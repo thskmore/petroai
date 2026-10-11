@@ -27,10 +27,32 @@ let db;
 async function initDb() {
   db = await openDatabase(process.env.DB_PATH || path.join(__dirname, "data.db"));
   db.pragma("journal_mode = WAL");
+
+  // Migrate existing users table if it restricted role to ('owner','manager','worker')
+  try {
+    const tableSql = (db.prepare("select sql from sqlite_master where type='table' and name='users'").get() || {}).sql || "";
+    if (tableSql.includes("check(role in ('owner','manager','worker'))") && !tableSql.includes("'admin'")) {
+      db.exec(`
+        create table users_migrated(
+          id integer primary key, name text not null, mobile text unique not null,
+          hash text not null, role text not null check(role in ('owner','manager','worker','admin')),
+          active integer not null default 1, station_id integer not null default 1,
+          approval_status text not null default 'approved', rejection_reason text
+        );
+        insert into users_migrated(id, name, mobile, hash, role, active)
+          select id, name, mobile, hash, role, active from users;
+        drop table users;
+        alter table users_migrated rename to users;
+      `);
+    }
+  } catch (mErr) {
+    console.error("Migration warning on users table:", mErr);
+  }
+
   db.exec(`
 create table if not exists users(
   id integer primary key, name text not null, mobile text unique not null,
-  hash text not null, role text not null check(role in ('owner','manager','worker')),
+  hash text not null, role text not null check(role in ('owner','manager','worker','admin')),
   active integer not null default 1);
 create table if not exists sessions(token text primary key, user_id integer not null, exp integer not null);
 create table if not exists state(id integer primary key check(id = 1), ver integer not null, json text not null);
@@ -83,6 +105,75 @@ create table if not exists duty_handovers(
   addCol("duties", "assigned_by", "integer");
   addCol("credit_recoveries", "duty_id", "integer");
   addCol("credit_sales", "duty_id", "integer");
+
+  // Multi-tenant station isolation
+  addCol("users", "station_id", "integer not null default 1");
+  addCol("users", "approval_status", "text not null default 'approved'");
+  addCol("users", "rejection_reason", "text");
+  addCol("duties", "station_id", "integer not null default 1");
+  addCol("credit_sales", "station_id", "integer not null default 1");
+  addCol("credit_recoveries", "station_id", "integer not null default 1");
+  addCol("dips", "station_id", "integer not null default 1");
+  addCol("duty_handovers", "station_id", "integer not null default 1");
+  addCol("days", "station_id", "integer not null default 1");
+  addCol("pay_rates", "station_id", "integer not null default 1");
+  addCol("pay_items", "station_id", "integer not null default 1");
+
+  db.exec(`
+    create table if not exists stations(
+      id integer primary key autoincrement,
+      owner_id integer,
+      name text not null,
+      omc text not null default 'HPCL',
+      address text,
+      city text,
+      state_name text,
+      mobile text not null,
+      status text not null default 'active',
+      created_at integer not null,
+      approved_at integer,
+      approved_by integer,
+      setup_done integer not null default 1,
+      nozzles_count integer default 4,
+      tanks_count integer default 2
+    );
+    create table if not exists station_states(
+      station_id integer primary key,
+      ver integer not null,
+      json text not null
+    );
+  `);
+
+  addCol("stations", "city", "text");
+  addCol("stations", "state_name", "text");
+  addCol("stations", "setup_done", "integer not null default 1");
+  addCol("stations", "nozzles_count", "integer default 4");
+  addCol("stations", "tanks_count", "integer default 2");
+
+  // Ensure default demo station 1 exists
+  const s1 = db.prepare("select * from stations where id=1").get();
+  if (!s1) {
+    db.prepare("insert into stations(id, owner_id, name, omc, address, city, state_name, mobile, status, created_at, setup_done) values(1, 1, 'Sarita Petroleum Station', 'HPCL', 'Pune-Solapur Highway, Maharashtra', 'Solapur', 'Maharashtra', '9422556644', 'active', ?, 1)")
+      .run(Math.floor(Date.now() / 1000));
+  } else if (!s1.setup_done) {
+    db.prepare("update stations set setup_done=1 where id=1").run();
+  }
+
+  // Ensure station 1 state is seeded into station_states
+  const ss1 = db.prepare("select * from station_states where station_id=1").get();
+  if (!ss1) {
+    const oldState = db.prepare("select * from state where id=1").get();
+    if (oldState) {
+      db.prepare("insert into station_states(station_id, ver, json) values(1, ?, ?)").run(oldState.ver, oldState.json);
+    }
+  }
+
+  // Ensure Super Admin user exists (mobile: 9999999999, pass: AdminPass123)
+  const adminUser = db.prepare("select * from users where mobile='9999999999'").get();
+  if (!adminUser) {
+    db.prepare("insert into users(name, mobile, hash, role, active, station_id, approval_status) values('Platform Super Admin', '9999999999', ?, 'admin', 1, 1, 'approved')")
+      .run(bcrypt.hashSync("AdminPass123", 10));
+  }
   seedDutyHandoversIfEmpty(db);
   const { seedPetrolOperations } = require("./seed-petrol-operations");
   await seedPetrolOperations(db);
@@ -241,9 +332,99 @@ const now = () => Math.floor(Date.now() / 1000);
 const DAY = 86400;
 const hs = (t) => crypto.createHash("sha256").update(t).digest("hex");
 const mob = (x) => String(x || "").replace(/\D/g, "").slice(-10);
-const pub = (u) => ({ id: u.id, name: u.name, mobile: u.mobile, role: u.role });
+const pub = (u) => ({
+  id: u.id,
+  name: u.name,
+  mobile: u.mobile,
+  role: u.role,
+  station_id: u.station_id || 1,
+  approval_status: u.approval_status || "approved"
+});
 const today = () => new Date().toLocaleDateString("en-CA", { timeZone: TZ });
 const usersCount = () => db.prepare("select count(*) n from users").get().n;
+
+function getStationId(q) {
+  if (q && q.user) {
+    if (q.user.role === "admin") {
+      const headerSt = q.headers && (q.headers["x-station-id"] || q.headers["x-station"]);
+      const querySt = q.query && q.query.station_id;
+      const target = headerSt || querySt;
+      if (target) {
+        const parsed = parseInt(target, 10);
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+      }
+    }
+    if (q.user.station_id) return q.user.station_id;
+  }
+  return 1;
+}
+
+function createDefaultStationState(stationId, stationInfo = {}) {
+  const omc = stationInfo.omc || "HPCL";
+  const stName = stationInfo.name || "My Petrol Station";
+  const stAddr = stationInfo.address || "";
+  const stPhone = stationInfo.mobile || "";
+
+  const defaultRates = [
+    { id: Date.now(), fuel: "Petrol (MS)", rate: 104.50, from: today() },
+    { id: Date.now() + 1, fuel: "Diesel (HSD)", rate: 92.80, from: today() }
+  ];
+  if (omc === "HPCL" || omc === "BPCL" || omc === "IOCL") {
+    defaultRates.push({
+      id: Date.now() + 2,
+      fuel: omc === "HPCL" ? "Power petrol" : omc === "IOCL" ? "XP95 Petrol" : "Speed Petrol",
+      rate: 111.20,
+      from: today()
+    });
+  }
+
+  const defaultTanks = [
+    { id: Date.now() + 10, fuel: "Petrol (MS)", name: "Tank 1 (MS Petrol)", cap: 20000, dip: 120, current_stock: 14500 },
+    { id: Date.now() + 20, fuel: "Diesel (HSD)", name: "Tank 2 (HSD Diesel)", cap: 25000, dip: 155, current_stock: 19800 }
+  ];
+
+  const defaultNozzles = [
+    { id: Date.now() + 101, name: "N1 (MS-1)", fuel: "Petrol (MS)", tank_id: defaultTanks[0].id, op: 1000.00 },
+    { id: Date.now() + 102, name: "N2 (MS-2)", fuel: "Petrol (MS)", tank_id: defaultTanks[0].id, op: 1000.00 },
+    { id: Date.now() + 103, name: "N3 (HSD-1)", fuel: "Diesel (HSD)", tank_id: defaultTanks[1].id, op: 1000.00 },
+    { id: Date.now() + 104, name: "N4 (HSD-2)", fuel: "Diesel (HSD)", tank_id: defaultTanks[1].id, op: 1000.00 }
+  ];
+
+  return {
+    c: [],
+    inv: [],
+    items: [
+      { id: Date.now() + 201, name: "Engine Oil 20W40 (1L)", mrp: 380, cost: 310, gst: 18 },
+      { id: Date.now() + 202, name: "2T 2-Stroke Pouch (40ml)", mrp: 25, cost: 18, gst: 18 },
+      { id: Date.now() + 203, name: "Coolant Concentrate (1L)", mrp: 260, cost: 200, gst: 18 },
+      { id: Date.now() + 204, name: "DEF / AdBlue (10L)", mrp: 650, cost: 520, gst: 18 }
+    ],
+    sup: [
+      { id: Date.now() + 301, name: `${omc} Regional Depot Supply`, phone: "1800-2333-555" }
+    ],
+    bk: [
+      { id: Date.now() + 401, name: "State Bank of India (Pump CC A/C)", no: "34891002341", ifsc: "SBIN0001234" }
+    ],
+    nozzles: defaultNozzles,
+    tanks: defaultTanks,
+    deliv: [],
+    rates: defaultRates,
+    expcats: ["Forecourt DG Power / Electricity", "Staff Tea & Meals", "Station Cleaning & Supplies", "Cash Transit / Bank Charges", "Weighbridge & Generator Maintenance"],
+    paymodes: ["Cash", "PhonePe / GPay QR", "POS Card Swipes", `${omc} Fleet Loyalty Card`, "Cheque / NEFT"],
+    ob: { Cash: 5000, Bank: 25000, UPI: 0 },
+    biz: {
+      name: stName,
+      omc: omc,
+      addr: stAddr,
+      phone: stPhone,
+      gst: "",
+      dealer_code: "",
+      dealer_name: stationInfo.owner_name || "",
+      depot: `${omc} Regional Depot`
+    },
+    setup_done: false
+  };
+}
 
 function cookie(q, k) {
   const m = (q.headers.cookie || "").split(";").map((x) => x.trim()).find((x) => x.startsWith(k + "="));
@@ -262,13 +443,13 @@ function getToken(q) {
 function getUser(q) {
   const t = getToken(q);
   if (!t) return null;
-  const r = db.prepare("select u.id,u.name,u.mobile,u.role,u.active,s.exp from sessions s join users u on u.id=s.user_id where s.token=?").get(hs(t));
+  const r = db.prepare("select u.id,u.name,u.mobile,u.role,u.active,u.station_id,u.approval_status,u.rejection_reason,s.exp from sessions s join users u on u.id=s.user_id where s.token=?").get(hs(t));
   return r && r.active && r.exp >= now() ? r : null;
 }
 const need = (...roles) => (q, s, n) => {
   const u = getUser(q);
   if (!u) return s.status(401).json({ error: "Please log in." });
-  if (roles.length && !roles.includes(u.role)) return s.status(403).json({ error: "You do not have access to this." });
+  if (roles.length && !roles.includes(u.role) && u.role !== "admin") return s.status(403).json({ error: "You do not have access to this." });
   q.user = u;
   n();
 };
@@ -304,19 +485,95 @@ app.post("/api/setup", (q, s) => {
   const { name, mobile, password } = q.body || {};
   const e = checkUser(name, mob(mobile), password);
   if (e) return s.status(400).json({ error: e });
-  const id = db.prepare("insert into users(name,mobile,hash,role) values(?,?,?,'owner')").run(String(name).trim(), mob(mobile), bcrypt.hashSync(password, 10)).lastInsertRowid;
+  const id = db.prepare("insert into users(name,mobile,hash,role,station_id,approval_status) values(?,?,?,'owner',1,'approved')").run(String(name).trim(), mob(mobile), bcrypt.hashSync(password, 10)).lastInsertRowid;
   const token = startSession(q, s, id);
-  s.json({ token, user: { id, name: String(name).trim(), mobile: mob(mobile), role: "owner" } });
+  s.json({ token, user: { id, name: String(name).trim(), mobile: mob(mobile), role: "owner", station_id: 1, approval_status: "approved" } });
 });
+
+// Owner Registration Endpoint (Awaiting Admin Approval & Installation)
+app.post("/api/register-owner", (q, s) => {
+  const { name, mobile, password, station_name, omc, address, city, state_name, nozzles_count, tanks_count } = q.body || {};
+  const m = mob(mobile);
+  const e = checkUser(name, m, password);
+  if (e) return s.status(400).json({ error: e });
+  if (!station_name || !String(station_name).trim()) return s.status(400).json({ error: "Enter petrol pump / station name." });
+
+  const existing = db.prepare("select * from users where mobile=?").get(m);
+  if (existing) {
+    if (existing.approval_status === "pending") {
+      return s.status(409).json({ error: "Your pump registration is already submitted and pending Admin approval. The admin will install your app shortly." });
+    }
+    return s.status(409).json({ error: "This mobile number is already registered in the system." });
+  }
+
+  const hash = bcrypt.hashSync(password, 10);
+  const nowSec = Math.floor(Date.now() / 1000);
+
+  // 1. Create owner user in pending status
+  const ownerId = db.prepare("insert into users(name, mobile, hash, role, active, station_id, approval_status) values(?, ?, ?, 'owner', 1, 0, 'pending')")
+    .run(String(name).trim(), m, hash).lastInsertRowid;
+
+  // 2. Create station in pending_approval status
+  const stationId = db.prepare(`
+    insert into stations(owner_id, name, omc, address, city, state_name, mobile, status, created_at, setup_done, nozzles_count, tanks_count)
+    values(?, ?, ?, ?, ?, ?, ?, 'pending_approval', ?, 0, ?, ?)
+  `).run(
+    ownerId,
+    String(station_name).trim(),
+    String(omc || "HPCL").trim(),
+    String(address || "").trim(),
+    String(city || "").trim(),
+    String(state_name || "Maharashtra").trim(),
+    m,
+    nowSec,
+    parseInt(nozzles_count, 10) || 4,
+    parseInt(tanks_count, 10) || 2
+  ).lastInsertRowid;
+
+  // Link station_id back to owner
+  db.prepare("update users set station_id=? where id=?").run(stationId, ownerId);
+
+  s.json({
+    ok: true,
+    message: "Registration submitted successfully! Your account and pump installation are waiting for Super Admin approval.",
+    station_id: stationId,
+    owner_id: ownerId
+  });
+});
+
 app.post("/api/login", (q, s) => {
   const m = mob(q.body && q.body.mobile), p = String((q.body && q.body.password) || ""), k = q.ip + "|" + m;
   if (blocked(k)) return s.status(429).json({ error: "Too many wrong attempts. Wait 30 seconds or click 'Unlock Now'." });
   const u = db.prepare("select * from users where mobile=?").get(m);
   if (!u || !u.active || !bcrypt.compareSync(p, u.hash)) { addFail(k); return s.status(401).json({ error: "Wrong mobile number or password." }); }
+  
+  // Check approval status
+  if (u.approval_status === "pending") {
+    return s.status(403).json({
+      error: "Your pump owner registration is pending Super Admin approval. Platform Admin will verify details and install the app workspace shortly.",
+      pending_approval: true
+    });
+  }
+  if (u.approval_status === "rejected") {
+    return s.status(403).json({
+      error: "Your pump registration was declined. " + (u.rejection_reason ? "Reason: " + u.rejection_reason : "Please contact the platform admin."),
+      rejected: true
+    });
+  }
+
+  // Check station status if user is owner/manager/worker
+  if (u.role !== "admin" && u.station_id) {
+    const st = db.prepare("select status from stations where id=?").get(u.station_id);
+    if (st && st.status === "suspended") {
+      return s.status(403).json({ error: "This petrol pump station is currently suspended by Platform Admin. Please contact support." });
+    }
+  }
+
   fails.delete(k);
   const token = startSession(q, s, u.id);
   s.json({ token, user: pub(u) });
 });
+
 app.post("/api/logout", (q, s) => {
   const t = getToken(q);
   if (t) db.prepare("delete from sessions where token=?").run(hs(t));
@@ -335,23 +592,163 @@ app.post("/api/password", need(), (q, s) => {
   s.json({ ok: true });
 });
 
-// ---- Team (owner only)
-app.get("/api/users", need("owner", "manager"), (q, s) =>
-  s.json(db.prepare(q.user.role === "owner" ? "select id,name,mobile,role,active from users order by id" : "select id,name,mobile,role,active from users where role='worker' order by id").all()));
+// Current Station Details & Setup Status
+app.get("/api/current-station", need(), (q, s) => {
+  const sId = getStationId(q);
+  const st = db.prepare("select * from stations where id=?").get(sId);
+  s.json(st || { id: 1, name: "Sarita Petroleum Station", omc: "HPCL", setup_done: 1, status: "active" });
+});
+
+// Finish Pump Setup Wizard
+app.post("/api/finish-setup", need("owner", "admin"), (q, s) => {
+  const sId = getStationId(q);
+  db.prepare("update stations set setup_done=1 where id=?").run(sId);
+  // Also update state flag
+  const stRow = getState(sId);
+  if (stRow) {
+    try {
+      const parsed = JSON.parse(stRow.json);
+      parsed.setup_done = true;
+      db.prepare("insert or replace into station_states(station_id, ver, json) values(?, ?, ?)").run(sId, stRow.ver + 1, JSON.stringify(parsed));
+      if (sId === 1) db.prepare("update state set ver=?, json=? where id=1").run(stRow.ver + 1, JSON.stringify(parsed));
+    } catch (_) {}
+  }
+  s.json({ ok: true, message: "Forecourt setup completed successfully!" });
+});
+
+// ==========================================
+// SUPER ADMIN CONSOLE ENDPOINTS
+// ==========================================
+app.get("/api/admin/overview", need("admin"), (q, s) => {
+  const pendingStations = db.prepare(`
+    select st.*, u.name as owner_name, u.mobile as owner_mobile, u.approval_status
+    from stations st
+    join users u on u.id = st.owner_id
+    where st.status = 'pending_approval' or u.approval_status = 'pending'
+    order by st.created_at desc
+  `).all();
+
+  const allStations = db.prepare(`
+    select st.*, u.name as owner_name, u.mobile as owner_mobile, u.approval_status,
+      (select count(*) from users where station_id=st.id) as staff_count
+    from stations st
+    left join users u on u.id = st.owner_id
+    order by st.id asc
+  `).all();
+
+  const totalUsers = db.prepare("select count(*) c from users").get().c;
+  const totalDuties = db.prepare("select count(*) c from duties").get().c;
+
+  s.json({
+    pending_count: pendingStations.length,
+    active_count: allStations.filter(x => x.status === "active").length,
+    total_stations: allStations.length,
+    total_users: totalUsers,
+    total_duties: totalDuties,
+    pending_list: pendingStations,
+    stations: allStations
+  });
+});
+
+app.post("/api/admin/approve-station", need("admin"), (q, s) => {
+  const { station_id, owner_id } = q.body || {};
+  if (!station_id) return s.status(400).json({ error: "Station ID required." });
+
+  const st = db.prepare("select * from stations where id=?").get(station_id);
+  if (!st) return s.status(404).json({ error: "Station not found." });
+
+  const oId = owner_id || st.owner_id;
+  const nowSec = Math.floor(Date.now() / 1000);
+
+  // Update station status to active and ready for setup
+  db.prepare("update stations set status='active', approved_at=?, approved_by=?, setup_done=0 where id=?")
+    .run(nowSec, q.user.id, station_id);
+
+  // Update owner approval status to approved
+  if (oId) {
+    db.prepare("update users set approval_status='approved', station_id=? where id=?").run(station_id, oId);
+  }
+
+  // Provision station_states if not exists
+  let ss = db.prepare("select * from station_states where station_id=?").get(station_id);
+  if (!ss) {
+    const owner = oId ? db.prepare("select * from users where id=?").get(oId) : null;
+    const initial = createDefaultStationState(station_id, {
+      name: st.name,
+      omc: st.omc,
+      address: st.address,
+      mobile: st.mobile,
+      owner_name: owner ? owner.name : ""
+    });
+    db.prepare("insert into station_states(station_id, ver, json) values(?, 1, ?)").run(station_id, JSON.stringify(initial));
+  }
+
+  s.json({
+    ok: true,
+    message: `Station "${st.name}" approved and dedicated pump app workspace installed successfully! Owner ${st.mobile} can now log in and configure forecourt nozzles.`
+  });
+});
+
+app.post("/api/admin/reject-station", need("admin"), (q, s) => {
+  const { station_id, owner_id, reason } = q.body || {};
+  if (!station_id) return s.status(400).json({ error: "Station ID required." });
+  const st = db.prepare("select * from stations where id=?").get(station_id);
+  if (!st) return s.status(404).json({ error: "Station not found." });
+
+  const oId = owner_id || st.owner_id;
+  const reasonText = String(reason || "Registration details could not be verified.").trim();
+
+  db.prepare("update stations set status='rejected' where id=?").run(station_id);
+  if (oId) {
+    db.prepare("update users set approval_status='rejected', rejection_reason=? where id=?").run(reasonText, oId);
+  }
+
+  s.json({ ok: true, message: `Station "${st.name}" registration was rejected.` });
+});
+
+app.post("/api/admin/toggle-station", need("admin"), (q, s) => {
+  const { station_id, status } = q.body || {};
+  if (!station_id || !["active", "suspended"].includes(status)) {
+    return s.status(400).json({ error: "Valid station ID and status ('active' or 'suspended') required." });
+  }
+  db.prepare("update stations set status=? where id=?").run(status, station_id);
+  s.json({ ok: true, status });
+});
+
+// ---- Team (owner & manager, scoped by station_id)
+app.get("/api/users", need("owner", "manager", "admin"), (q, s) => {
+  const sId = getStationId(q);
+  if (q.user.role === "admin") {
+    return s.json(db.prepare(`
+      select u.id, u.name, u.mobile, u.role, u.active, u.station_id, u.approval_status, st.name as station_name
+      from users u
+      left join stations st on st.id = u.station_id
+      order by u.id
+    `).all());
+  }
+  if (q.user.role === "owner") {
+    return s.json(db.prepare("select id,name,mobile,role,active from users where station_id=? order by id").all(sId));
+  }
+  return s.json(db.prepare("select id,name,mobile,role,active from users where station_id=? and role='worker' order by id").all(sId));
+});
+
 app.post("/api/users", need("owner", "manager"), (q, s) => {
   const { name, mobile, password, role } = q.body || {};
   const m = mob(mobile);
+  const sId = getStationId(q);
   if (!["manager", "worker"].includes(role)) return s.status(400).json({ error: "Choose manager or worker." });
   if (q.user.role === "manager" && role !== "worker") return s.status(403).json({ error: "Managers can add workers only." });
   const e = checkUser(name, m, password);
   if (e) return s.status(400).json({ error: e });
   if (db.prepare("select 1 from users where mobile=?").get(m)) return s.status(409).json({ error: "This mobile number is already registered." });
-  db.prepare("insert into users(name,mobile,hash,role) values(?,?,?,?)").run(String(name).trim(), m, bcrypt.hashSync(password, 10), role);
+  db.prepare("insert into users(name,mobile,hash,role,station_id,approval_status) values(?,?,?,?,?,'approved')").run(String(name).trim(), m, bcrypt.hashSync(password, 10), role, sId);
   s.json({ ok: true });
 });
+
 app.patch("/api/users/:id", need("owner", "manager"), (q, s) => {
   const id = +q.params.id, u = db.prepare("select * from users where id=?").get(id);
   if (!u) return s.status(404).json({ error: "User not found." });
+  if (q.user.role !== "admin" && u.station_id !== getStationId(q)) return s.status(403).json({ error: "Access denied." });
   if (q.user.role === "manager" && u.role !== "worker") return s.status(403).json({ error: "Managers can change workers only." });
   const { active, password, name, mobile, role } = q.body || {};
   if (active !== undefined) {
@@ -379,7 +776,7 @@ app.patch("/api/users/:id", need("owner", "manager"), (q, s) => {
     db.prepare("update users set mobile=? where id=?").run(m, id);
   }
   if (role !== undefined && role !== u.role) {
-    if (q.user.role !== "owner") return s.status(403).json({ error: "Only the owner can change user roles." });
+    if (q.user.role !== "owner" && q.user.role !== "admin") return s.status(403).json({ error: "Only the owner can change user roles." });
     if (u.role === "owner") return s.status(400).json({ error: "Owner role cannot be changed." });
     if (!["manager", "worker"].includes(role)) return s.status(400).json({ error: "Choose manager or worker." });
     db.prepare("update users set role=? where id=?").run(role, id);
@@ -388,32 +785,71 @@ app.patch("/api/users/:id", need("owner", "manager"), (q, s) => {
   s.json({ ok: true, user: updated });
 });
 
-// ---- Shared business data (owner and manager)
-const getState = () => db.prepare("select ver,json from state where id=1").get();
-app.get("/api/state", need("owner", "manager"), (q, s) => {
-  const r = getState();
+// ---- Shared business data (isolated by station_id)
+const getState = (target) => {
+  let sId = 1;
+  if (typeof target === "number") {
+    sId = target;
+  } else if (target && typeof target === "object") {
+    sId = getStationId(target);
+  }
+  let row = db.prepare("select ver, json from station_states where station_id=?").get(sId);
+  if (!row) {
+    if (sId === 1) {
+      row = db.prepare("select ver, json from state where id=1").get();
+      if (row) {
+        db.prepare("insert or replace into station_states(station_id, ver, json) values(1, ?, ?)").run(row.ver, row.json);
+      }
+    } else {
+      const stRow = db.prepare("select * from stations where id=?").get(sId);
+      const ownerRow = stRow && stRow.owner_id ? db.prepare("select * from users where id=?").get(stRow.owner_id) : null;
+      const initial = createDefaultStationState(sId, {
+        name: stRow ? stRow.name : "My Station",
+        omc: stRow ? stRow.omc : "HPCL",
+        address: stRow ? stRow.address : "",
+        mobile: stRow ? stRow.mobile : "",
+        owner_name: ownerRow ? ownerRow.name : ""
+      });
+      const jsonStr = JSON.stringify(initial);
+      db.prepare("insert or replace into station_states(station_id, ver, json) values(?, 1, ?)").run(sId, jsonStr);
+      row = { ver: 1, json: jsonStr };
+    }
+  }
+  return row;
+};
+
+app.get("/api/state", need("owner", "manager", "admin"), (q, s) => {
+  const sId = getStationId(q);
+  const r = getState(sId);
   s.json(r ? { ver: r.ver, state: JSON.parse(r.json) } : { ver: 0, state: null });
 });
-app.put("/api/state", need("owner", "manager"), (q, s) => {
+
+app.put("/api/state", need("owner", "manager", "admin"), (q, s) => {
   const { ver, state } = q.body || {};
   if (!state || !Array.isArray(state.c) || !Array.isArray(state.inv)) return s.status(400).json({ error: "Invalid data." });
+  const sId = getStationId(q);
   const v = db.transaction(() => {
-    const r = getState(), cur = r ? r.ver : 0;
+    const r = getState(sId), cur = r ? r.ver : 0;
     if (ver !== cur) return null;
-    db.prepare("insert into state(id,ver,json) values(1,?,?) on conflict(id) do update set ver=excluded.ver,json=excluded.json").run(cur + 1, JSON.stringify(state));
+    const jsonStr = JSON.stringify(state);
+    db.prepare("insert or replace into station_states(station_id, ver, json) values(?, ?, ?)").run(sId, cur + 1, jsonStr);
+    if (sId === 1) {
+      db.prepare("insert into state(id,ver,json) values(1,?,?) on conflict(id) do update set ver=excluded.ver,json=excluded.json").run(cur + 1, jsonStr);
+    }
     return cur + 1;
   })();
   if (v === null) return s.status(409).json({ error: "Data was changed by someone else." });
   s.json({ ver: v });
 });
 
-// ---- Credit customers and worker credit sales
-function customers() {
-  const r = getState(), st = r ? JSON.parse(r.json) : { c: [] };
+// ---- Credit customers and worker credit sales (scoped by station_id)
+function customers(q) {
+  const sId = getStationId(q);
+  const r = getState(sId), st = r ? JSON.parse(r.json) : { c: [] };
   const sums = {};
-  db.prepare("select cust_id, sum(a) t from credit_sales where status='ok' group by cust_id").all().forEach((x) => (sums[x.cust_id] = x.t));
+  db.prepare("select cust_id, sum(a) t from credit_sales where status='ok' and station_id=? group by cust_id").all(sId).forEach((x) => (sums[x.cust_id] = x.t));
   const recSums = {};
-  db.prepare("select cust_id, sum(a) t from credit_recoveries group by cust_id").all().forEach((x) => (recSums[x.cust_id] = x.t));
+  db.prepare("select cust_id, sum(a) t from credit_recoveries where station_id=? group by cust_id").all(sId).forEach((x) => (recSums[x.cust_id] = x.t));
   return (st.c || []).map((c) => {
     const due = (c.e || []).reduce((a, x) => a + (x.t === "sale" ? x.a : -x.a), 0) + (sums[String(c.id)] || 0) - (recSums[String(c.id)] || 0);
     return { id: c.id, name: c.name, active: c.active !== false, veh: c.veh || [], available: Math.round(((c.limit || 0) - due) * 100) / 100, due: Math.round(due * 100) / 100 };
@@ -421,11 +857,12 @@ function customers() {
 }
 app.get("/api/customers", need(), (q, s) => {
   const all = q.query.all === "1" || q.query.all === "true";
-  s.json(customers().filter((c) => (all ? true : (c.active || (c.due != null && c.due > 0)))));
+  s.json(customers(q).filter((c) => (all ? true : (c.active || (c.due != null && c.due > 0)))));
 });
 app.post("/api/credit-sales", need(), (q, s) => {
   const { cust_id, n, a, veh, force, duty_id } = q.body || {};
-  const c = customers().find((x) => String(x.id) === String(cust_id));
+  const sId = getStationId(q);
+  const c = customers(q).find((x) => String(x.id) === String(cust_id));
   const amt = Math.round(+a * 100) / 100, item = String(n || "").trim();
   if (!c) return s.status(400).json({ error: "Choose a customer from the list." });
   if (!c.active) return s.status(400).json({ error: "This customer is inactive." });
@@ -436,16 +873,19 @@ app.post("/api/credit-sales", need(), (q, s) => {
   if (over && !worker && !force) return s.status(409).json({ error: "over_limit", available: c.available });
   const status = over && worker ? "pending" : "ok";
   const openD = duty_id || (openDuty(q.user.id) ? openDuty(q.user.id).id : null);
-  const id = db.prepare("insert into credit_sales(cust_id,d,n,a,veh,worker_id,created,status,duty_id) values(?,?,?,?,?,?,?,?,?)")
-    .run(String(c.id), bizDate(), item, amt, String(veh || "").trim().toUpperCase().slice(0, 20), q.user.id, now(), status, openD).lastInsertRowid;
+  const id = db.prepare("insert into credit_sales(cust_id,d,n,a,veh,worker_id,created,status,duty_id,station_id) values(?,?,?,?,?,?,?,?,?,?)")
+    .run(String(c.id), bizDate(), item, amt, String(veh || "").trim().toUpperCase().slice(0, 20), q.user.id, now(), status, openD, sId).lastInsertRowid;
   s.json({ id, pending: status === "pending", available: Math.round((status === "ok" ? c.available - amt : c.available) * 100) / 100 });
 });
-app.get("/api/credit-sales", need("owner", "manager"), (q, s) =>
-  s.json(db.prepare("select cs.id,cs.cust_id,cs.d,cs.n,cs.a,cs.veh,cs.status,u.name worker from credit_sales cs join users u on u.id=cs.worker_id where cs.status<>'rejected' order by cs.id").all()));
+app.get("/api/credit-sales", need("owner", "manager", "admin"), (q, s) => {
+  const sId = getStationId(q);
+  s.json(db.prepare("select cs.id,cs.cust_id,cs.d,cs.n,cs.a,cs.veh,cs.status,u.name worker from credit_sales cs join users u on u.id=cs.worker_id where cs.status<>'rejected' and cs.station_id=? order by cs.id").all(sId));
+});
 app.get("/api/my-credit-sales", need(), (q, s) => {
+  const sId = getStationId(q);
   const names = {};
-  customers().forEach((c) => (names[String(c.id)] = c.name));
-  const rows = db.prepare("select id,cust_id,d,n,a,veh,status from credit_sales where worker_id=? order by id desc limit 50").all(q.user.id);
+  customers(q).forEach((c) => (names[String(c.id)] = c.name));
+  const rows = db.prepare("select id,cust_id,d,n,a,veh,status from credit_sales where worker_id=? and station_id=? order by id desc limit 50").all(q.user.id, sId);
   s.json(rows.map((r) => ({ ...r, cname: names[r.cust_id] || "Customer" })));
 });
 const decide = (to) => (q, s) => {
@@ -4223,16 +4663,18 @@ app.delete("/api/sample-labels/:id", need("owner", "manager"), (q, s) => {
 // 2. STATION OMC PROFILE & SETTINGS
 // ==========================================
 app.get("/api/station-profile", need(), (q, s) => {
-  const st = getState();
+  const sId = getStationId(q);
+  const st = getState(sId);
   const stateObj = st ? JSON.parse(st.json) : {};
   const biz = stateObj.biz || {};
+  const stRow = db.prepare("select * from stations where id=?").get(sId);
   s.json({
-    name: biz.name || "Rituraj Petrolium Mahud bk",
-    omc: biz.omc || "HPCL",
+    name: (stRow && stRow.name) || biz.name || "Rituraj Petrolium Mahud bk",
+    omc: (stRow && stRow.omc) || biz.omc || "HPCL",
     dealer_code: biz.dealer_code || "4175666",
     dealer_name: biz.dealer_name || "Shripati More",
-    addr: biz.addr || "At Post Mahud bk, Taluka Sangola, Dist Solapur, Maharashtra - 413306",
-    phone: biz.phone || "9422556644",
+    addr: (stRow && stRow.address) || biz.addr || "At Post Mahud bk, Taluka Sangola, Dist Solapur, Maharashtra - 413306",
+    phone: (stRow && stRow.mobile) || biz.phone || "9422556644",
     email: biz.email || "riturajpetroleum@gmail.com",
     gst: biz.gst || "27AABCR1234F1Z5",
     vat_tin: biz.vat_tin || "27123456789V",
@@ -4240,16 +4682,27 @@ app.get("/api/station-profile", need(), (q, s) => {
     peso_license: biz.peso_license || "P/HQ/MH/15/4175 (E5412)",
     wm_stamping_reg: biz.wm_stamping_reg || "SOL/WM/2026/0412",
     upi_id: biz.upi_id || "9422556644@upi",
-    depot: biz.depot || "HPCL Pakni Depot"
+    depot: biz.depot || "HPCL Pakni Depot",
+    station_id: sId,
+    setup_done: stRow ? !!stRow.setup_done : true
   });
 });
 
-app.put("/api/station-profile", need("owner", "manager"), (q, s) => {
-  const st = getState();
+app.put("/api/station-profile", need("owner", "manager", "admin"), (q, s) => {
+  const sId = getStationId(q);
+  const st = getState(sId);
   if (!st) return s.status(404).json({ error: "State not initialized." });
   const stateObj = JSON.parse(st.json);
   stateObj.biz = Object.assign({}, stateObj.biz, q.body || {});
-  db.prepare("update state set ver=ver+1, json=? where id=1").run(JSON.stringify(stateObj));
+  const jsonStr = JSON.stringify(stateObj);
+  db.prepare("insert or replace into station_states(station_id, ver, json) values(?, ?, ?)").run(sId, st.ver + 1, jsonStr);
+  if (sId === 1) {
+    db.prepare("update state set ver=ver+1, json=? where id=1").run(jsonStr);
+  }
+  if (q.body.name || q.body.omc || q.body.addr || q.body.phone) {
+    db.prepare("update stations set name=coalesce(?, name), omc=coalesce(?, omc), address=coalesce(?, address), mobile=coalesce(?, mobile) where id=?")
+      .run(q.body.name || null, q.body.omc || null, q.body.addr || null, q.body.phone || null, sId);
+  }
   s.json({ ok: true, profile: stateObj.biz });
 });
 
