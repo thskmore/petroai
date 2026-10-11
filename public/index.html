@@ -210,7 +210,7 @@ tr:hover td{background:rgba(10,99,248,0.02)}
 .tank-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tank-cover{font-family:'IBM Plex Mono',monospace;font-size:10.5px;margin-top:3px;white-space:nowrap}
 
-/* Petro GPT / NOVA Intelligence Block */
+/* Petro GPT / NETRA Intelligence Block */
 .petro-gpt-card{position:relative;isolation:isolate;display:flex;flex-direction:column;background:linear-gradient(135deg,rgba(10,99,248,0.05),transparent),var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 4px rgba(6,42,107,0.04);overflow:hidden}
 [data-theme="dark"] .petro-gpt-card{background:radial-gradient(100% 180% at 100% 0%,rgba(10,99,248,0.10),transparent 56%),var(--s1)}
 .petro-gpt-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
@@ -963,16 +963,7 @@ body:not(.logged-in) #navDrawerBackdrop {
     display: none;
   }
   .petro-auth-stats {
-    margin-top: 14px;
-    padding-top: 14px;
-    gap: 16px;
-    justify-content: space-between;
-  }
-  .petro-auth-stat-item b {
-    font-size: 20px;
-  }
-  .petro-auth-stat-item span {
-    font-size: 11.5px;
+    display: none !important;
   }
   .petro-auth-main {
     padding: 26px 18px 40px;
@@ -1120,6 +1111,12 @@ body:not(.logged-in) #navDrawerBackdrop {
   cursor: pointer;
   align-items: center;
   justify-content: center;
+}
+.petro-home-mobile-right {
+  display: none;
+}
+.petro-mobile-signin-tab {
+  display: none;
 }
 .petro-home-mobile-drawer {
   display: none;
@@ -1422,7 +1419,7 @@ body:not(.logged-in) #navDrawerBackdrop {
   line-height: 1.6;
 }
 
-/* NOVA Dialogue */
+/* NETRA Dialogue */
 .petro-dialogue {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
@@ -1458,7 +1455,7 @@ body:not(.logged-in) #navDrawerBackdrop {
   margin: 0;
   line-height: 1.22;
 }
-.petro-nova-avatar {
+.petro-netra-avatar, .petro-nova-avatar {
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -1709,6 +1706,35 @@ body:not(.logged-in) #navDrawerBackdrop {
 @media (max-width: 980px) {
   .petro-home-nav, .petro-home-cta-group {
     display: none;
+  }
+  .petro-home-mobile-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .petro-mobile-signin-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);
+    color: #ffffff;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 15px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 2px 10px rgba(10, 99, 248, 0.35);
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+  .petro-mobile-signin-tab:active {
+    transform: scale(0.96);
+    opacity: 0.92;
   }
   .petro-home-burger {
     display: flex;
@@ -3741,18 +3767,18 @@ function renderHome(){
           '</div>' +
         '</div>' +
 
-        '<!-- Petro GPT / NOVA Forecourt Intelligence Copilot -->' +
+        '<!-- Petro GPT / NETRA Forecourt Intelligence Copilot -->' +
         '<div class="petro-gpt-card">' +
           '<div class="petro-gpt-hd">' +
             '<div class="petro-gpt-status">' +
               '<span class="petro-gpt-pulse"></span>' +
-              '<span>NOVA Copilot · Forecourt Intelligence</span>' +
+              '<span>NETRA Copilot · Forecourt Intelligence</span>' +
             '</div>' +
             '<span class="chip" style="font-size:10px">Online</span>' +
           '</div>' +
           '<div class="panel-bd">' +
             '<div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">' +
-              'Ask NOVA about sales, fuel stock, dip reconciliation, or overdue credit. Grounded in ' + esc(pumpTitle) + ' live data.' +
+              'Ask NETRA about sales, fuel stock, dip reconciliation, or overdue credit. Grounded in ' + esc(pumpTitle) + ' live data.' +
             '</div>' +
             '<div class="petro-gpt-prompts">' +
               '<button type="button" class="petro-gpt-prompt" onclick="handlePetroGptPrompt(\'How did we do today?\')">How did we do today?</button>' +
@@ -3762,7 +3788,7 @@ function renderHome(){
             '</div>' +
             '<div class="petro-gpt-input-row">' +
               '<input type="text" id="petroGptInput" class="petro-gpt-input" placeholder="Ask about tanks, margins, shift dues..." onkeydown="if(event.key===\'Enter\')sendPetroGptQuery()">' +
-              '<button type="button" class="btn btn-sm" style="background:var(--sodium);color:var(--sodium-ink);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700" onclick="sendPetroGptQuery()">Ask NOVA</button>' +
+              '<button type="button" class="btn btn-sm" style="background:var(--sodium);color:var(--sodium-ink);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700" onclick="sendPetroGptQuery()">Ask NETRA</button>' +
             '</div>' +
             '<div id="petroGptAnsBox" class="petro-gpt-ans">' +
               (PETRO_GPT_ANS || generatePetroGptAnswer("How did we do today?")) +
@@ -5431,14 +5457,112 @@ window.addEventListener("resize",function(){
 });
 var dl=null;try{if(window.claude&&claude.use)claude.use("downloads").then(function(d){dl=d}).catch(function(){})}catch(e){}
 function renderBak(){tab="setup";SU="bak";renderSetup()}
-function doBackup(){if(!dl)return showBk();
-dl.save({filename:"petrol-pump-backup-"+today()+".json",data:JSON.stringify(strip(),null,1)}).then(function(){S.lastBk=new Date().toLocaleString("en-IN");save();renderBak()}).catch(function(e){if(e&&e.code=="declined")return;showBk()})}
+function doBackup(){var jsonStr=JSON.stringify(strip(),null,2);try{var blob=new Blob([jsonStr],{type:"application/json"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="petrol-pump-backup-"+today()+".json";document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(S)S.lastBk=new Date().toLocaleString("en-IN");save();toast("Backup downloaded successfully.");renderBak();return}catch(e){}if(!dl)return showBk();dl.save({filename:"petrol-pump-backup-"+today()+".json",data:jsonStr}).then(function(){if(S)S.lastBk=new Date().toLocaleString("en-IN");save();renderBak()}).catch(function(e){if(e&&e.code=="declined")return;showBk()})}
 function showBk(){openM('<h2>Backup text</h2><div class="sub">Copy all of this and keep it somewhere safe. Paste it into Restore to bring the data back.</div><textarea id="bt" readonly style="width:100%;height:180px;margin-top:8px;font:12px monospace;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Close</button><button onclick="var t=document.getElementById(\'bt\');t.select();document.execCommand(\'copy\')">Select and copy</button></div>');document.getElementById("bt").value=JSON.stringify(strip())}
 function restForm(){openM('<h2>Restore from backup</h2><div class="sub">This replaces all data in this browser with the backup.</div><label>Backup file<input id="rf1" type="file" accept=".json,application/json"></label><label>Or paste backup text<textarea id="rt" style="width:100%;height:120px;font:12px monospace;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea></label><div class="err" id="er"></div><div class="row"><button class="ghost" onclick="close()">Cancel</button><button onclick="doRestore()">Restore data</button></div>');
 document.getElementById("rf1").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){document.getElementById("rt").value=r.result};r.readAsText(f)}}
 function doRestore(){var o;try{o=JSON.parse(document.getElementById("rt").value)}catch(e){return er("This isn't a valid backup. Choose the .json file or paste the full backup text.")}
 if(!o||!Array.isArray(o.c)||!Array.isArray(o.inv))return er("This backup is missing customer or invoice data.");
 ask("Replace all current data with this backup?",function(){S=o;S.items=S.items||[];S.sup=S.sup||[];S.bk=S.bk||[];S.ob=S.ob||{Cash:0,Bank:0,UPI:0};S.biz=S.biz||{name:"",addr:"",gst:""};save();SRV?pullDuty(render):render()})}
+function getModuleResetInfo(id){
+  var summaries={
+    duty:"Shift duties, meter readings, worker handovers & cash variances",
+    pricerev:"Daily 06:00 AM rate revision archive & price broadcast logs",
+    density:"Hydrometer density tests, ASTM 53B records & water dips",
+    wmvault:"5L delivery checks, calibration certs & W&M reseal logs",
+    tanks:"Underground tank dips, loss/gain analysis & decantation logs",
+    bowser:"Mobile bowser trips, DDD doorstep deliveries & refill logs",
+    vault:"Cash drop tokens, safe envelopes & manager clearance logs",
+    equipment:"Generator running hours, diesel logs & equipment tickets",
+    amenities:"Customer washroom & water cleanliness audit checklists",
+    indents:"Fleet indents, driver vouchers, vehicle loyalty & sample labels",
+    lubes:"Bay lubricant items, 2T/DEF stock & counter sale bills",
+    inv:"B2B GST tax invoices & billing records",
+    stock:"Inventory items & stock reorder balances",
+    sup:"Vendor inward purchase bills & payment vouchers",
+    book:"Forecourt day cash book, petty expenses & bank remittances",
+    pnl:"Daily overhead expense vouchers & dealer commission logs",
+    compliance:"PESO explosive storage licenses & statutory renewal logs",
+    pay:"Worker wage sheets, attendance & salary advance slips",
+    audit:"AI forensic audit reports & anomaly history",
+    analytics:"Volume trend summaries & dispensing heatmaps",
+    rep:"Consolidated shift & sales daily audit reports"
+  };
+  var mod=(window.PETRO_MODULE_CATALOG||[]).find(function(m){return m.id===id});
+  return {
+    id: id,
+    mod: mod,
+    name: mod ? mod.name : id,
+    category: mod ? mod.category : "Forecourt Module",
+    desc: summaries[id] || (mod ? mod.summary : "Operational records & logs")
+  };
+}
+function updateResetModuleSelection(){
+  var checked=[];
+  var chks=document.querySelectorAll(".chk-reset-mod");
+  chks.forEach(function(c){if(c.checked)checked.push(c.value)});
+  window.SELECTED_RESET_MODULES=checked;
+  var cnt=document.getElementById("resetSelectedCount");
+  if(cnt)cnt.textContent=checked.length;
+  var btn=document.getElementById("btnResetSelectedTrigger");
+  if(btn){
+    btn.disabled=(checked.length===0);
+    btn.textContent="Reset Selected Modules ("+checked.length+")";
+  }
+}
+function selectAllResetModules(val){
+  var chks=document.querySelectorAll(".chk-reset-mod");
+  chks.forEach(function(c){c.checked=!!val});
+  updateResetModuleSelection();
+}
+function getSelectedResetModuleIds(){
+  var checked=[];
+  var chks=document.querySelectorAll(".chk-reset-mod");
+  chks.forEach(function(c){if(c.checked)checked.push(c.value)});
+  return checked;
+}
+function confirmResetSelectedModules(){
+  var ids=getSelectedResetModuleIds();
+  if(!ids.length)return toast("Please select at least one module from the list below.");
+  confirmResetData("selected_modules",ids);
+}
+function confirmResetSingleModule(id){
+  confirmResetData("selected_modules",[id]);
+}
+function confirmResetData(mode,targetModIds){var title="",desc="",warn="",needTypeReset=false,selectedModsListHtml="";
+if(mode==="operational"){title="Clear Operational & Shift Data";desc="This will permanently delete all shift duties, nozzle meter sales logs, credit sales & recoveries, expense vouchers, tank dips, and delivery logs. Master configuration (nozzles, tanks, fuel rates, team users, and customer profiles) will be preserved.";warn="Use this to close an old period or clear test duties.";}
+else if(mode==="ledger"){title="Reset Credit Ledgers & Balances";desc="This will clear all customer credit sales transactions and collection payments, resetting all customer outstanding balances to ₹0. Customer names, phones, vehicles, and credit limits are kept intact.";warn="This will zero out all customer balances.";}
+else if(mode==="modules"){title="🧩 Clear All Modules Data";desc="This will clear all operational logs, registers, and test entries stored across all installed forecourt modules (density hydrometer logs, 5L calibration measures, water dips, equipment work orders, generator logs, bowser trips, and driver loyalty records). Master pump configuration and customer profiles will remain intact.";warn="All module transactions and history will be cleared.";}
+else if(mode==="selected_modules"){
+  var ids=Array.isArray(targetModIds)?targetModIds:getSelectedResetModuleIds();
+  if(!ids||!ids.length){return toast("Please select at least one module to reset.");}
+  window.PENDING_RESET_MOD_IDS=ids;
+  if(ids.length===1){
+    var info=getModuleResetInfo(ids[0]);
+    title="Reset "+info.name;
+    desc="You are about to reset operational data for \""+info.name+"\". This will permanently delete: "+info.desc+". All other modules and core station configurations will remain untouched.";
+    warn="Operational history for this module will be permanently cleared.";
+  } else {
+    title="Reset Selected Modules ("+ids.length+")";
+    desc="You are about to reset data for "+ids.length+" selected modules. Only the operational records and logs for these modules will be wiped. Core pump configuration, fuel rates, tanks, nozzles, customers, and unselected modules will remain completely untouched.";
+    warn="Permanent wipe of data for the "+ids.length+" selected modules.";
+  }
+  selectedModsListHtml='<div style="max-height:160px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:12px;background:var(--card)"><div style="font-size:11.5px;font-weight:700;color:var(--mute);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Modules Selected for Data Wipe ('+ids.length+'):</div>'+ids.map(function(id){
+    var inf=getModuleResetInfo(id);
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:12.5px"><span style="font-weight:600;color:var(--ink)">• '+esc(inf.name)+'</span><span style="font-size:11px;color:var(--mute)">'+esc(inf.category)+'</span></div>';
+  }).join("")+'</div>';
+}
+else if(mode==="factory"){title="⚠️ Complete Factory Reset & Wipe";desc="This will permanently ERASE ALL DATA: credit customers, invoices, nozzle configurations, tanks, fuel rates, expenses, shift duties, and ALL installed modules data. The station will return to a clean blank slate.";warn="EXTREME CAUTION: This cannot be undone! A safety backup file should be downloaded first.";needTypeReset=true;}
+var h='<h2>'+esc(title)+'</h2><div class="sub" style="margin-bottom:12px">'+esc(desc)+'</div>'+selectedModsListHtml+'<div class="cust" style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.25);color:var(--due);margin-bottom:14px;padding:12px"><b>⚠️ Warning:</b> '+esc(warn)+'</div><div style="margin-bottom:14px"><button type="button" class="ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px" onclick="doBackup()">📥 Download Safety Backup Copy First</button></div>';
+if(needTypeReset){h+='<label>To confirm, type <b>RESET</b> below:<input id="txtConfirmReset" placeholder="Type RESET in capital letters" autocomplete="off" oninput="var b=document.getElementById(\'btnDoReset\');if(b)b.disabled=(this.value.trim()!==\'RESET\');"></label>'}
+var btnText=(mode==="selected_modules"?(targetModIds&&targetModIds.length===1?"Yes, Reset This Module":"Yes, Reset Selected ("+(targetModIds?targetModIds.length:0)+")"):"Yes, Clear Data");
+h+='<div class="err" id="er"></div><div class="row" style="margin-top:14px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" id="btnDoReset" style="background:var(--due);color:#fff;font-weight:700" '+(needTypeReset?'disabled':'')+' onclick="doResetData(\''+mode+'\')">'+esc(btnText)+'</button></div>';
+openM(h)}
+function doResetData(mode){var btn=document.getElementById("btnDoReset");if(btn){btn.disabled=true;btn.textContent="Clearing data...";}
+var modIds=(mode==="selected_modules")?(window.PENDING_RESET_MOD_IDS||[]):undefined;
+if(SRV){api("POST","/api/reset-data",{mode:mode,module_ids:modIds}).then(function(res){if(res&&res.state){S=res.state}else{if(mode==="operational"){(S.c||[]).forEach(function(c){c.e=[]});S.inv=[];S.bk=[];S.deliv=[];S.ob={Cash:0,Bank:0,UPI:0}}else if(mode==="ledger"){(S.c||[]).forEach(function(c){c.e=[]})}else if(mode==="selected_modules"&&Array.isArray(modIds)){modIds.forEach(function(mId){if(mId==="duty"){(S.c||[]).forEach(function(c){c.e=[]})}if(mId==="inv"){S.inv=[]}if(mId==="stock"){S.items=[]}if(mId==="sup"){(S.sup||[]).forEach(function(s){s.e=[]})}if(mId==="book"){S.bk=[];S.ob={Cash:0,Bank:0,UPI:0}}if(mId==="tanks"){S.deliv=[]}})}else if(mode==="factory"){S=emptyS()}}
+try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}close();if(mode==="selected_modules"){toast((modIds?modIds.length:1)+" module(s) data reset successfully.")}else if(mode==="modules"){toast("All modules data cleared successfully.")}else{toast("Data cleared successfully.")}if(mode==="factory"){setTimeout(function(){location.reload()},600)}else{renderSetup()}}).catch(function(e){if(btn){btn.disabled=false;btn.textContent="Yes, Clear Data"}var erEl=document.getElementById("er");if(erEl)erEl.textContent=(e&&e.error)||"Could not reset data on server."})}
+else{if(mode==="operational"){(S.c||[]).forEach(function(c){c.e=[]});S.inv=[];S.bk=[];S.deliv=[];S.ob={Cash:0,Bank:0,UPI:0}}else if(mode==="ledger"){(S.c||[]).forEach(function(c){c.e=[]})}else if(mode==="modules"){toast("Local modules data cleared.")}else if(mode==="selected_modules"&&Array.isArray(modIds)){modIds.forEach(function(mId){if(mId==="duty"){(S.c||[]).forEach(function(c){c.e=[]})}if(mId==="inv"){S.inv=[]}if(mId==="stock"){S.items=[]}if(mId==="sup"){(S.sup||[]).forEach(function(s){s.e=[]})}if(mId==="book"){S.bk=[];S.ob={Cash:0,Bank:0,UPI:0}}if(mId==="tanks"){S.deliv=[]}})}else if(mode==="factory"){S=emptyS()}save();close();toast(mode==="selected_modules"?((modIds?modIds.length:1)+" module(s) data cleared locally."):"Local data cleared successfully.");if(mode==="factory"){setTimeout(function(){location.reload()},600)}else{renderSetup()}}}
 function localStart(){document.body.classList.add("logged-in");renderDrawerContent();S=load();S.inv=S.inv||[];S.bk=S.bk||[];S.ob=S.ob||{Cash:20000,Bank:100000,UPI:0};S.sup=S.sup||[{id:1,name:"Oil company depot",kind:"Oil company",phone:"",e:[{d:dago(8),t:"pay",n:"Bank transfer",a:500000},{d:dago(4),t:"bill",n:"MS and HSD tanker",a:320000}]},{id:2,name:"Lube dealer",kind:"Dealer",phone:"",e:[{d:dago(6),t:"bill",n:"Oil and coolant stock",a:18000}]}];S.items=S.items||[{id:1,name:"Engine oil 1 L",unit:"piece",sell:520,buy:430,stock:24,low:6},{id:2,name:"Coolant 1 L",unit:"piece",sell:260,buy:200,stock:5,low:6},{id:3,name:"Gear oil 500 ml",unit:"piece",sell:310,buy:250,stock:12,low:4}];S.biz=S.biz||{name:"",addr:"",gst:""};render()}
 
 // ---- AI Forensic Audit Feature
@@ -6441,9 +6565,10 @@ h+='</div>';
 h+='<label>Note (optional)<input value="'+esc(DF.note)+'" '+(mgrReview?'disabled style="background:var(--bg);color:var(--ink)" ':'oninput="DF.note=this.value;autoSaveDuty()" onchange="DF.note=this.value;autoSaveDuty(true)"')+'>';
 h+='<div class="cust" id="dsum" style="cursor:default;margin-top:12px"></div><div class="err" id="er"></div>';
 setTimeout(dsum,0);return h}
-function fromDuty(d,ctx,mode){var pay={};Object.keys(d.pay||{}).forEach(function(k){pay[k]=d.pay[k]||""});
+function fromDuty(d,ctx,mode){if(!d)return null;ctx=ctx||{};var pay={};if(d.pay&&typeof d.pay==="object"){Object.keys(d.pay).forEach(function(k){pay[k]=d.pay[k]||""})}
 var slips=(d.pay&&d.pay._slips)||d.slips||{},cash_denoms=(d.pay&&d.pay._denoms)||d.cash_denoms||{};
-var obj={id:d.id,mode:mode,modes:ctx.modes,cats:ctx.cats,stock:ctx.items,lines:d.lines.map(function(l){var op=l.opening==null?"":(typeof l.opening==="number"?l.opening.toFixed(2):l.opening);var cl=l.closing==null?"":(typeof l.closing==="number"?l.closing.toFixed(2):l.closing);var ts=l.testing==null?0:(typeof l.testing==="number"?l.testing.toFixed(2):l.testing);return{nozzle_id:l.nozzle_id,name:l.nozzle,fuel:l.fuel,opening:op,closing:cl,testing:ts,rate:l.rate==null?"":l.rate}}),items:d.items.map(function(i){return{item_id:i.item_id,qty:i.qty}}),exps:d.expenses.map(function(e){return{cat:e.cat,note:e.note,amount:e.amount}}),pay:pay,note:d.note||"",credit:d.credit||0,credits:d.credit_sales||[],recovery:d.recovery||0,recoveries:d.credit_recoveries||[],meta:d,slips:slips,cash_denoms:cash_denoms};
+var lines=Array.isArray(d.lines)?d.lines:[];var items=Array.isArray(d.items)?d.items:[];var exps=Array.isArray(d.expenses)?d.expenses:[];
+var obj={id:d.id,mode:mode,modes:ctx.modes||allModes(),cats:ctx.cats||cats(),stock:ctx.items||(S&&S.items)||[],lines:lines.map(function(l){var op=l.opening==null?"":(typeof l.opening==="number"?l.opening.toFixed(2):l.opening);var cl=l.closing==null?"":(typeof l.closing==="number"?l.closing.toFixed(2):l.closing);var ts=l.testing==null?0:(typeof l.testing==="number"?l.testing.toFixed(2):l.testing);return{nozzle_id:l.nozzle_id,name:l.nozzle||"Nozzle",fuel:l.fuel||"",opening:op,closing:cl,testing:ts,rate:l.rate==null?"":l.rate}}),items:items.map(function(i){return{item_id:i.item_id,qty:i.qty}}),exps:exps.map(function(e){return{cat:e.cat,note:e.note,amount:e.amount}}),pay:pay,note:d.note||"",credit:d.credit||0,credits:d.credit_sales||[],recovery:d.recovery||0,recoveries:d.credit_recoveries||[],meta:d,slips:slips,cash_denoms:cash_denoms};
 try{var raw=localStorage.getItem("petrol_duty_draft_"+d.id);if(raw){var dr=JSON.parse(raw);if(dr&&dr.lines){dr.lines.forEach(function(dl){var tg=obj.lines.find(function(l){return String(l.nozzle_id)===String(dl.nozzle_id)});if(tg&&tg.closing===""&&dl.closing!==""&&dl.closing!=null){tg.closing=dl.closing;if(dl.testing!=null)tg.testing=dl.testing}})}if(dr&&dr.note&&!obj.note)obj.note=dr.note}}catch(e){}
 return obj}
 function dpay(){var payCopy={};Object.keys(DF.pay||{}).forEach(function(k){if(k[0]!=="_")payCopy[k]=DF.pay[k]});if(DF.slips)payCopy._slips=DF.slips;if(DF.cash_denoms)payCopy._denoms=DF.cash_denoms;return{lines:DF.lines.map(function(l){return{nozzle_id:l.nozzle_id,opening:l.opening===""||l.opening==null?null:Math.round(parseFloat(l.opening)*100)/100,closing:l.closing===""||l.closing==null?null:Math.round(parseFloat(l.closing)*100)/100,testing:l.testing===""||l.testing==null?0:Math.round(parseFloat(l.testing)*100)/100,rate:l.rate===""||l.rate==null?null:Math.round(parseFloat(l.rate)*100)/100}}),items:DF.items,expenses:DF.exps,pay:payCopy,note:DF.note,recoveries:DF.recoveries||[]}}
@@ -7309,23 +7434,67 @@ function generateDutyPDFDoc(d) {
 }
 // ---- Worker
 function loadW(){
+  tab="wduty";
   document.body.classList.add("logged-in");
   renderDrawerContent();
+  document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">Loading shift duty details…</div>';
   if(!SRV){
     WD={duty:null,modes:allModes(),cats:cats(),items:(S&&S.items)||[],recent:[]};
     return renderW();
   }
-  Promise.all([api("GET","/api/duty/current"),fetchCL()]).then(function(r){
+  var cachedRaw=null;
+  try{cachedRaw=localStorage.getItem("petrol_cached_duty");}catch(e){}
+
+  Promise.all([
+    api("GET","/api/duty/current").catch(function(e){
+      console.warn("api /api/duty/current failed:", e);
+      if(e&&e.status===401) throw e;
+      if(cachedRaw){
+        try{return JSON.parse(cachedRaw);}catch(_){}
+      }
+      return {duty:null,modes:allModes(),cats:cats(),items:(S&&S.items)||[],recent:[]};
+    }),
+    fetchCL()
+  ]).then(function(r){
     WD=r[0]||{duty:null,modes:allModes(),cats:cats(),items:(S&&S.items)||[],recent:[]};
+    try{localStorage.setItem("petrol_cached_duty",JSON.stringify(WD));}catch(e){}
     renderW();
   }).catch(function(e){
     console.error("loadW error:", e);
-    document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">Could not load. '+esc((e&&e.error)||(e&&e.message)||"Check your connection.")+'<div style="margin-top:14px"><button onclick="loadW()">Try again</button></div></div>';
+    if(e&&e.status===401){
+      document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">'
+        +'<b>Session expired</b>'
+        +'<div class="sub" style="margin-top:6px">Please sign in again to view your shift duties.</div>'
+        +'<div style="margin-top:14px"><button onclick="authView(false)">Sign in</button></div>'
+        +'</div>';
+      return;
+    }
+    if(cachedRaw){
+      try{
+        WD=JSON.parse(cachedRaw);
+        toast("Loaded cached shift data (offline).");
+        return renderW();
+      }catch(_){}
+    }
+    document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">'
+      +'<div style="font-size:32px;margin-bottom:8px">📡</div>'
+      +'<b>Could not load shift duty.</b>'
+      +'<div class="sub" style="margin-top:4px">'+esc((e&&e.error)||(e&&e.message)||"Check your connection.")+'</div>'
+      +'<div style="margin-top:14px;display:flex;gap:10px;justify-content:center">'
+      +'<button onclick="loadW()">Try again</button>'
+      +'<button class="ghost" onclick="WD={duty:null,modes:allModes(),cats:cats(),items:(S&&S.items)||[],recent:[]};renderW()">Open offline duty</button>'
+      +'</div></div>';
   });
 }
 function renderW(){
   if(!WD) WD={duty:null,modes:allModes(),cats:cats(),items:(S&&S.items)||[],recent:[]};
-  if(WD.duty){DF=fromDuty(WD.duty,{modes:WD.modes||allModes(),cats:WD.cats||cats(),items:WD.items||(S&&S.items)||[]},"worker");return renderDF()}
+  if(WD.duty){
+    var dObj=fromDuty(WD.duty,{modes:WD.modes||allModes(),cats:WD.cats||cats(),items:WD.items||(S&&S.items)||[]},"worker");
+    if(dObj){
+      DF=dObj;
+      return renderDF();
+    }
+  }
   var h=ubar()+wnav()+'<h1>My duty</h1>'
     +'<div class="cust" style="cursor:default;margin-bottom:14px;padding:12px">'
     +'<div class="row"><b>No active duty in progress</b><span class="sub" style="flex:none;color:var(--ok)">Ready for shift</span></div>'
@@ -8035,8 +8204,8 @@ function rateNow(f,d){var b=null;S.rates.forEach(function(r){if(r.fuel==f&&r.fro
 function renderSetup(){var A=document.getElementById("app");if(!SRV){A.innerHTML=nav()+'<div class="empty">Pump setup needs the server. It is not available in this preview.</div>';return}
 tab="setup";if(SU=="open"||!SU)SU="nozzles";
 if(SU=="modules") return renderModulesTab(true);
-var T=[["nozzles","Nozzles"],["tanks","Tanks"],["rates","Fuel rates"],["cats","Expense categories"],["modes","Payment modes"],["cust","Credit customers"],["biz","Business details"],["team","Team"],["bak","Backup"],["modules","Modules Store"]];
-var h=nav()+'<h1>Pump setup</h1><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px">'+T.map(function(t){return '<button style="padding:9px 4px;font-size:12px;min-width:0;line-height:1.2" class="'+(SU==t[0]?'':'ghost')+'" onclick="SU=\''+t[0]+'\';renderSetup()">'+t[1]+'</button>'}).join("")+'</div>';
+var T=[["nozzles","Nozzles"],["tanks","Tanks"],["rates","Fuel rates"],["cats","Expense categories"],["modes","Payment modes"],["cust","Credit customers"],["biz","Business details"],["team","Team"],["bak","Backup"],["reset","Reset Data"],["modules","Modules Store"]];
+var h=nav()+'<h1>Pump setup</h1><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px">'+T.map(function(t){return '<button style="padding:9px 4px;font-size:12px;min-width:0;line-height:1.2" class="'+((SU==t[0]||(SU=="bak"&&t[0]=="reset"&&window.BAK_SUBTAB=="reset")||(SU=="reset"&&t[0]=="reset"))?'':'ghost')+'" onclick="'+(t[0]=="reset"?'window.BAK_SUBTAB=\'reset\';SU=\'bak\';renderSetup()':(t[0]=="bak"?'window.BAK_SUBTAB=\'backup\';SU=\'bak\';renderSetup()':'SU=\''+t[0]+'\';renderSetup()'))+'">'+t[1]+'</button>'}).join("")+'</div>';
 var tn=function(id){var t=S.tanks.filter(function(x){return x.id==id})[0];return t?t.name:"No tank"};
 if(SU=="nozzles"){h+='<div class="btns"><button onclick="nozEdit(0)">Add nozzle</button></div>';if(!S.nozzles.length)h+='<div class="empty">No nozzles yet. Tap Add nozzle to configure pump nozzles and their opening meter readings.</div>';
 S.nozzles.forEach(function(n){h+='<div class="cust" style="cursor:default'+(n.active===false?';opacity:.6':'')+'"><div class="row"><b>'+esc(n.name)+'</b><span class="sub" style="flex:none">'+(n.active===false?'Inactive':'Active')+'</span></div><div class="sub">'+esc(n.fuel)+' \u00b7 '+esc(tn(n.tank_id))+'</div><div class="sub" style="margin-top:4px">Opening reading: '+(n.open!=null?'<b style="color:var(--ink)">'+Number(n.open).toFixed(2)+'</b>':'<span style="color:var(--warn);font-weight:700">Not set (required for duties)</span>')+'</div><div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="nozEdit(\''+n.id+'\')">Edit</button></div></div>'})}
@@ -8052,7 +8221,83 @@ h+='<label>Add a payment mode<input id="nm" placeholder="e.g. Fleet card"></labe
 else if(SU=="cust"){h+='<div class="sub">Inactive customers are hidden from workers and invoices. Their ledger stays.</div>';if(!S.c.length)h+='<div class="empty">No credit customers yet.</div>';S.c.forEach(function(c){h+='<div class="row" style="margin-top:8px"><span>'+esc(c.name)+'</span><button class="'+(c.active===false?'ghost':'')+'" style="flex:none;padding:6px 10px" onclick="custTog('+c.id+')">'+(c.active===false?'Inactive':'Active')+'</button></div>'})}
 else if(SU=="biz"){var b=S.biz||{name:"",addr:"",gst:""};h+='<div class="sub">These pump details appear on GST invoices, statements, and reports.</div>';if(b.name){h+='<div class="cust" style="cursor:default;margin-bottom:14px"><div class="row"><b style="font-size:16px">'+esc(b.name)+'</b></div>'+(b.addr?'<div class="sub">'+esc(b.addr)+'</div>':'')+'<div class="sub" style="margin-top:4px">GSTIN: '+(b.gst?'<b style="color:var(--ink)">'+esc(b.gst)+'</b>':'<span style="color:var(--warn);font-weight:700">Not set</span>')+'</div></div>'}h+='<label>Pump name<input id="bz1" placeholder="e.g. Mahud Auto Fuel Station" value="'+esc(b.name||"")+'"></label><label>Address<input id="bz2" placeholder="e.g. NH 65, Mahud, Solapur" value="'+esc(b.addr||"")+'"></label><label>GSTIN (15 characters)<input id="bz3" placeholder="e.g. 27ABCDE1234F1Z5" autocapitalize="characters" value="'+esc(b.gst||"")+'"></label><div class="err" id="er"></div><div class="btns" style="margin-top:12px"><button onclick="saveBizSetup()">Save business details</button></div>'}
 else if(SU=="team"){h+='<div class="sub">Worker and manager accounts for this petrol pump.</div><div class="btns"><button onclick="userForm()">Add user</button></div><div id="setup_team"><div class="empty">Loading team\u2026</div></div>';A.innerHTML=h;api("GET","/api/users").then(function(U){if(tab!="setup"||SU!="team")return;var el=document.getElementById("setup_team");if(!el)return;TEAM_USERS=U;if(!U.length){el.innerHTML='<div class="empty">No team members yet. Tap Add user to create accounts.</div>';return}var th="";U.forEach(function(u){th+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(u.name)+'</b><span class="sub" style="flex:none;text-align:right">'+u.role+(u.active?'':' \u00b7 inactive')+'</span></div><div class="sub">Mobile '+esc(u.mobile)+'</div><div class="btns" style="margin:10px 0 0"><button class="ghost" onclick="editUserForm('+u.id+')">Edit user</button>'+(u.role=="owner"?'':'<button class="ghost" onclick="userAct('+u.id+',\''+(u.active?'off':'on')+'\')">'+(u.active?'Deactivate':'Activate')+'</button><button class="ghost" onclick="resetPw('+u.id+')">Reset password</button>')+'</div></div>'});el.innerHTML=th}).catch(function(e){var el=document.getElementById("setup_team");if(el)el.innerHTML='<div class="empty">Could not load the team. '+esc(e.error||"")+'</div>'});return}
-else if(SU=="bak"){var n=function(a){return (a||[]).length};h+='<div class="sub">Export data backup files or restore business data.</div><div class="cust" style="cursor:default">'+(SRV?'<b>Your data is stored on your server database.</b><div class="sub">Still download regular backup files and keep them in a safe place.</div>':'<b>Your data lives only in this browser.</b><div class="sub">Clearing browser data or switching phones loses it. Back up regularly and keep the file safe.</div>')+'<div class="sub" style="margin-top:6px">Last backup: '+(S.lastBk?esc(S.lastBk):"never")+'</div></div><div class="tbl" style="margin-top:10px"><table>'+[["Credit customers",n(S.c)],["Invoices",n(S.inv)],["Stock items",n(S.items)],["Suppliers",n(S.sup)],["Book entries",n(S.bk)],["Nozzles",n(S.nozzles)],["Tanks",n(S.tanks)]].map(function(r){return '<tr><td>'+r[0]+'</td><td class="r">'+r[1]+'</td></tr>'}).join("")+'</table></div><div class="btns" style="margin-top:12px"><button onclick="doBackup()">Back up to file</button><button class="ghost" onclick="showBk()">Show backup text</button><button class="ghost" onclick="restForm()">Restore</button></div>'}
+else if(SU=="bak"||SU=="reset"){
+  var curBakSub=(SU=="reset"?"reset":(window.BAK_SUBTAB||"backup"));
+  var n=function(a){return (a||[]).length};
+  h+='<div class="ops-subtabs noprint" style="margin-bottom:14px;background:rgba(0,0,0,0.03);padding:4px;border-radius:10px;display:flex;gap:6px">'
+    +'<button class="ops-subtab-btn '+(curBakSub==="backup"?"active":"")+'" onclick="window.BAK_SUBTAB=\'backup\';SU=\'bak\';renderSetup()">💾 Backup &amp; Restore</button>'
+    +'<button class="ops-subtab-btn '+(curBakSub==="reset"?"active":"")+'" onclick="window.BAK_SUBTAB=\'reset\';SU=\'bak\';renderSetup()">⚠️ Clear &amp; Reset Data</button>'
+    +'</div>';
+
+  if(curBakSub==="backup"){
+    h+='<div class="sub">Export data backup files or restore business data.</div><div class="cust" style="cursor:default">'+(SRV?'<b>Your data is stored on your server database.</b><div class="sub">Still download regular backup files and keep them in a safe place.</div>':'<b>Your data lives only in this browser.</b><div class="sub">Clearing browser data or switching phones loses it. Back up regularly and keep the file safe.</div>')+'<div class="sub" style="margin-top:6px">Last backup: '+(S.lastBk?esc(S.lastBk):"never")+'</div></div><div class="tbl" style="margin-top:10px"><table>'+[["Credit customers",n(S.c)],["Invoices",n(S.inv)],["Stock items",n(S.items)],["Suppliers",n(S.sup)],["Book entries",n(S.bk)],["Nozzles",n(S.nozzles)],["Tanks",n(S.tanks)]].map(function(r){return '<tr><td>'+r[0]+'</td><td class="r">'+r[1]+'</td></tr>'}).join("")+'</table></div><div class="btns" style="margin-top:14px"><button onclick="doBackup()">Back up to file</button><button class="ghost" onclick="showBk()">Show backup text</button><button class="ghost" onclick="restForm()">Restore</button><button class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="window.BAK_SUBTAB=\'reset\';SU=\'bak\';renderSetup()">⚠️ Reset Tab &rarr;</button></div>';
+  } else {
+    h+='<div class="sub">Safely clear or reset business transactions, customer ledger debts, or perform a complete wipe.</div>'
+      +'<div class="cust" style="cursor:default;margin-bottom:14px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.3)">'
+      +'<div class="row"><b>⚠️ Clear &amp; Reset Business Data</b><span class="sub" style="flex:none;color:var(--warn);font-weight:700">Owner Access</span></div>'
+      +'<div class="sub" style="margin-top:4px">Select the scope of data you wish to clear. We recommend taking a backup before performing any reset.</div>'
+      +'<div style="margin-top:10px"><button type="button" class="ghost" style="font-size:12px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px" onclick="doBackup()">📥 Download Safety Backup Copy First</button></div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:12px">'
+      +'<div class="cust" style="cursor:default">'
+      +'<div class="row"><b style="font-size:15px">🔄 Clear Operational &amp; Shift Data</b><span class="role-badge" style="background:var(--warn);color:#fff">Shift &amp; Sales Reset</span></div>'
+      +'<div class="sub" style="margin-top:4px;line-height:1.45">Deletes all shift duty records, nozzle meter sales logs, cash/UPI collections, daily expense vouchers, tank dips, and delivery logs.<br><b>Preserves:</b> Nozzles, tanks, fuel rates, payment modes, expense categories, customer profiles (zero balance), and team accounts.</div>'
+      +'<div class="btns" style="margin-top:10px"><button type="button" class="ghost" style="color:var(--warn);border-color:var(--warn);font-weight:700" onclick="confirmResetData(\'operational\')">Clear Transactions &amp; Shift Duties</button></div>'
+      +'</div>'
+      +'<div class="cust" style="cursor:default">'
+      +'<div class="row"><b style="font-size:15px">💳 Reset Customer Credit Balances</b><span class="role-badge" style="background:#0A63F8;color:#fff">Debt Balance Wipe</span></div>'
+      +'<div class="sub" style="margin-top:4px;line-height:1.45">Clears all credit transactions and collection payment receipts across all customers, resetting everyone\'s outstanding balance to ₹0.<br><b>Preserves:</b> Customer names, phone numbers, vehicle lists, and sanctioned credit limits.</div>'
+      +'<div class="btns" style="margin-top:10px"><button type="button" class="ghost" style="color:var(--due);border-color:var(--due);font-weight:700" onclick="confirmResetData(\'ledger\')">Reset Credit Ledgers to ₹0</button></div>'
+      +'</div>'
+      +'<div class="cust" style="cursor:default;border-color:rgba(124,58,237,0.35)">'
+      +'<div class="row"><b style="font-size:15px;color:#7c3aed">🧩 Clear All Modules Data</b><span class="role-badge" style="background:#7c3aed;color:#fff">All Modules Data</span></div>'
+      +'<div class="sub" style="margin-top:4px;line-height:1.45">Completely clears all operational data across all installed modules: 5L calibration logs, hydrometer density tests, water dip logs, equipment maintenance tickets, generator power logs, customer amenities checks, bowser trips &amp; deliveries, lube sales, driver loyalty points, and statutory license logs.<br><b>Preserves:</b> Master nozzles, tanks, fuel rates, customers, and user accounts.</div>'
+      +'<div class="btns" style="margin-top:10px"><button type="button" class="ghost" style="color:#7c3aed;border-color:#7c3aed;font-weight:700" onclick="confirmResetData(\'modules\')">Clear All Modules Data</button></div>'
+      +'</div>'
+      +'<div class="cust" style="cursor:default;border-color:rgba(2,132,199,0.35);background:rgba(2,132,199,0.02)">'
+      +'<div class="row">'
+      +'<b style="font-size:15px;color:#0284c7;display:inline-flex;align-items:center;gap:6px">'
+      +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>'
+      +'🎯 Reset Selected Modules Data</b>'
+      +'<span class="role-badge" style="background:#0284c7;color:#fff"><span id="resetSelectedCount">0</span> Selected</span>'
+      +'</div>'
+      +'<div class="sub" style="margin-top:4px;line-height:1.45">'
+      +'Select one or more forecourt modules below to wipe only their operational records, test logs, or registers. Master pump configuration, fuel rates, tanks, nozzles, and credit customer ledgers will remain completely unaffected.'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--line)">'
+      +'<div style="display:flex;gap:6px">'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;font-weight:600" onclick="selectAllResetModules(true)">Select All ('+PETRO_MODULE_CATALOG.length+')</button>'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px" onclick="selectAllResetModules(false)">Deselect All</button>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;align-items:center">'
+      +'<button type="button" id="btnResetSelectedTrigger" style="padding:6px 14px;font-size:12.5px;background:#0284c7;color:#fff;font-weight:700" onclick="confirmResetSelectedModules()" disabled>Reset Selected Modules (0)</button>'
+      +'</div>'
+      +'</div>'
+      +'<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:480px;overflow-y:auto;padding-right:4px">'
+      +PETRO_MODULE_CATALOG.map(function(m){
+        var info=getModuleResetInfo(m.id);
+        return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);transition:background 0.15s">'
+          +'<input type="checkbox" class="chk-reset-mod" id="chk_reset_'+m.id+'" value="'+m.id+'" onchange="updateResetModuleSelection()" style="margin-top:3px;cursor:pointer;width:17px;height:17px;accent-color:#0284c7">'
+          +'<div style="flex:1;min-width:0;cursor:pointer" onclick="var c=document.getElementById(\'chk_reset_'+m.id+'\');if(c){c.checked=!c.checked;updateResetModuleSelection()}">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap">'
+          +'<span style="font-weight:700;font-size:13.5px;color:var(--ink)">'+esc(m.name)+'</span>'
+          +'<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:var(--bg);color:var(--mute);border:1px solid var(--line)">'+esc(m.category)+'</span>'
+          +'</div>'
+          +'<div style="font-size:12px;color:var(--mute);margin-top:3px;line-height:1.4"><b>Wipes:</b> '+esc(info.desc)+'</div>'
+          +'</div>'
+          +'<button type="button" class="ghost" style="padding:3px 9px;font-size:11px;color:var(--due);border-color:rgba(220,38,38,0.3);flex-shrink:0;align-self:center;font-weight:600" onclick="confirmResetSingleModule(\''+m.id+'\')">Reset</button>'
+          +'</div>';
+      }).join("")
+      +'</div>'
+      +'</div>'
+      +'<div class="cust" style="cursor:default;border-color:rgba(220,38,38,0.35)">'
+      +'<div class="row"><b style="font-size:15px;color:var(--due)">💥 Complete Factory Reset &amp; Clear All</b><span class="role-badge" style="background:var(--due);color:#fff">Permanent Wipe</span></div>'
+      +'<div class="sub" style="margin-top:4px;line-height:1.45">Permanently clears ALL data: customers, nozzles, tanks, fuel rates, invoices, shift duties, and ALL installed modules data. Returns the station to a pristine blank state for clean reconfiguration.</div>'
+      +'<div class="btns" style="margin-top:10px"><button type="button" style="background:var(--due);color:#fff;font-weight:700" onclick="confirmResetData(\'factory\')">Factory Reset &amp; Clear All Data</button></div>'
+      +'</div>'
+      +'</div>';
+  }
+}
 A.innerHTML=h}
 function saveBizSetup(){var nm=(v("bz1")||"").trim(),ad=(v("bz2")||"").trim(),g=(v("bz3")||"").trim().toUpperCase();if(!nm)return er("Enter the pump name.");if(g&&g.length!=15)return er("GSTIN must be 15 characters (or leave blank).");S.biz={name:nm,addr:ad,gst:g};save();toast("Business details saved.");renderSetup()}
 function nozEdit(id){var n=(id&&id!="0")?S.nozzles.filter(function(x){return String(x.id)==String(id)})[0]:{name:"",fuel:FUELS[0],tank_id:"",active:true,open:""};
@@ -8145,27 +8390,505 @@ var d=v("dd"),id=Date.now(),tot=ls.reduce(function(s,l){return s+l.litres},0),ts
 S.deliv.push({id:id,d:d,ts:ts,sup:v("ds"),billno:v("db"),amount:a,lines:ls});
 sfind(v("ds")).e.push({d:d,t:"bill",n:"Fuel delivery"+(v("db")?" "+v("db"):"")+" ("+tot+" L)",a:a,dv:id});TK_STOCK_CACHE=null;save();close();if(tab=="stock")renderStock();else renderTanks()}
 function delDeliv(id){ask("Delete this delivery? The bill is removed from the oil company account too.",function(){S.deliv=S.deliv.filter(function(d){return d.id!=id});S.sup.forEach(function(s){s.e=s.e.filter(function(x){return x.dv!=id})});TK_STOCK_CACHE=null;save();if(tab=="stock")renderStock();else renderTanks()})}
-var PM=today().slice(0,7),SHS=["Morning","Evening","Night"],KL={advance:"Advance",bonus:"Bonus",waive:"Shortage waived",paid:"Paid"};
-function payCard(w,own){var L=function(a,b,c){return '<tr><td>'+a+'</td><td class="r"'+(c?' style="color:'+c+'"':'')+'>'+b+'</td></tr>'};
-var du=SHS.filter(function(x){return w.count[x]>0}).map(function(x){return x+' \u00d7 '+w.count[x]+(w.rates[x]!=null?' @ '+inr(w.rates[x]):' (no rate set)')}).join(", ")||"No closed duties";
-var h='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(w.name)+'</b><span class="amt" style="flex:none">'+inr(w.net)+'</span></div><div class="sub">Net pay for the month</div>'+(w.missing_rate?'<div class="sub" style="color:var(--due)">Some duties have no rate set, so they count as zero.</div>':'')+(w.pending?'<div class="sub" style="color:var(--warn)">'+w.pending+' duty not yet closed, not counted</div>':'')+
-'<div class="tbl" style="margin-top:8px"><table style="min-width:0">'+L("Duties<div class=\"sub\">"+esc(du)+"</div>",inr(w.earn))+L("Bonus","+"+inr(w.bonus))+L("Advances","\u2212"+inr(w.advance),'var(--due)')+L("Cash shortage"+(w.waived?'<div class="sub">'+inr(w.waived)+' waived</div>':''),"\u2212"+inr(Math.max(0,w.short-w.waived)),'var(--due)')+L("Already paid","\u2212"+inr(w.paid))+L("<b>Balance to pay</b>","<b>"+inr(w.balance)+"</b>")+'</table></div>';
-if(w.items.length){h+='<div class="sub" style="margin-top:10px">Entries this month</div>';w.items.forEach(function(x){h+='<div class="row" style="margin-top:6px"><span>'+esc(KL[x.kind])+(x.note?' \u00b7 '+esc(x.note):'')+'<div class="sub">'+x.d+'</div></span><span style="flex:none;text-align:right">'+inr(x.amount)+'</span>'+(own?'':'<button class="ghost" style="flex:none;padding:5px 8px" onclick="delPay('+x.id+')">Delete</button>')+'</div>'})}
-if(!own)h+='<div class="btns" style="margin:12px 0 0"><button class="ghost" onclick="rateForm('+w.id+')">Set rates</button><button class="ghost" onclick="payForm('+w.id+',\'advance\')">Advance</button><button class="ghost" onclick="payForm('+w.id+',\'bonus\')">Bonus</button>'+(w.short>w.waived?'<button class="ghost" onclick="payForm('+w.id+',\'waive\')">Waive shortage</button>':'')+'<button onclick="payForm('+w.id+',\'paid\')">Record payment</button></div>';
-return h+'</div>'}
-function monthPick(fn){return '<label>Month<input type="month" value="'+PM+'" onchange="PM=this.value||PM;'+fn+'()"></label>'}
-function renderSalary(){var A=document.getElementById("app");if(!SRV){A.innerHTML=nav()+'<div class="empty">Salary needs the server. It is not available in this preview.</div>';return}
-tab="pay";A.innerHTML=nav()+'<div class="empty">Loading\u2026</div>';
-api("GET","/api/payroll?month="+PM).then(function(r){if(tab!="pay")return;var h=nav()+'<h1>Worker salary</h1>'+monthPick("renderSalary")+'<div class="sub" style="margin-top:6px">Pay = closed duties \u00d7 rate, plus bonus, minus advances and cash shortages. Only the owner can see this tab.</div>';
-if(!r.workers.length)h+='<div class="empty">No workers yet. Add them in the Team tab.</div>';
-r.workers.forEach(function(w){h+=payCard(w,false)});A.innerHTML=h}).catch(function(e){badge(e.error||"Could not load salary.")})}
-function loadMyPay(){api("GET","/api/my-pay?month="+PM).then(function(r){document.getElementById("app").innerHTML=ubar()+wnav()+'<h1>My pay</h1>'+monthPick("loadMyPay")+'<div style="margin-top:10px">'+payCard(r.worker,true)+'</div>'}).catch(function(e){document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">Could not load. '+esc(e.error||"Check your connection.")+'</div>'})}
-function rateForm(id){api("GET","/api/payroll?month="+PM).then(function(r){var x=r.workers.filter(function(k){return k.id==id})[0];openM('<h2>Pay per duty</h2><div class="sub">'+esc(x.name)+'. Leave a shift blank if they do not work it.</div>'+SHS.map(function(sh,i){return '<label>'+sh+' duty (\u20b9)<input id="r'+i+'" inputmode="decimal" value="'+(x.rates[sh]!=null?x.rates[sh]:"")+'"></label>'}).join("")+'<div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveRates('+id+')">Save rates</button></div>')})}
-function saveRates(id){var b={};SHS.forEach(function(sh,i){b[sh]=v("r"+i)});api("PUT","/api/payroll/rates",{worker_id:id,rates:b}).then(function(){close();renderSalary()}).catch(function(e){er(e.error||"Could not save.")})}
-function payForm(id,kind){var T={advance:"Advance given",bonus:"Bonus or extra pay",waive:"Waive cash shortage",paid:"Record salary payment"};
-openM('<h2>'+T[kind]+'</h2><div class="sub">For '+PM+'</div><label>Amount (\u20b9)<input id="m1" inputmode="decimal"></label><label>Note (optional)<input id="m2"></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="savePay('+id+',\''+kind+'\')">Save</button></div>')}
-function savePay(id,kind){api("POST","/api/payroll/items",{worker_id:id,month:PM,kind:kind,amount:v("m1"),note:v("m2")}).then(function(){close();renderSalary()}).catch(function(e){er(e.error||"Could not save.")})}
-function delPay(id){ask("Delete this entry?",function(){api("DELETE","/api/payroll/items/"+id).then(renderSalary).catch(function(e){badge(e.error||"Could not delete.")})})}
+var PM=today().slice(0,7),SHS=["Morning","Evening","Night"],KL={advance:"Cash Advance",bonus:"Bonus / Ex-gratia",waive:"Shortage waived",paid:"Salary Payment",ot:"Overtime (OT)",incentive:"Lube / Forecourt Incentive",loan_emi:"Loan EMI Recovery",deduction:"Forecourt Deduction"};
+var LAST_PAYROLL_DATA=null;
+
+function numToWords(n){
+  n=Math.round(Number(n)||0);
+  if(n<=0)return "Zero Rupees";
+  var a=["","One ","Two ","Three ","Four ","Five ","Six ","Seven ","Eight ","Nine ","Ten ","Eleven ","Twelve ","Thirteen ","Fourteen ","Fifteen ","Sixteen ","Seventeen ","Eighteen ","Nineteen "];
+  var b=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  function c(num){
+    if(num===0)return "";
+    if(num<20)return a[num];
+    var ten=Math.floor(num/10),unit=num%10;
+    return b[ten]+(unit?" "+a[unit]:" ");
+  }
+  var cr=Math.floor(n/10000000);n%=10000000;
+  var lk=Math.floor(n/100000);n%=100000;
+  var th=Math.floor(n/1000);n%=1000;
+  var hd=Math.floor(n/100);n%=100;
+  var str="";
+  if(cr)str+=c(cr)+"Crore ";
+  if(lk)str+=c(lk)+"Lakh ";
+  if(th)str+=c(th)+"Thousand ";
+  if(hd)str+=c(hd)+"Hundred ";
+  if(n)str+=(str?"and ":"")+c(n);
+  return str.trim()+" Rupees Only";
+}
+
+function payCard(w,own){
+  var L=function(a,b,c,bold){return '<tr><td'+(bold?' style="font-weight:700"':'')+'>'+a+'</td><td class="r" style="'+(bold?'font-weight:700;':'')+(c?'color:'+c+';':'')+'">'+b+'</td></tr>'};
+  var isMonthly=(w.pay_type==="monthly");
+  var du=SHS.filter(function(x){return w.count&&w.count[x]>0}).map(function(x){return x+' \u00d7 '+w.count[x]+(w.rates&&w.rates[x]!=null?' @ '+inr(w.rates[x]):' (no rate)')}).join(", ")||"No closed duties";
+  var h='<div class="cust" style="cursor:default;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--card)">'
+    +'<div class="row" style="align-items:flex-start">'
+    +'<div><div style="display:flex;align-items:center;gap:8px"><b style="font-size:16px">'+esc(w.name)+'</b>'
+    +'<span class="role-badge" style="background:'+(isMonthly?'#0284c7':'#7c3aed')+';color:#fff;font-size:11px">'+(isMonthly?'Monthly Fixed: '+inr(w.monthly_salary):'Shift-based Wage')+'</span>'
+    +'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">'+esc(w.role)+'</span></div>'
+    +(w.mobile?'<div class="sub" style="margin-top:2px">📞 +91 '+esc(w.mobile)+(w.bank_acc?' · A/C: ••••'+esc(w.bank_acc.slice(-4))+(w.bank_ifsc?' ('+esc(w.bank_ifsc)+')':''):'')+'</div>':'')
+    +'</div>'
+    +'<div style="text-align:right"><span class="amt" style="font-size:18px;color:var(--ink)">'+inr(w.net)+'</span><div class="sub" style="font-size:11px;font-weight:600">Net Payable ('+PM+')</div></div>'
+    +'</div>';
+
+  if(w.missing_rate&&!isMonthly){h+='<div class="sub" style="color:var(--due);margin-top:4px">⚠️ Some shifts have no rate configured, counted as ₹0.</div>';}
+  if(w.pending){h+='<div class="sub" style="color:var(--warn);margin-top:4px">⏳ '+w.pending+' duty open/submitted, will be included once closed.</div>';}
+
+  h+='<div class="tbl" style="margin-top:10px"><table style="min-width:0;font-size:13px">'
+    +(isMonthly?L("Fixed Basic Salary<div class=\"sub\">"+(w.duties||0)+" closed shifts recorded</div>",inr(w.earn))
+              :L("Shift Duties Pay<div class=\"sub\">"+esc(du)+"</div>",inr(w.earn)))
+    +(w.ot?L("Overtime (OT) Pay","+"+inr(w.ot),'var(--green)'):'')
+    +(w.incentive?L("Lube &amp; Forecourt Incentive<div class=\"sub\">Forecourt lube sales: "+inr(w.lube_sold||0)+(w.lube_incentive_pct?' ('+w.lube_incentive_pct+'%)':'')+"</div>","+"+inr(w.incentive),'var(--green)'):'')
+    +(w.bonus?L("Bonus / Festival Ex-gratia","+"+inr(w.bonus),'var(--green)'):'')
+    +L("<b>Gross Total Earnings</b>","<b>"+inr(w.gross||w.earn)+"</b>",'',true)
+    +(w.advance?L("Cash Advances","\u2212"+inr(w.advance),'var(--due)'):'')
+    +(w.short?L("Cash Shortage"+(w.waived?'<div class=\"sub\">'+inr(w.waived)+' waived</div>':''),"\u2212"+inr(w.net_short||0),'var(--due)'):'')
+    +(w.loan_emi?L("Staff Loan EMI Recovery","\u2212"+inr(w.loan_emi),'var(--due)'):'')
+    +(w.deduction?L("Forecourt Deductions (Mess/Uniform/Other)","\u2212"+inr(w.deduction),'var(--due)'):'')
+    +(w.paid?L("Already Paid to Worker","\u2212"+inr(w.paid),'#0284c7'):'')
+    +L("<b>Balance Due to Pay</b>","<b>"+inr(w.balance)+"</b>",(w.balance>0?'var(--due)':'var(--green)'),true)
+    +'</table></div>';
+
+  // Active Loans Widget
+  if(w.loans&&w.loans.length){
+    h+='<div style="margin-top:10px;padding:8px 10px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:8px">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--warn);display:flex;align-items:center;justify-content:space-between"><span>💰 Active Staff Loans</span><span style="font-size:11px;color:var(--mute)">EMI Auto-Deduction</span></div>'
+      +w.loans.map(function(ln){
+        var rem=Math.max(0,ln.total_amount-ln.paid_amount);
+        return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-top:4px">'
+          +'<span>• '+esc(ln.purpose)+' (EMI: '+inr(ln.monthly_emi)+'/mo)</span>'
+          +'<span>Remaining: <b>'+inr(rem)+'</b> of '+inr(ln.total_amount)+' '+(own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px" onclick="repayLoanForm('+ln.id+','+ln.monthly_emi+',\''+esc(ln.purpose)+'\')">Deduct EMI</button>':'')+'</span></div>';
+      }).join("")
+      +'</div>';
+  }
+
+  // Monthly items audit list
+  if(w.items&&w.items.length){
+    h+='<div class="sub" style="margin-top:12px;font-weight:700">Detailed Payroll Transactions for '+PM+':</div>';
+    w.items.forEach(function(x){
+      var isAdd=(x.kind==="bonus"||x.kind==="ot"||x.kind==="incentive");
+      var isPaid=(x.kind==="paid");
+      h+='<div class="row" style="margin-top:4px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px">'
+        +'<span><b>'+esc(KL[x.kind]||x.kind)+'</b>'+(x.note?' \u00b7 '+esc(x.note):'')+'<span class="sub" style="margin-left:6px">'+x.d+'</span></span>'
+        +'<div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="font-weight:600;color:'+(isPaid?'#0284c7':isAdd?'var(--green)':'var(--due)')+'">'+(isAdd?'+':'-')+inr(x.amount)+'</span>'
+        +(own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px;color:var(--due)" onclick="delPay('+x.id+')">✕</button>':'')
+        +'</div></div>';
+    });
+  }
+
+  // Action Buttons
+  h+='<div class="btns" style="margin-top:14px;gap:6px;flex-wrap:wrap">';
+  h+='<button type="button" class="ghost" style="font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="showPaySlipById('+w.id+')">📄 Pay Slip</button>';
+  if(!own){
+    h+='<button type="button" class="ghost" style="font-weight:600" onclick="workerSalaryForm('+w.id+')">⚙️ Salary &amp; Rates</button>'
+      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'ot\')">+ Overtime</button>'
+      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'incentive\')">+ Lube Incentive</button>'
+      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'bonus\')">+ Bonus</button>'
+      +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="payForm('+w.id+',\'advance\')">\u2212 Advance</button>'
+      +(w.short>w.waived?'<button type="button" class="ghost" style="color:var(--warn);border-color:rgba(245,158,11,0.3)" onclick="payForm('+w.id+',\'waive\')">Waive Shortage</button>':'')
+      +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="payForm('+w.id+',\'deduction\')">\u2212 Deduction</button>'
+      +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="payForm('+w.id+',\'paid\')">✅ Record Payment</button>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function monthPick(fn){
+  return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">'
+    +'<label style="margin:0;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">Select Month:'
+    +'<input type="month" value="'+PM+'" style="padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit" onchange="PM=this.value||PM;'+fn+'()">'
+    +'</label>'
+    +'</div>';
+}
+
+function renderSalary(){
+  var A=document.getElementById("app");
+  if(!SRV){A.innerHTML=nav()+'<div class="empty">Salary needs the server database. It is not available in local mode.</div>';return}
+  tab="pay";
+  A.innerHTML=nav()+'<div class="empty">Loading payroll\u2026</div>';
+  api("GET","/api/payroll?month="+PM).then(function(r){
+    if(tab!="pay")return;
+    LAST_PAYROLL_DATA=r;
+    var workers=r.workers||[];
+    var totNet=workers.reduce(function(acc,w){return acc+(w.net||0)},0);
+    var totPaid=workers.reduce(function(acc,w){return acc+(w.paid||0)},0);
+    var totBal=workers.reduce(function(acc,w){return acc+(w.balance||0)},0);
+    var totShifts=workers.reduce(function(acc,w){return acc+(w.duties||0)},0);
+
+    var h=nav();
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">'
+      +'<div><h1 style="margin:0;font-size:20px;font-weight:800">Forecourt Staff Payroll &amp; Salary</h1>'
+      +'<div class="sub" style="margin-top:2px">Fixed monthly salary, shift rates, lube incentives, loans, advances &amp; payslips</div></div>'
+      +'<div class="btns" style="margin:0;gap:6px">'
+      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="exportSalaryCsv()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export Salary Sheet (.csv)</button>'
+      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="loanForm()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>Issue Staff Loan</button>'
+      +'</div></div>';
+
+    h+=monthPick("renderSalary");
+
+    // Aggregate summary cards
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">'
+      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL NET PAYABLE</div><b style="font-size:17px;color:var(--ink)">'+inr(totNet)+'</b></div>'
+      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL PAID SO FAR</div><b style="font-size:17px;color:#0284c7">'+inr(totPaid)+'</b></div>'
+      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">PENDING BALANCE</div><b style="font-size:17px;color:'+(totBal>0?'var(--due)':'var(--green)')+'">'+inr(totBal)+'</b></div>'
+      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL CLOSED SHIFTS</div><b style="font-size:17px;color:var(--ink)">'+totShifts+'</b></div>'
+      +'</div>';
+
+    if(!workers.length){
+      h+='<div class="empty">No workers or staff accounts found. Add workers under Pump Setup → Team Users.</div>';
+    } else {
+      workers.forEach(function(w){h+=payCard(w,false)});
+    }
+    A.innerHTML=h;
+  }).catch(function(e){
+    badge(e.error||"Could not load payroll.");
+  });
+}
+
+function loadMyPay(){
+  api("GET","/api/my-pay?month="+PM).then(function(r){
+    LAST_PAYROLL_DATA={workers:[r.worker]};
+    document.getElementById("app").innerHTML=ubar()+wnav()+'<h1>My Salary &amp; Wages</h1>'+monthPick("loadMyPay")+'<div style="margin-top:10px">'+payCard(r.worker,true)+'</div>';
+  }).catch(function(e){
+    document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">Could not load. '+esc(e.error||"Check your connection.")+'</div>';
+  });
+}
+
+function workerSalaryForm(id){
+  api("GET","/api/payroll?month="+PM).then(function(r){
+    var x=r.workers.filter(function(k){return k.id==id})[0];
+    if(!x)return toast("Worker not found");
+    var isMonthly=(x.pay_type==="monthly");
+    var h='<h2>Salary &amp; Wage Configuration</h2><div class="sub" style="margin-bottom:12px">Configure basic salary model, overtime, lube incentives, and bank details for <b>'+esc(x.name)+'</b>.</div>';
+
+    h+='<label>Compensation Model'
+      +'<select id="w_pay_type" onchange="var m=document.getElementById(\'sec_monthly\'),s=document.getElementById(\'sec_shift\');if(this.value===\'monthly\'){m.style.display=\'block\';s.style.display=\'none\'}else{m.style.display=\'none\';s.style.display=\'block\'}">'
+      +'<option value="duty"'+(!isMonthly?' selected':'')+'>Per-Duty Rate (Shift-based, paid per closed shift)</option>'
+      +'<option value="monthly"'+(isMonthly?' selected':'')+'>Fixed Monthly Basic Salary (e.g. ₹15,000/mo)</option>'
+      +'</select></label>';
+
+    h+='<div id="sec_monthly" style="display:'+(isMonthly?'block':'none')+';background:rgba(2,132,199,0.04);border:1px solid rgba(2,132,199,0.25);border-radius:8px;padding:10px;margin-bottom:12px">'
+      +'<label style="margin:0">Monthly Basic Salary (\u20b9)<input id="w_monthly_salary" inputmode="decimal" placeholder="e.g. 15000" value="'+(x.monthly_salary||"")+'"><div class="sub" style="margin-top:3px">Fixed monthly basic wage for Cashier, Manager, or Permanent Attendant.</div></label>'
+      +'</div>';
+
+    h+='<div id="sec_shift" style="display:'+(!isMonthly?'block':'none')+';background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px">'
+      +'<div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Shift-wise Duty Rates (\u20b9):</div>'
+      +SHS.map(function(sh,i){
+        return '<label style="margin-bottom:6px">'+sh+' Shift Duty (\u20b9)<input id="r'+i+'" inputmode="decimal" placeholder="e.g. 400" value="'+(x.rates&&x.rates[sh]!=null?x.rates[sh]:"")+'"></label>';
+      }).join("")
+      +'</div>';
+
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
+      +'<label>Overtime (OT) Rate (\u20b9/hr)<input id="w_ot_rate" inputmode="decimal" placeholder="e.g. 60" value="'+(x.ot_rate||"")+'"></label>'
+      +'<label>Lube Sales Incentive (%)<input id="w_lube_pct" inputmode="decimal" placeholder="e.g. 3" value="'+(x.lube_incentive_pct||"")+'"><div class="sub" style="font-size:11px">% on forecourt oil &amp; DEF sales</div></label>'
+      +'</div>';
+
+    h+='<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px">'
+      +'<div style="font-weight:700;font-size:12.5px;margin-bottom:6px">Bank NEFT Details (For Salary Sheet Export):</div>'
+      +'<div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:10px">'
+      +'<label>Bank Account Number<input id="w_bank_acc" inputmode="numeric" placeholder="e.g. 123456789012" value="'+esc(x.bank_acc||"")+'"></label>'
+      +'<label>Bank IFSC Code<input id="w_bank_ifsc" style="text-transform:uppercase" placeholder="e.g. SBIN0001234" value="'+esc(x.bank_ifsc||"")+'"></label>'
+      +'</div></div>';
+
+    h+='<div class="err" id="er"></div><div class="row" style="margin-top:14px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="saveWorkerSalarySettings('+id+')">Save Settings</button></div>';
+    openM(h);
+  });
+}
+
+function saveWorkerSalarySettings(id){
+  var pt=v("w_pay_type");
+  var ms=v("w_monthly_salary");
+  var ot=v("w_ot_rate");
+  var lp=v("w_lube_pct");
+  var acc=v("w_bank_acc");
+  var ifsc=v("w_bank_ifsc");
+  var b={};
+  SHS.forEach(function(sh,i){var el=document.getElementById("r"+i);if(el)b[sh]=el.value});
+
+  api("PUT","/api/payroll/worker-settings",{
+    worker_id:id,
+    pay_type:pt,
+    monthly_salary:ms,
+    ot_rate:ot,
+    lube_incentive_pct:lp,
+    bank_acc:acc,
+    bank_ifsc:ifsc,
+    rates:b
+  }).then(function(){
+    close();toast("Salary settings saved.");renderSalary();
+  }).catch(function(e){
+    er(e.error||"Could not save.");
+  });
+}
+
+function payForm(id,kind){
+  var titles={
+    advance:"💸 Issue Staff Cash Advance",
+    bonus:"🎁 Add Bonus / Festival Ex-gratia",
+    waive:"🤝 Waive Cash Shortage",
+    paid:"✅ Record Salary Payment Disbursal",
+    ot:"⏱️ Record Overtime (OT) Pay",
+    incentive:"⛽ Add Forecourt Lube / DEF Incentive",
+    loan_emi:"💰 Record Loan EMI Recovery",
+    deduction:"✂️ Forecourt Deduction (Mess, Uniform, Penalty)"
+  };
+  var hints={
+    advance:"Advance will be deducted from this month's net pay balance.",
+    bonus:"Bonus adds directly to gross earnings.",
+    waive:"Waives shift meter shortage difference.",
+    paid:"Disburses net balance to worker and closes balance.",
+    ot:"Overtime pay for double duties or extra hours.",
+    incentive:"Commission for driveway lube & DEF buckets sold.",
+    loan_emi:"Deducts monthly installment against staff loan.",
+    deduction:"Canteen/tea charges, safety uniform deposit, or absenteeism."
+  };
+
+  var showCashbookToggle=(kind==="paid"||kind==="advance");
+
+  var h='<h2>'+(titles[kind]||"Payroll Entry")+'</h2><div class="sub" style="margin-bottom:12px">'+(hints[kind]||"")+' For Month: <b>'+PM+'</b></div>';
+  h+='<label>Amount (\u20b9)<input id="m1" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 1000"></label>'
+    +'<label>Reason / Note (optional)<input id="m2" placeholder="e.g. Advance for festival / 4 hrs OT / Canteen tea bill"></label>';
+
+  if(showCashbookToggle){
+    h+='<div style="background:rgba(2,132,199,0.05);border:1px solid rgba(2,132,199,0.3);border-radius:8px;padding:10px;margin-top:12px">'
+      +'<label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;font-weight:700;font-size:13px">'
+      +'<input type="checkbox" id="chk_auto_cashbook" checked style="width:16px;height:16px;accent-color:#0284c7"> Auto-record in Daily Cash Book (Day Book &amp; P&amp;L)'
+      +'</label>'
+      +'<div class="sub" style="margin:4px 0 8px 24px">Posts a debit entry under Staff Wages &amp; Salaries so you do not have to enter it twice.</div>'
+      +'<div style="margin-left:24px"><label style="margin:0;font-size:12px">Payment Mode'
+      +'<select id="sel_pay_mode"><option value="Cash">Cash (Station Drawer)</option><option value="Bank">Bank Transfer / NEFT</option><option value="UPI">UPI / GPay / PhonePe</option></select>'
+      +'</label></div>'
+      +'</div>';
+  }
+
+  h+='<div class="err" id="er"></div><div class="row" style="margin-top:14px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="savePay('+id+',\''+kind+'\')">Save Entry</button></div>';
+  openM(h);
+}
+
+function savePay(id,kind){
+  var amt=v("m1"),note=v("m2");
+  var autoCb=false,payMode="Cash";
+  var chk=document.getElementById("chk_auto_cashbook");
+  if(chk&&chk.checked)autoCb=true;
+  var sel=document.getElementById("sel_pay_mode");
+  if(sel)payMode=sel.value;
+
+  api("POST","/api/payroll/items",{
+    worker_id:id,
+    month:PM,
+    kind:kind,
+    amount:amt,
+    note:note,
+    auto_cashbook:autoCb,
+    pay_mode:payMode
+  }).then(function(){
+    close();toast("Payroll entry saved.");renderSalary();
+  }).catch(function(e){
+    er(e.error||"Could not save.");
+  });
+}
+
+function delPay(id){
+  ask("Delete this payroll entry?",function(){
+    api("DELETE","/api/payroll/items/"+id).then(function(){toast("Entry deleted.");renderSalary()}).catch(function(e){badge(e.error||"Could not delete.")});
+  });
+}
+
+function loanForm(defaultWorkerId){
+  if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
+  var workers=LAST_PAYROLL_DATA.workers;
+  var h='<h2>💰 Issue Staff Emergency / Festival Loan</h2><div class="sub" style="margin-bottom:12px">Records a staff loan with scheduled monthly EMI auto-deductions.</div>';
+  h+='<label>Staff Member<select id="ln_worker">'+workers.map(function(w){return '<option value="'+w.id+'"'+(defaultWorkerId==w.id?' selected':'')+'>'+esc(w.name)+' ('+esc(w.role)+')</option>'}).join("")+'</select></label>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<label>Total Loan Amount (\u20b9)<input id="ln_tot" type="number" placeholder="e.g. 10000"></label>'
+    +'<label>Monthly EMI (\u20b9)<input id="ln_emi" type="number" placeholder="e.g. 2000"></label>'
+    +'</div>'
+    +'<label>Loan Reason / Purpose<input id="ln_purpose" placeholder="e.g. Diwali Festival Advance / Medical Emergency"></label>'
+    +'<label>Start Month Deduction<input id="ln_start" type="month" value="'+PM+'"></label>'
+    +'<div class="err" id="er"></div>'
+    +'<div class="row" style="margin-top:14px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="saveStaffLoan()">Save Loan</button></div>';
+  openM(h);
+}
+
+function saveStaffLoan(){
+  var wid=v("ln_worker"),tot=v("ln_tot"),emi=v("ln_emi"),pur=v("ln_purpose"),sm=v("ln_start");
+  api("POST","/api/payroll/loans",{
+    worker_id:wid,
+    total_amount:tot,
+    monthly_emi:emi,
+    purpose:pur,
+    start_month:sm
+  }).then(function(){
+    close();toast("Staff loan registered successfully.");renderSalary();
+  }).catch(function(e){
+    er(e.error||"Could not save loan.");
+  });
+}
+
+function repayLoanForm(loanId,emiAmt,purpose){
+  openM('<h2>Deduct Loan EMI</h2><div class="sub">Record EMI deduction for '+esc(purpose)+' in month '+PM+'</div>'
+    +'<label>Deduction Amount (\u20b9)<input id="remi_amt" type="number" value="'+emiAmt+'"></label>'
+    +'<div class="err" id="er"></div><div class="row" style="margin-top:14px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:var(--due);color:#fff;font-weight:700" onclick="saveLoanRepay('+loanId+')">Record EMI Deduction</button></div>');
+}
+
+function saveLoanRepay(loanId){
+  var amt=v("remi_amt");
+  api("POST","/api/payroll/loan-repay",{loan_id:loanId,amount:amt,month:PM}).then(function(){
+    close();toast("Loan EMI deducted.");renderSalary();
+  }).catch(function(e){er(e.error||"Could not deduct EMI.")});
+}
+
+function showPaySlipById(id){
+  if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
+  var w=LAST_PAYROLL_DATA.workers.filter(function(x){return x.id==id})[0];
+  if(w)showPaySlip(w);
+}
+
+function showPaySlip(w){
+  var biz=(S&&S.biz)||{};
+  var pumpName=biz.name||"Rituraj Petrolium Mahud bk";
+  var pumpAddr=biz.addr||"At Post Mahud bk, Taluka Sangola, Dist Solapur - 413306";
+  var pumpGst=biz.gst||"27AABCR1234F1Z5";
+  var isMonthly=(w.pay_type==="monthly");
+  var monthName=new Date(PM+"-01").toLocaleString("en-IN",{month:"long",year:"numeric"});
+  var netWords=numToWords(w.net||0);
+
+  var h='<div id="printablePaySlip" style="padding:10px;color:#1e293b;font-family:system-ui,-apple-system,sans-serif">'
+    +'<div style="border:2px solid #0f172a;border-radius:10px;padding:16px;background:#fff">'
+    // Header
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0f172a;padding-bottom:12px;margin-bottom:14px">'
+    +'<div>'
+    +'<div style="font-size:18px;font-weight:900;color:#0f172a;text-transform:uppercase">'+esc(pumpName)+'</div>'
+    +'<div style="font-size:12px;color:#475569;margin-top:2px">'+esc(pumpAddr)+'</div>'
+    +'<div style="font-size:12px;color:#475569">GSTIN: <b>'+esc(pumpGst)+'</b> · OMC: <b>HPCL</b></div>'
+    +'</div>'
+    +'<div style="text-align:right">'
+    +'<div style="background:#0284c7;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;display:inline-block;letter-spacing:0.5px">SALARY PAY SLIP</div>'
+    +'<div style="font-size:13px;font-weight:700;margin-top:4px">'+monthName+'</div>'
+    +'</div></div>'
+
+    // Employee Meta Grid
+    +'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px">'
+    +'<div>Employee Name: <b>'+esc(w.name)+'</b></div>'
+    +'<div>Designation / Role: <b>'+esc(w.role)+'</b></div>'
+    +'<div>Mobile No: <b>+91 '+(w.mobile?esc(w.mobile):'—')+'</b></div>'
+    +'<div>Salary Structure: <b>'+(isMonthly?'Monthly Fixed Basic':'Shift Duty Rates')+'</b></div>'
+    +'<div>Bank Account: <b>'+(w.bank_acc?esc(w.bank_acc):'Cash / Direct')+'</b></div>'
+    +'<div>IFSC Code: <b>'+(w.bank_ifsc?esc(w.bank_ifsc):'—')+'</b></div>'
+    +'<div>Total Shifts Worked: <b>'+(w.duties||0)+' closed shifts</b></div>'
+    +'<div>Shift Breakdown: <b>M: '+(w.count&&w.count.Morning||0)+' | E: '+(w.count&&w.count.Evening||0)+' | N: '+(w.count&&w.count.Night||0)+'</b></div>'
+    +'</div>'
+
+    // Earnings vs Deductions Table
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">'
+    // Left: Earnings
+    +'<div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">'
+    +'<div style="background:#f1f5f9;padding:6px 10px;font-weight:800;font-size:12px;border-bottom:1px solid #e2e8f0">EARNINGS &amp; ALLOWANCES</div>'
+    +'<div style="padding:8px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:5px">'
+    +'<div style="display:flex;justify-content:space-between"><span>'+(isMonthly?'Monthly Basic Pay':'Shift Duties Earnings')+':</span><b>'+inr(w.earn)+'</b></div>'
+    +(w.ot?'<div style="display:flex;justify-content:space-between"><span>Overtime (OT):</span><b>+'+inr(w.ot)+'</b></div>':'')
+    +(w.incentive?'<div style="display:flex;justify-content:space-between"><span>Lube &amp; DEF Commission:</span><b>+'+inr(w.incentive)+'</b></div>':'')
+    +(w.bonus?'<div style="display:flex;justify-content:space-between"><span>Festival Bonus:</span><b>+'+inr(w.bonus)+'</b></div>':'')
+    +'<div style="border-top:1px dashed #cbd5e1;padding-top:5px;display:flex;justify-content:space-between;font-weight:800;color:#0f172a"><span>GROSS EARNINGS:</span><span>'+inr(w.gross||w.earn)+'</span></div>'
+    +'</div></div>'
+
+    // Right: Deductions
+    +'<div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">'
+    +'<div style="background:#f1f5f9;padding:6px 10px;font-weight:800;font-size:12px;border-bottom:1px solid #e2e8f0">DEDUCTIONS &amp; RECOVERIES</div>'
+    +'<div style="padding:8px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:5px">'
+    +'<div style="display:flex;justify-content:space-between"><span>Cash Advances:</span><b>'+(w.advance?'-'+inr(w.advance):'₹0')+'</b></div>'
+    +'<div style="display:flex;justify-content:space-between"><span>Meter Shortage:</span><b>'+(w.net_short?'-'+inr(w.net_short):'₹0')+'</b></div>'
+    +(w.loan_emi?'<div style="display:flex;justify-content:space-between"><span>Loan EMI Recovery:</span><b>-'+inr(w.loan_emi)+'</b></div>':'')
+    +(w.deduction?'<div style="display:flex;justify-content:space-between"><span>Mess / Uniform / Other:</span><b>-'+inr(w.deduction)+'</b></div>':'')
+    +'<div style="border-top:1px dashed #cbd5e1;padding-top:5px;display:flex;justify-content:space-between;font-weight:800;color:#dc2626"><span>TOTAL DEDUCTIONS:</span><span>-'+inr((w.advance||0)+(w.net_short||0)+(w.loan_emi||0)+(w.deduction||0))+'</span></div>'
+    +'</div></div>'
+    +'</div>'
+
+    // Net Payable Box
+    +'<div style="background:#0284c7;color:#fff;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">'
+    +'<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">NET SALARY PAYABLE FOR '+monthName+':</div><div style="font-size:12px;opacity:0.9;margin-top:2px;font-style:italic">'+netWords+'</div></div>'
+    +'<div style="font-size:24px;font-weight:900">'+inr(w.net)+'</div>'
+    +'</div>'
+
+    // Signatures
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:26px;padding-top:14px;border-top:1px solid #cbd5e1;font-size:12px;color:#475569">'
+    +'<div style="text-align:center;width:160px;border-top:1px solid #94a3b8;padding-top:4px">Employee Signature</div>'
+    +'<div style="text-align:center;width:180px;border-top:1px solid #94a3b8;padding-top:4px">Authorized Pump Signatory</div>'
+    +'</div>'
+
+    +'</div>' // border card
+    +'</div>'; // container
+
+  // Modal actions
+  h+='<div class="row noprint" style="margin-top:14px;gap:8px;justify-content:flex-end">'
+    +'<button type="button" class="ghost" onclick="close()">Close</button>'
+    +'<button type="button" class="ghost" style="color:#25D366;border-color:rgba(37,211,102,0.4);font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="sendSlipWhatsApp(\''+esc(w.mobile||"")+'\',\''+esc(w.name)+'\','+w.net+',\''+monthName+'\')">📲 Send on WhatsApp</button>'
+    +'<button type="button" style="background:#0f172a;color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="window.print()">🖨️ Print / Save PDF</button>'
+    +'</div>';
+
+  openM(h);
+}
+
+function sendSlipWhatsApp(phone,name,amt,monthName){
+  var biz=(S&&S.biz)||{};
+  var pumpName=biz.name||"Rituraj Petrolium";
+  var text="*SALARY PAY SLIP - "+pumpName+"*\n"
+    +"Month: "+monthName+"\n"
+    +"Staff Name: "+name+"\n"
+    +"Net Salary Payable: "+inr(amt)+"\n\n"
+    +"Your monthly salary slip has been processed and credited. Kindly check the detailed statement or collect your physical copy at the manager desk.\n"
+    +"Thank you!";
+  openWaLink(phone,text);
+}
+
+function exportSalaryCsv(){
+  if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers||!LAST_PAYROLL_DATA.workers.length){
+    return toast("No payroll data to export.");
+  }
+  var rows=[
+    ["Staff Name","Mobile","Role","Pay Structure","Shifts Worked","Bank Account","IFSC Code","Base Pay","Overtime","Lube Incentive","Bonus","Gross Earnings","Advances","Shortage","Loan EMI","Deductions","Total Deductions","Net Payable","Already Paid","Balance Due","Month"]
+  ];
+  LAST_PAYROLL_DATA.workers.forEach(function(w){
+    var totDed=(w.advance||0)+(w.net_short||0)+(w.loan_emi||0)+(w.deduction||0);
+    rows.push([
+      w.name,
+      w.mobile||"",
+      w.role,
+      (w.pay_type==="monthly"?"Monthly Fixed":"Shift-based"),
+      w.duties||0,
+      w.bank_acc||"",
+      w.bank_ifsc||"",
+      w.earn||0,
+      w.ot||0,
+      w.incentive||0,
+      w.bonus||0,
+      w.gross||w.earn||0,
+      w.advance||0,
+      w.net_short||0,
+      w.loan_emi||0,
+      w.deduction||0,
+      totDed,
+      w.net||0,
+      w.paid||0,
+      w.balance||0,
+      PM
+    ]);
+  });
+
+  var csvContent="data:text/csv;charset=utf-8," + rows.map(function(e){
+    return e.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",");
+  }).join("\n");
+
+  var encodedUri=encodeURI(csvContent);
+  var link=document.createElement("a");
+  link.setAttribute("href",encodedUri);
+  link.setAttribute("download","Petrol-Pump-Salary-Sheet-"+PM+".csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  toast("Salary Sheet (.csv) exported successfully.");
+}
 var SUM=null;
 function sumForm(){api("GET","/api/daily-summary?d="+DD).then(function(r){SUM=r;openM('<h2>Daily summary</h2><div class="sub">For '+DD+'. Check it, then send it on WhatsApp.</div><textarea id="st" style="width:100%;height:230px;margin-top:8px;font:13px/1.4 monospace;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea><label>Send to WhatsApp number (leave blank to choose in WhatsApp)<input id="sn" inputmode="tel" value="'+esc(r.to)+'"></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Close</button><button class="ghost" onclick="copySum()">Copy</button><button onclick="sendSum()">Open WhatsApp</button></div>');document.getElementById("st").value=r.text}).catch(function(e){badge(e.error||"Could not build the summary.")})}
 function copySum(){var t=document.getElementById("st");t.select();try{document.execCommand("copy");er("Copied.")}catch(e){er("Select the text and copy it.")}}
@@ -8240,7 +8963,7 @@ function homeView() {
   + '      <span>Petro <b>AI</b></span>'
   + '    </a>'
   + '    <nav class="petro-home-nav">'
-  + '      <a href="#nova">NOVA Intelligence</a>'
+  + '      <a href="#netra">NETRA Intelligence</a>'
   + '      <a href="#live-product">Forecourt Screens</a>'
   + '      <a href="#capabilities">Capabilities</a>'
   + '      <a href="#faq">FAQ</a>'
@@ -8251,12 +8974,18 @@ function homeView() {
   + '        Open live demo &rarr;'
   + '      </button>'
   + '    </div>'
-  + '    <button class="petro-home-burger" id="homeBurger" type="button" onclick="toggleHomeDrawer()" aria-label="Toggle navigation menu">'
-  + '      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>'
-  + '    </button>'
+  + '    <div class="petro-home-mobile-right">'
+  + '      <button type="button" class="petro-mobile-signin-tab" onclick="authView(false)" aria-label="Sign in">'
+  + '        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>'
+  + '        <span>Sign in</span>'
+  + '      </button>'
+  + '      <button class="petro-home-burger" id="homeBurger" type="button" onclick="toggleHomeDrawer()" aria-label="Toggle navigation menu">'
+  + '        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>'
+  + '      </button>'
+  + '    </div>'
   + '  </div>'
   + '  <div class="petro-home-mobile-drawer" id="homeNavDrawer">'
-  + '    <a href="#nova" onclick="toggleHomeDrawer()">NOVA Intelligence</a>'
+  + '    <a href="#netra" onclick="toggleHomeDrawer()">NETRA Intelligence</a>'
   + '    <a href="#live-product" onclick="toggleHomeDrawer()">Forecourt Screens</a>'
   + '    <a href="#capabilities" onclick="toggleHomeDrawer()">Capabilities</a>'
   + '    <a href="#faq" onclick="toggleHomeDrawer()">FAQ</a>'
@@ -8271,18 +9000,18 @@ function homeView() {
   + '    <div class="petro-hero-copy">'
   + '      <div class="petro-hero-eyebrow">'
   + '        <span class="petro-pulse-dot"></span>'
-  + '        <span>NOVA intelligence is now in Petro AI</span>'
+  + '        <span>NETRA intelligence is now in Petro AI</span>'
   + '      </div>'
   + '      <h1 class="petro-hero-h1">'
   + '        Make your petrol station<br>'
   + '        <span class="petro-word-rotator" id="wordRotator">AI-powered</span>'
   + '      </h1>'
   + '      <p class="petro-hero-lede">'
-  + '        Ask what changed in sales, stock, settlements or shifts. NOVA reads the trusted station figures already inside Petro AI and gives you a clear next step.'
+  + '        Ask what changed in sales, stock, settlements or shifts. NETRA reads the trusted station figures already inside Petro AI and gives you a clear next step.'
   + '      </p>'
   + '      <div class="petro-hero-actions">'
   + '        <button type="button" class="petro-btn-teal" onclick="launchDemo()">'
-  + '          Ask NOVA in the live demo &rarr;'
+  + '          Ask NETRA in the live demo &rarr;'
   + '        </button>'
   + '        <button type="button" class="petro-btn-outline" onclick="authView(true)">'
   + '          Start free trial'
@@ -8311,7 +9040,7 @@ function homeView() {
   + '          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0A63F8;box-shadow:0 0 8px #0A63F8"></span>'
   + '          PETRO FORECOURT LIVE TELEMETRY'
   + '        </div>'
-  + '        <span class="petro-hud-badge">NOVA / station intelligence</span>'
+  + '        <span class="petro-hud-badge">NETRA / station intelligence</span>'
   + '      </div>'
   + '      <div class="petro-hud-stats">'
   + '        <div class="petro-hud-stat">'
@@ -8354,13 +9083,13 @@ function homeView() {
   + '  </div>'
   + '</section>'
 
-  + '<!-- NOVA Intelligence Dialogue Section -->'
-  + '<section class="petro-section petro-sec-soft" id="nova">'
+  + '<!-- NETRA Intelligence Dialogue Section -->'
+  + '<section class="petro-section petro-sec-soft" id="netra">'
   + '  <div class="petro-home-wrap">'
   + '    <div class="petro-sec-head">'
-  + '      <div class="petro-sec-index">NOVA intelligence</div>'
+  + '      <div class="petro-sec-index">NETRA intelligence</div>'
   + '      <h2>Grounded in the figures<br>your station already knows.</h2>'
-  + '      <p>Ask in natural speech. NOVA synthesizes fuel throughput, daily dip readings, credit recoveries, and shift cash without risking your accounting ledger.</p>'
+  + '      <p>Ask in natural speech. NETRA synthesizes fuel throughput, daily dip readings, credit recoveries, and shift cash without risking your accounting ledger.</p>'
   + '    </div>'
   + '    <div class="petro-dialogue">'
   + '      <div class="petro-dial-q">'
@@ -8368,11 +9097,11 @@ function homeView() {
   + '        <p class="petro-dial-quote">\u201cWhich tank needs attention first?\u201d</p>'
   + '      </div>'
   + '      <div class="petro-dial-a">'
-  + '        <div class="petro-nova-avatar">'
+  + '        <div class="petro-netra-avatar">'
   + '          <svg viewBox="0 0 40 40" width="26" height="26" fill="none"><path d="M20 4.5c6 7.1 11 12.8 11 19a11 11 0 1 1-22 0c0-6.2 5-11.9 11-19Z" fill="#020607"/></svg>'
   + '        </div>'
   + '        <div>'
-  + '          <div class="petro-dial-badge">NOVA answers</div>'
+  + '          <div class="petro-dial-badge">NETRA answers</div>'
   + '          <p class="petro-dial-ans-p">T2 Petrol is likely to run out first. It has 3,120 L left—about two days at the current draw.</p>'
   + '          <div class="petro-dial-sub">Example grounded directly in your station\'s real-time tank dip records.</div>'
   + '        </div>'
@@ -8387,12 +9116,12 @@ function homeView() {
   + '      <div class="petro-rail-item">'
   + '        <svg viewBox="0 0 24 24"><path d="M4 19V8l8-5 8 5v11M8 19v-5h8v5M2 19h20"/></svg>'
   + '        <h3>Bound to one outlet</h3>'
-  + '        <p>NOVA receives compact, sanitized aggregates only—customer privacy and employee details remain sealed.</p>'
+  + '        <p>NETRA receives compact, sanitized aggregates only—customer privacy and employee details remain sealed.</p>'
   + '      </div>'
   + '      <div class="petro-rail-item">'
   + '        <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>'
   + '        <h3>Advises, never edits</h3>'
-  + '        <p>NOVA explains discrepancies and suggests solutions. It cannot alter a customer bill, ledger entry, or shift record.</p>'
+  + '        <p>NETRA explains discrepancies and suggests solutions. It cannot alter a customer bill, ledger entry, or shift record.</p>'
   + '      </div>'
   + '    </div>'
   + '  </div>'
@@ -8457,7 +9186,7 @@ function homeView() {
   + '      <p>Built for the reality of Indian forecourts: dust, intermittent connectivity, shift handovers, and strict dealer margins.</p>'
   + '    </div>'
   + '    <ul class="petro-cap-list">'
-  + '      <li><strong>NOVA Intelligence</strong><span>Ask about daily draw, nozzle testing liters, and supplier bills in natural speech.</span></li>'
+  + '      <li><strong>NETRA Intelligence</strong><span>Ask about daily draw, nozzle testing liters, and supplier bills in natural speech.</span></li>'
   + '      <li><strong>Shift Duty Handover</strong><span>Record exact nozzle meter starts and closes with zero arithmetic discrepancy.</span></li>'
   + '      <li><strong>OMC MDG Compliance</strong><span>Permissible density and temperature calculations grounded in Marketing Discipline Guidelines.</span></li>'
   + '      <li><strong>Offline-Ready Staff Shell</strong><span>Workers can log transactions even in mobile network dead zones; data synchronizes once signal returns.</span></li>'
@@ -8470,20 +9199,20 @@ function homeView() {
   + '  <div class="petro-home-wrap">'
   + '    <div class="petro-sec-head" style="text-align:center;margin:0 auto 40px">'
   + '      <div class="petro-sec-index">Questions worth asking</div>'
-  + '      <h2>What NOVA can—and cannot—do.</h2>'
+  + '      <h2>What NETRA can—and cannot—do.</h2>'
   + '    </div>'
   + '    <div class="petro-faq-list" style="margin:0 auto">'
   + '      <details class="petro-faq-item" open>'
-  + '        <summary class="petro-faq-summary">What can NOVA see?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">NOVA receives a small, fixed set of aggregates for the selected outlet—such as daily sales, tank stock levels, settlements, and shift totals. Customer personal information and confidential records remain sealed.</div>'
+  + '        <summary class="petro-faq-summary">What can NETRA see?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">NETRA receives a small, fixed set of aggregates for the selected outlet—such as daily sales, tank stock levels, settlements, and shift totals. Customer personal information and confidential records remain sealed.</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
-  + '        <summary class="petro-faq-summary">Can NOVA change my accounts?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">No. NOVA is strictly read-only. It has no authority or tool to create, modify, or erase any invoice, credit transaction, or stock record.</div>'
+  + '        <summary class="petro-faq-summary">Can NETRA change my accounts?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">No. NETRA is strictly read-only. It has no authority or tool to create, modify, or erase any invoice, credit transaction, or stock record.</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
   + '        <summary class="petro-faq-summary">Can I ask questions in Hindi or Hinglish?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">Yes. NOVA understands natural speech and text queries in English, Hindi, and Hinglish, providing rapid answers suited for busy forecourt managers.</div>'
+  + '        <div class="petro-faq-content">Yes. NETRA understands natural speech and text queries in English, Hindi, and Hinglish, providing rapid answers suited for busy forecourt managers.</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
   + '        <summary class="petro-faq-summary">Do I need an automated tank gauge (ATG)?<span>+</span></summary>'
@@ -8505,7 +9234,7 @@ function homeView() {
   + '        <span style="display:inline-block;width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center">'
   + '          <svg viewBox="0 0 40 40" width="22" height="22" fill="none"><path d="M20 4.5c6 7.1 11 12.8 11 19a11 11 0 1 1-22 0c0-6.2 5-11.9 11-19Z" fill="#062A6B"/></svg>'
   + '        </span>'
-  + '        <h2>Put NOVA on your forecourt.</h2>'
+  + '        <h2>Put NETRA on your forecourt.</h2>'
   + '      </div>'
   + '      <div>'
   + '        <p>Explore the working dashboard first. Start a 30-day trial when the records, controls, and answers make sense for your station.</p>'
@@ -8617,6 +9346,11 @@ var h='<div class="petro-auth">'
 +'<div class="petro-auth-quote">'
 +'<p>\u201cThe register never told me who was quietly financing their business on my account.\u201d</p>'
 +'<cite>\u2014 A dealer running two outlets, on why the credit book had to change</cite>'
++'</div>'
++'<div class="petro-auth-stats">'
++'<div class="petro-auth-stat-item"><b>30 days</b><span>free trial, no card required</span></div>'
++'<div class="petro-auth-stat-item"><b>Your data</b><span>separated per outlet &amp; shift</span></div>'
++'<div class="petro-auth-stat-item"><b>Any OMC</b><span>HPCL, BPCL, IOCL, Nayara</span></div>'
 +'</div>'
 +'</aside>'
 +'<!-- Right Modern Form Panel -->'
