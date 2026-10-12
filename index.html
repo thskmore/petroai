@@ -101,7 +101,56 @@ tr:hover td{background:rgba(10,99,248,0.02)}
 #sheet h2{margin:0 0 6px;font-size:20px;font-weight:800;letter-spacing:-0.4px}
 .err{color:var(--due);font-size:13px;margin-top:8px;min-height:18px}
 .empty{padding:28px 10px;text-align:center;color:var(--mute)}
-@media print{.noprint,button,#bdg,#modal{display:none!important}body{background:#fff!important;color:#000!important;font-size:12px}.wrap{max-width:100%!important;padding:0!important;margin:0!important}.tbl{border:1px solid #ccc!important;box-shadow:none!important;margin-bottom:12px;page-break-inside:avoid}table{width:100%!important;font-size:11px!important}th,td{padding:6px 8px!important;border-bottom:1px solid #ccc!important}h1{font-size:15px!important;color:#000!important;margin-top:16px!important}.sub{color:#555!important;font-size:11px!important}}
+@media print{
+  .noprint, button:not(.print-keep), #bdg, .app-topbar, .desktop-topbar, .nav-drawer, .nav-drawer-backdrop, #mobileBottomNav, .modal-close { display:none!important; }
+  body.printing-voucher #app,
+  body.printing-voucher .desktop-topbar,
+  body.printing-voucher .app-topbar,
+  body.printing-voucher .nav-drawer,
+  body.printing-voucher #mobileBottomNav,
+  body.printing-voucher .nav-drawer-backdrop {
+    display: none !important;
+  }
+  #modal:not(.print-active) { display:none!important; }
+  #modal.print-active {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    z-index: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #modal.print-active #sheet {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+    color: #0b192c !important;
+  }
+  #modal.print-active .duty-voucher-preview > .row.noprint,
+  #modal.print-active .row.noprint {
+    display: none !important;
+  }
+  #dutyVoucherPrintable, #dayReportPrintable {
+    display: block !important;
+    width: 100% !important;
+  }
+  body { background:#fff!important; color:#0b192c!important; font-size:12px; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .wrap { max-width:100%!important; padding:0!important; margin:0!important; }
+  .tbl { border:1px solid #cbd5e1!important; box-shadow:none!important; margin-bottom:12px; page-break-inside:avoid; }
+  table { width:100%!important; font-size:11px!important; }
+  th,td { padding:6px 8px!important; border-bottom:1px solid #cbd5e1!important; color:#0b192c!important; }
+  h1 { font-size:16px!important; color:#062A6B!important; margin-top:14px!important; }
+  .sub { color:#475569!important; font-size:11px!important; }
+}
 #bdg{display:none;position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;background:var(--due);color:#fff;padding:8px 12px;font-size:14px;z-index:9;text-align:center}
 @keyframes spin{to{transform:rotate(360deg)}}
 .chart-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px;position:relative}
@@ -2463,12 +2512,6 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 function today(){return new Date().toISOString().slice(0,10)}
 function find(id){if(!S||!S.c)return null;return S.c.filter(function(c){return c.id==id})[0]}
 function render(){if(!S)S=emptyS();if(!S.c)S.c=[];if(SRV&&!ME)return;
-if(!window.SHOW_ALL_MODULES){
-  if(tab !== "wduty" && tab !== "mypay" && tab !== "wassign"){
-    tab = "wduty";
-    return loadW();
-  }
-}
 if(tab=="modules")return renderModulesTab();
 if(!isTabAllowedByModules(tab))return renderUninstalledModuleScreen(tab);
 if(tab=="home"||!tab)return renderHome();
@@ -2525,7 +2568,7 @@ if(!n)h+='<tr><td colspan="5" class="empty">No entries in this range.</td></tr>'
 h+='</table></div>'}
 document.getElementById("app").innerHTML=h}
 function openM(h, wide){var sh=document.getElementById("sheet");if(sh){sh.style.maxWidth=wide?wide:"";}document.getElementById("sheet").innerHTML=h;document.getElementById("modal").classList.add("on")}
-function closeM(){var sh=document.getElementById("sheet");if(sh){sh.style.maxWidth="";}document.getElementById("modal").classList.remove("on")}
+function closeM(){var m=document.getElementById("modal");if(m){m.classList.remove("on");m.classList.remove("print-active");}var sh=document.getElementById("sheet");if(sh){sh.style.maxWidth="";}}
 function close(){closeM()}
 window.closeM=closeM;
 document.getElementById("modal").onclick=function(e){if(e.target.id=="modal")closeM()};
@@ -3077,13 +3120,6 @@ function getNavTabsList(){
     modules: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>'
   };
 
-  if (!window.SHOW_ALL_MODULES) {
-    return [
-      { id: "wduty", label: "My Duty", icon: icons.wduty, group: "Worker Tasks" },
-      { id: "mypay", label: "My Pay & Advances", icon: icons.mypay, group: "Worker Tasks" }
-    ];
-  }
-
   var T = [
     { id: "home", label: "Home", icon: icons.home, group: "Overview" },
     { id: "ledger", label: "Ledger", icon: icons.ledger, group: "Sales & Customers" },
@@ -3189,11 +3225,6 @@ function selectNavTab(tabId){
   if(window.innerWidth < 900){
     closeNavDrawer();
   }
-  if(!window.SHOW_ALL_MODULES){
-    if(tabId !== "wduty" && tabId !== "mypay" && tabId !== "wassign"){
-      tabId = "wduty";
-    }
-  }
   if(tabId === "admin"){
     return renderAdminConsole();
   }
@@ -3281,8 +3312,7 @@ function renderDrawerContent(){
         themeBtn +
         '<button type="button" class="ghost" style="padding:6px 8px;font-size:12px;flex:1" onclick="if(window.innerWidth<900)closeNavDrawer();pwForm()">Password</button>' +
         '<button type="button" class="ghost" style="padding:6px 8px;font-size:12px;flex:1;color:var(--due)" onclick="logout()">Log out</button>' +
-      '</div>' +
-      (ME && (ME.role === 'owner' || ME.role === 'admin') ? ('<div style="margin-top:8px;text-align:center"><button type="button" class="ghost" style="padding:4px 8px;font-size:11px;width:100%" onclick="window.SHOW_ALL_MODULES=!window.SHOW_ALL_MODULES;renderDrawerContent();if(window.SHOW_ALL_MODULES){tab=\'home\';renderHome();}else{tab=\'wduty\';loadW();}">' + (window.SHOW_ALL_MODULES ? '🔒 Show Only My Duty & Pay' : '⚙️ Station Admin Modules') + '</button></div>') : '');
+      '</div>';
     } else {
       footer.innerHTML = '<div class="row" style="gap:6px">' +
         themeBtn +
@@ -3476,7 +3506,7 @@ function getCurrentRatesPill(){
 
 function nav(){
   var tabs = getNavTabsList();
-  var curItem = tabs.find(function(t){ return t.id === tab; }) || tabs[0] || { id: "wduty", label: "My Duty", group: "Worker Tasks" };
+  var curItem = tabs.find(function(t){ return t.id === tab; }) || tabs[0] || { id: "home", label: "Home", group: "Overview" };
   var pumpTitle = (S&&S.biz&&S.biz.name) ? S.biz.name : "Rituraj Petrolieum";
 
   setTimeout(renderDrawerContent, 0);
@@ -3484,7 +3514,7 @@ function nav(){
   var isDutyActive = (tab === "wduty" || tab === "duty" || tab === "wassign");
   var isPayActive = (tab === "mypay" || tab === "pay");
 
-  var workerQuickSwitch = (!window.SHOW_ALL_MODULES) ? ('<div class="row noprint" style="gap:8px;margin:8px 0 14px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(6,42,107,0.04)">' +
+  var workerQuickSwitch = (ME && ME.role === "worker") ? ('<div class="row noprint" style="gap:8px;margin:8px 0 14px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(6,42,107,0.04)">' +
     '<button type="button" class="' + (isDutyActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isDutyActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wduty\';loadW()">⛽ My Duty</button>' +
     '<button type="button" class="' + (isPayActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isPayActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'mypay\';loadMyPay()">💵 My Pay &amp; Advances</button>' +
   '</div>') : '';
@@ -6528,6 +6558,29 @@ var lTot=document.getElementById("lubeTotal");if(lTot&&document.activeElement!==
 var rTot=document.getElementById("recoveryTotal");if(rTot&&document.activeElement!==rTot){rTot.value=R?R:""}
 var eTot=document.getElementById("expTotal");if(eTot&&document.activeElement!==eTot){eTot.value=X?X:""}
 var cTot=document.getElementById("creditTotal");if(cTot&&document.activeElement!==cTot){cTot.value=DF.credit?DF.credit:""}
+var totalObligation=Math.round((A+P+R)*100)/100;
+var obValEl=document.getElementById("shiftSalesObligationVal");
+if(obValEl)obValEl.textContent=inr(totalObligation);
+var obBrkEl=document.getElementById("shiftSalesObligationBreakdown");
+if(obBrkEl){
+  var parts=["Fuel Sales: "+inr(A),"Lubes: "+inr(P)];
+  if(R>0)parts.push("Recovery: +"+inr(R));
+  obBrkEl.textContent=parts.join(" + ");
+}
+var sectionTotal=Math.round((C+X+DF.credit)*100)/100;
+var collValEl=document.getElementById("totalCollectionVal");
+if(collValEl)collValEl.textContent=inr(sectionTotal);
+var collBrkEl=document.getElementById("totalCollectionBreakdown");
+if(collBrkEl){
+  var collParts=[];
+  (DF.modes||[]).forEach(function(m){
+    var v=fnum(DF.pay[m.key]);
+    if(v>0)collParts.push(esc(m.name)+": "+inr(v));
+  });
+  if(X>0)collParts.push("Expense: "+inr(X));
+  if(DF.credit>0)collParts.push("Credit: "+inr(DF.credit));
+  collBrkEl.textContent=collParts.length?collParts.join(" + "):"Payments, Expenses & Credit Sales";
+}
 e.innerHTML=R2("Fuel sold",L.toFixed(2)+" L")+R2("Fuel sales",m2(A))+R2("Lube and shop sales",m2(P))+(R>0?R2("Credit recovery collections","+"+m2(R)):"")+R2("Less credit sales",m2(DF.credit))+R2("Less expense",m2(X))+R2("Expected collection",m2(ex))+R2("Collected",m2(C))+'<div class="amt" style="color:'+(Math.abs(df)<1?'var(--ok)':'var(--due)')+'">'+R2(df<=-1?"Short":df>=1?"Excess":"Tally",m2(Math.abs(df)))+'</div>'}
 function onNozInput(el,idx,field){var v=el.value;if(v.indexOf('.')!==-1){var parts=v.split('.');if(parts[1].length>2){v=parts[0]+'.'+parts[1].slice(0,2);el.value=v}}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty()}
 function onNozChange(el,idx,field){var v=el.value.trim();if(v!==""&&!isNaN(parseFloat(v))){var rounded=(Math.round(parseFloat(v)*100)/100).toFixed(2);el.value=rounded;v=rounded}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty(true)}
@@ -6568,6 +6621,35 @@ if(DF.recoveries&&DF.recoveries.length){
   });
   h+='</div>';
 }
+var initFuelSales=0;
+(DF.lines||[]).forEach(function(l){
+  var hasClosing=l.closing!==""&&l.closing!=null&&!isNaN(parseFloat(l.closing));
+  if(hasClosing){
+    var op=fnum(l.opening),cl=fnum(l.closing),ts=fnum(l.testing),r=fnum(l.rate);
+    var lt=Math.round((cl-op-ts)*100)/100;
+    if(lt>0&&r>0) initFuelSales+=Math.round(lt*r*100)/100;
+  }
+});
+initFuelSales=Math.round(initFuelSales*100)/100;
+var initObligation=Math.round((initFuelSales+totalLube+totalRec)*100)/100;
+h+='<div id="shiftSalesObligationCard" class="cust" style="cursor:default;margin-top:12px;background:linear-gradient(135deg, rgba(10,99,248,0.08) 0%, rgba(6,42,107,0.06) 100%);border:1.5px solid var(--primary,#0A63F8);border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(10,99,248,0.06)">'
+  +'<div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+  +'<div>'
+  +'<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--primary,#0A63F8);display:flex;align-items:center;gap:6px">'
+  +'<span>⚡</span> <span>Expected collection</span>'
+  +'</div>'
+  +'<div class="sub" id="shiftSalesObligationBreakdown" style="font-size:11.5px;margin-top:3px;color:var(--mute)">'
+  +'Fuel Sales: '+inr(initFuelSales)+' + Lubes: '+inr(totalLube)+(totalRec>0?' + Recovery: +'+inr(totalRec):'')
+  +'</div>'
+  +'</div>'
+  +'<div style="text-align:right">'
+  +'<div id="shiftSalesObligationVal" style="font-size:19px;font-weight:900;color:var(--ink);letter-spacing:-0.2px">'
+  +inr(initObligation)
+  +'</div>'
+  +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--primary,#0A63F8)">Gross Shift Remittance Due</div>'
+  +'</div>'
+  +'</div>'
+  +'</div>';
 h+=sect("Money collected");
 var totalExp=DF.exps.reduce(function(a,x){return a+fnum(x.amount)},0);
 var totalCredit=(DF.credits&&DF.credits.length)?DF.credits.reduce(function(a,x){return a+(x.status!='rejected'?fnum(x.a):0)},0):fnum(DF.credit);
@@ -6586,7 +6668,38 @@ h+='<div style="margin-top:8px">';
 DF.credits.forEach(function(x,i){h+='<div class="cust" style="cursor:'+(mgrReview?'default':'pointer')+';margin-top:6px;padding:9px 12px" '+(mgrReview?'':'onclick="creditModal()"')+'><div class="row"><b>'+esc(x.cname||"Customer")+'</b><span class="amt" style="flex:none">'+inr(fnum(x.a))+'</span></div><div class="row" style="margin-top:2px"><span class="sub" style="flex:1">'+esc(x.n||"")+(x.veh?' \u00b7 '+esc(x.veh):'')+(x.status=="pending"?' <span style="color:var(--warn)">(Waiting approval)</span>':'')+'</span>'+(mgrReview?'':'<button class="ghost" style="flex:none;padding:3px 8px;font-size:12px" onclick="event.stopPropagation();removeCreditSale('+x.id+');autoSaveDuty(true)">Remove</button>')+'</div></div>'});
 h+='</div>';
 }
-h+='<label>Note (optional)<input value="'+esc(DF.note)+'" '+(mgrReview?'disabled style="background:var(--bg);color:var(--ink)" ':'oninput="DF.note=this.value;autoSaveDuty()" onchange="DF.note=this.value;autoSaveDuty(true)"')+'>';
+var initCollected=0,initPayParts=[];
+(DF.modes||[]).forEach(function(m){
+  var amt=fnum(DF.pay[m.key]);
+  if(amt>0){
+    initCollected+=amt;
+    initPayParts.push(esc(m.name)+': '+inr(amt));
+  }
+});
+initCollected=Math.round(initCollected*100)/100;
+var initSectionTotal=Math.round((initCollected+totalExp+totalCredit)*100)/100;
+var initSectionParts=[].concat(initPayParts);
+if(totalExp>0) initSectionParts.push('Expense: '+inr(totalExp));
+if(totalCredit>0) initSectionParts.push('Credit: '+inr(totalCredit));
+h+='<div id="totalCollectionCard" class="cust" style="cursor:default;margin-top:12px;background:linear-gradient(135deg, rgba(5,150,105,0.08) 0%, rgba(4,120,87,0.05) 100%);border:1.5px solid var(--ok,#059669);border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(5,150,105,0.06)">'
+  +'<div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+  +'<div>'
+  +'<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--ok,#059669);display:flex;align-items:center;gap:6px">'
+  +'<span>💰</span> <span>Total</span>'
+  +'</div>'
+  +'<div class="sub" id="totalCollectionBreakdown" style="font-size:11.5px;margin-top:3px;color:var(--mute)">'
+  +(initSectionParts.length?initSectionParts.join(' + '):'Payments, Expenses & Credit Sales')
+  +'</div>'
+  +'</div>'
+  +'<div style="text-align:right">'
+  +'<div id="totalCollectionVal" style="font-size:19px;font-weight:900;color:var(--ok,#059669);letter-spacing:-0.2px">'
+  +inr(initSectionTotal)
+  +'</div>'
+  +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--ok,#059669)">Total Accounted</div>'
+  +'</div>'
+  +'</div>'
+  +'</div>';
+h+='<label style="margin-top:12px">Note (optional)<input value="'+esc(DF.note)+'" '+(mgrReview?'disabled style="background:var(--bg);color:var(--ink)" ':'oninput="DF.note=this.value;autoSaveDuty()" onchange="DF.note=this.value;autoSaveDuty(true)"')+'>';
 h+='<div class="cust" id="dsum" style="cursor:default;margin-top:12px"></div><div class="err" id="er"></div>';
 setTimeout(dsum,0);return h}
 function fromDuty(d,ctx,mode){if(!d)return null;ctx=ctx||{};var pay={};if(d.pay&&typeof d.pay==="object"){Object.keys(d.pay).forEach(function(k){pay[k]=d.pay[k]||""})}
@@ -6612,7 +6725,7 @@ if(DF.mode=="worker"){
   h+=formHtml()+'<div class="row" style="margin-top:12px"><button class="ghost" onclick="wSave(0)">Save draft</button><button onclick="confirmDutyModal()">Submit duty</button></div>';
 }else{
   var isManager=(ME&&ME.role=="manager");
-  h=nav()+'<button class="ghost noprint" onclick="renderDutyTab()">Back to duty list</button><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px"><h1>'+esc(m.worker)+' \u00b7 '+esc(m.shift)+' \u00b7 '+m.d+'</h1>'+(isManager?'':autoBadge)+'</div>';
+  h=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><div style="display:inline-flex;gap:6px"><button class="ghost" onclick="printSingleDuty(DF.id)" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Duty Voucher</button><button class="ghost" onclick="downloadDutyPDF(DF.id)" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px"><h1>'+esc(m.worker)+' \u00b7 '+esc(m.shift)+' \u00b7 '+m.d+'</h1>'+(isManager?'':autoBadge)+'</div>';
   if(isManager){
     h+='<div class="cust" style="background:var(--card);border:1px solid var(--line);padding:10px 14px;margin:8px 0 14px;border-radius:8px"><b style="font-size:15px">📋 Manager Review (Read-only)</b><div class="sub" style="margin-top:4px">Review the figures submitted by <b>'+esc(m.worker)+'</b>. You cannot make direct changes. If any correction is needed, send the duty back to the worker with notes. If all figures are verified, close the duty.</div></div>';
   }else{
@@ -6877,7 +6990,8 @@ function dutyBlock(d, mn) {
   h += '<div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">';
   h += '<div><b style="font-size:15px">' + esc(d.worker) + ' · ' + esc(d.shift) + '</b><div class="sub" style="margin-top:2px">' + d.d + ' · Duty #' + d.id + ' (' + (d.status == "closed" ? "Closed & Verified" : (d.status == "submitted" ? "Submitted" : "Open")) + ')</div></div>';
   h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-  h += '<button class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF Report</button>';
+  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="printSingleDuty(' + d.id + ')">🖨️ Print Voucher</button>';
+  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF</button>';
   h += '</div></div>';
 
   // Nozzles table
@@ -6929,6 +7043,615 @@ function dutyBlock(d, mn) {
     + (d.note ? '<div class="sub" style="margin-top:6px">Note: ' + esc(d.note) + '</div>' : '')
     + '</div>';
   return h;
+}
+
+function printSingleDuty(dutyOrId) {
+  var id = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) ? dutyOrId.id : dutyOrId;
+  if (!id) {
+    toast("No duty selected to print.");
+    return;
+  }
+  toast("Preparing shift handover voucher for print...");
+  var req = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.lines && dutyOrId.lines.length)
+    ? Promise.resolve(dutyOrId)
+    : ((ME && ME.role === "worker")
+        ? api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; })
+        : api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
+            return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+          }));
+
+  req.then(function(duty){
+    if (!duty) {
+      toast("Duty record not found.");
+      return;
+    }
+    openDutyPrintModal(duty);
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load duty details for print.");
+  });
+}
+
+function triggerDutyDirectPrint(identifier) {
+  var modalEl = document.getElementById("modal");
+  if (modalEl) modalEl.classList.add("print-active");
+  document.body.classList.add("printing-voucher");
+
+  var voucherEl = document.getElementById("dutyVoucherPrintable");
+  var contentHtml = voucherEl ? voucherEl.innerHTML : "";
+
+  // Attempt clean iframe print first
+  try {
+    var iframe = document.getElementById("dutyPrintFrame");
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.id = "dutyPrintFrame";
+      iframe.style.position = "fixed";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.style.width = "1px";
+      iframe.style.height = "1px";
+      iframe.style.opacity = "0.01";
+      iframe.style.border = "none";
+      iframe.style.pointerEvents = "none";
+      document.body.appendChild(iframe);
+    }
+    var frameDoc = iframe.contentWindow.document;
+    frameDoc.open();
+    frameDoc.write('<!DOCTYPE html><html><head><title>Shift Duty Voucher</title>' +
+      '<style>' +
+      '@page { size: A4 portrait; margin: 8mm 10mm; }' +
+      'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 11px; color: #0b192c; margin: 0; padding: 0; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fff !important; }' +
+      '.noprint { display: none !important; }' +
+      'table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; }' +
+      'th, td { border: 1px solid #cbd5e1; padding: 5px 7px; text-align: left; color: #0b192c; }' +
+      'th { background: #f1f5f9; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; color: #334155; }' +
+      '.r { text-align: right; font-family: monospace; }' +
+      '.sub { color: #64748b; font-size: 10px; }' +
+      'h1, h2, h3 { margin: 0; }' +
+      '.voucher-header { border-bottom: 2px solid #062A6B; padding-bottom: 8px; margin-bottom: 10px; }' +
+      '.voucher-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; margin-top: 8px; background: #fafafa; }' +
+      '.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }' +
+      '.kpi-cell { border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; text-align: center; background: #f8fafc; }' +
+      '.kpi-val { font-size: 13px; font-weight: 800; margin-top: 2px; }' +
+      '.sign-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; padding-top: 10px; border-top: 1px solid #cbd5e1; }' +
+      '.sign-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 8px; text-align: center; }' +
+      '</style></head><body>' +
+      contentHtml +
+      '</body></html>');
+    frameDoc.close();
+
+    setTimeout(function(){
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch (errIframe) {
+        console.warn("Iframe print threw, falling back to window.print():", errIframe);
+        window.focus();
+        window.print();
+      }
+    }, 150);
+  } catch (err) {
+    console.warn("Iframe doc write failed, direct window print fallback:", err);
+    window.focus();
+    window.print();
+  }
+
+  // Auto clear print class
+  setTimeout(function(){
+    document.body.classList.remove("printing-voucher");
+  }, 2500);
+}
+
+function openDutyPrintModal(d) {
+  var voucherHtml = buildDutyVoucherContent(d);
+  var modalEl = document.getElementById("modal");
+  if (modalEl) modalEl.classList.add("print-active");
+
+  var h = '<div class="duty-voucher-preview">' +
+    '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px">' +
+      '<div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px">' +
+        '<span>🖨️</span> <span>Shift Duty Voucher Preview #' + d.id + '</span>' +
+      '</div>' +
+      '<div style="display:inline-flex;align-items:center;gap:6px">' +
+        '<button type="button" class="print-keep" style="background:#0A63F8;color:#fff;font-weight:700;padding:7px 14px;font-size:13px;border-radius:8px" onclick="triggerDutyDirectPrint(' + d.id + ')">🖨️ Print Voucher</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="closeM()">✕ Close</button>' +
+      '</div>' +
+    '</div>' +
+    '<div id="dutyVoucherPrintable">' +
+      voucherHtml +
+    '</div>' +
+  '</div>';
+
+  openM(h, "840px");
+}
+
+function buildDutyVoucherContent(d) {
+  var biz = (S && S.biz) || {};
+  var bName = biz.name || "PETRO NETRA FUEL PLAZA";
+  var bAddr = biz.addr || "Highway Retail Outlet";
+  var bGst = biz.gst ? ("GSTIN: " + esc(biz.gst)) : "GSTIN: Registered";
+  var isClosed = (d.status === "closed");
+  var statusBadge = isClosed ? "CLOSED & VERIFIED" : (d.status === "submitted" ? "SUBMITTED" : "IN PROGRESS");
+  var statusColor = isClosed ? "#059669" : (d.status === "submitted" ? "#0284c7" : "#d97706");
+  var printTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+
+  var h = '<div style="background:#fff;color:#0b192c;padding:12px;font-family:inherit">' +
+    '<!-- Header -->' +
+    '<div class="voucher-header" style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #062A6B;padding-bottom:10px;margin-bottom:12px">' +
+      '<div>' +
+        '<div style="font-size:18px;font-weight:900;color:#062A6B;letter-spacing:-0.2px">' + esc(bName.toUpperCase()) + '</div>' +
+        '<div style="font-size:11.5px;color:#475569;margin-top:2px">' + esc(bAddr) + ' · ' + esc(bGst) + '</div>' +
+        '<div style="font-size:12px;font-weight:800;color:#0A63F8;margin-top:4px;letter-spacing:0.5px">SHIFT DUTY HANDOVER RECEIPT &amp; AUDIT VOUCHER</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="display:inline-block;padding:3px 8px;font-size:10.5px;font-weight:800;border-radius:4px;background:' + statusColor + ';color:#fff">' + statusBadge + '</div>' +
+        '<div style="font-size:11px;font-weight:700;margin-top:3px">Duty ID: #' + d.id + '</div>' +
+        '<div style="font-size:10px;color:#64748b">Printed: ' + printTime + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- Metadata Meta Bar -->' +
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11.5px">' +
+      '<div>Attendant: <b>' + esc(d.worker || "Attendant") + '</b></div>' +
+      '<div>Shift: <b>' + esc(d.shift || "Morning") + '</b></div>' +
+      '<div>Business Day: <b>' + esc(d.d) + '</b></div>' +
+      '<div>Record Status: <b>' + esc(d.status) + '</b></div>' +
+    '</div>' +
+
+    '<!-- KPI Cards Grid -->' +
+    '<div class="kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">FUEL SOLD</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#0A63F8">' + Number(d.litres || 0).toFixed(2) + ' L</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">GROSS SALES</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800">' + inr((d.sales || 0) + (d.lube || 0)) + '</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL COLLECTED</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#059669">' + inr(d.collected || 0) + '</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">CASH VARIANCE</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:' + (Math.abs(d.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(d.diff || 0) + '</div>' +
+      '</div>' +
+    '</div>';
+
+  // Table 1: Nozzle Readings
+  h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">1. DISPENSER NOZZLE TOTALIZERS &amp; DISPENSED FUEL:</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+      '<thead><tr style="background:#f1f5f9">' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Nozzle &amp; Fuel</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Opening</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Closing</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">5L Test</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Net Sold (L)</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Rate/L</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Total (₹)</th>' +
+      '</tr></thead><tbody>';
+
+  var lines = d.lines || [];
+  if (!lines.length) {
+    h += '<tr><td colspan="7" class="empty" style="text-align:center;padding:8px">No nozzle records attached.</td></tr>';
+  } else {
+    lines.forEach(function(l){
+      var opStr = l.opening != null ? Number(l.opening).toFixed(2) : '-';
+      var clStr = l.closing != null ? Number(l.closing).toFixed(2) : '-';
+      var tsStr = l.testing != null ? Number(l.testing).toFixed(2) : '0.00';
+      var ltStr = l.litres != null ? Number(l.litres).toFixed(2) : '0.00';
+      h += '<tr>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(l.nozzle || l.nozzle_id) + '</b> <span class="sub">(' + esc(l.fuel || 'Fuel') + ')</span></td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + opStr + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + clStr + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + tsStr + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + ltStr + ' L</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + (l.rate ? m2(l.rate) : '-') + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + inr(l.amount || 0) + '</td>' +
+      '</tr>';
+    });
+    h += '<tr style="background:#f8fafc;font-weight:800">' +
+      '<td colspan="4" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL FUEL DISPENSED</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#0A63F8">' + Number(d.litres || 0).toFixed(2) + ' L</td>' +
+      '<td style="border:1px solid #cbd5e1;padding:5px 7px"></td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(d.sales || 0) + '</td>' +
+    '</tr>';
+  }
+  h += '</tbody></table>';
+
+  // Table 2: Lubes & Shop Items (if any)
+  if (d.items && d.items.length) {
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">2. LUBRICANTS &amp; FORECOURT SHOP SALES:</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Item Description</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Qty</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Price (₹)</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Amount (₹)</th>' +
+        '</tr></thead><tbody>' +
+        d.items.map(function(it){
+          return '<tr>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(it.name) + '</b></td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + it.qty + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + m2(it.price) + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + inr(it.amount || 0) + '</td>' +
+          '</tr>';
+        }).join("") +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="3" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL LUBE &amp; SHOP SALES</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(d.lube || 0) + '</td></tr>' +
+      '</tbody></table>';
+  }
+
+  // Table 3: Expenses (if any)
+  if (d.expenses && d.expenses.length) {
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">3. FORECOURT OPERATING EXPENSES (PAID FROM SHIFT CASH):</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Expense Category</th>' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Voucher Note</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Deducted Amount (₹)</th>' +
+        '</tr></thead><tbody>' +
+        d.expenses.map(function(e){
+          return '<tr>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(e.cat) + '</b></td>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(e.note || '—') + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#e11d48">−' + inr(e.amount || 0) + '</td>' +
+          '</tr>';
+        }).join("") +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL SHIFT EXPENSES DEDUCTED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">−' + inr(d.exp || 0) + '</td></tr>' +
+      '</tbody></table>';
+  }
+
+  // Table 4: Credit Sales / Indents (if any)
+  if (d.credit_sales && d.credit_sales.length) {
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">4. CREDIT FUEL SALES &amp; FLEET INDENTS:</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Customer / Fleet Account</th>' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Vehicle / Indent Ref</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Credit Amount (₹)</th>' +
+        '</tr></thead><tbody>' +
+        d.credit_sales.map(function(c){
+          var ref = [c.veh, c.n].filter(Boolean).join(" · ") || "Indent Slip";
+          return '<tr>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(c.cname || "Fleet Customer") + '</b></td>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(ref) + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + inr(c.a || 0) + '</td>' +
+          '</tr>';
+        }).join("") +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL CREDIT SALES</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(d.credit || 0) + '</td></tr>' +
+      '</tbody></table>';
+  }
+
+  // Table 5: Credit Recoveries (if any)
+  if (d.credit_recoveries && d.credit_recoveries.length) {
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">5. CREDIT RECOVERIES (PAST DUES COLLECTED IN SHIFT):</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Customer Name</th>' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Mode / Note</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Amount Recovered (₹)</th>' +
+        '</tr></thead><tbody>' +
+        d.credit_recoveries.map(function(cr){
+          return '<tr>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(cr.cname || "Customer") + '</b></td>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc([cr.mode, cr.note].filter(Boolean).join(" · ") || "Cash") + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#059669">+' + inr(cr.a || 0) + '</td>' +
+          '</tr>';
+        }).join("") +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL RECOVERIES COLLECTED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(d.recovery || 0) + '</td></tr>' +
+      '</tbody></table>';
+  }
+
+  // Table 6: Shift Settlement & Cash Reconciliation
+  var mn = (typeof mname === "function") ? mname() : { cash: "Cash", upi: "UPI / QR", card: "Card (POS)" };
+  var payObj = d.pay || {};
+  h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">6. SHIFT SETTLEMENT &amp; CASH RECONCILIATION:</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:14px">' +
+      '<thead><tr style="background:#062A6B;color:#fff">' +
+        '<th style="border:1px solid #062A6B;padding:6px 8px;color:#fff">Reconciliation Item</th>' +
+        '<th class="r" style="border:1px solid #062A6B;padding:6px 8px;color:#fff">Amount (₹)</th>' +
+      '</tr></thead><tbody>' +
+      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Gross Fuel Dispensed Sales (A)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:600">' + inr(d.sales || 0) + '</td></tr>' +
+      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Lubes &amp; Shop Items (B)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:600">' + inr(d.lube || 0) + '</td></tr>' +
+      '<tr style="background:#f8fafc;font-weight:700"><td style="border:1px solid #cbd5e1;padding:5px 7px">Total Gross Forecourt Sales (A + B)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr((d.sales || 0) + (d.lube || 0)) + '</td></tr>' +
+      (d.recovery ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(+) Credit Recoveries Received (C)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(d.recovery) + '</td></tr>' : '') +
+      (d.credit ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(−) Less Credit Sales / Indents (D)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#475569">−' + inr(d.credit) + '</td></tr>' : '') +
+      (d.exp ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(−) Less Operating Expenses Paid (E)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">−' + inr(d.exp) + '</td></tr>' : '') +
+      '<tr style="background:#f1f5f9;font-weight:800"><td style="border:1px solid #cbd5e1;padding:6px 8px">EXPECTED TOTAL COLLECTIONS (A + B + C − D − E)</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px">' + inr(d.expected || 0) + '</td></tr>';
+
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    var mTitle = (mn && mn[k]) || (k.charAt(0).toUpperCase() + k.slice(1));
+    var mAmt = Number(payObj[k] || 0);
+    h += '<tr><td style="border:1px solid #cbd5e1;padding:4px 7px;padding-left:18px;color:#334155">• Collected via ' + esc(mTitle) + '</td><td class="r" style="border:1px solid #cbd5e1;padding:4px 7px">' + inr(mAmt) + '</td></tr>';
+  });
+
+  h += '<tr style="background:#ecfdf5;font-weight:800"><td style="border:1px solid #cbd5e1;padding:6px 8px">TOTAL ACTUAL COLLECTIONS RECEIVED</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:#059669;font-size:12.5px">' + inr(d.collected || 0) + '</td></tr>' +
+    '<tr style="background:' + (Math.abs(d.diff || 0) < 1 ? '#f0fdf4' : '#fef2f2') + ';font-weight:800">' +
+      '<td style="border:1px solid #cbd5e1;padding:6px 8px">NET SHORTAGE / EXCESS VARIANCE</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:13px;color:' + (Math.abs(d.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(d.diff || 0) + (Math.abs(d.diff || 0) < 1 ? ' (BALANCED ✓)' : (d.diff < 0 ? ' (SHORTAGE ⚠)' : ' (EXCESS)')) + '</td>' +
+    '</tr>' +
+  '</tbody></table>';
+
+  if (d.note) {
+    h += '<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;margin-bottom:14px;font-size:11px">' +
+      '<b>Handover Remarks / Notes:</b> ' + esc(d.note) +
+    '</div>';
+  }
+
+  // Signatures Grid
+  h += '<div class="sign-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px;padding-top:12px;border-top:1px solid #cbd5e1">' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">OUTGOING ATTENDANT</div>' +
+      '<div style="margin:26px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">' + esc(d.worker || "Attendant") + '</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Shift Relinquished</div>' +
+    '</div>' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">INCOMING STAFF / RECEIVER</div>' +
+      '<div style="margin:26px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">Relieving Attendant</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Physical Till &amp; Nozzles Verified</div>' +
+    '</div>' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">STATION MANAGER / DEALER</div>' +
+      '<div style="margin:26px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">Audit &amp; Verified By</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Duty Reconciled</div>' +
+    '</div>' +
+  '</div>' +
+  '</div>';
+
+  return h;
+}
+
+function printDutyDaySheet(){
+  var dateStr = DD || today();
+  toast("Loading day duties sheet for " + dateStr + "...");
+  Promise.all([
+    api("GET", "/api/duties?d=" + dateStr),
+    api("GET", "/api/day-report?d=" + dateStr).catch(function(){ return null; })
+  ]).then(function(res){
+    var dutyRes = res[0] || {};
+    var repRes = res[1] || {};
+    openDayDutySheetModal(dateStr, dutyRes, repRes);
+  }).catch(function(e){
+    toast("Could not load day duties: " + ((e && e.error) || "Network error"));
+  });
+}
+
+function openDayDutySheetModal(dateStr, dutyRes, repRes){
+  var biz = (S && S.biz) || {};
+  var bName = biz.name || "PETRO NETRA FUEL PLAZA";
+  var bAddr = biz.addr || "Highway Retail Outlet";
+  var bGst = biz.gst ? ("GSTIN: " + esc(biz.gst)) : "GSTIN: Registered";
+  var duties = dutyRes.day || [];
+  var st = dutyRes.day_status || "open";
+  var statusBadge = (st === "approved") ? "APPROVED BY OWNER" : (st === "closed" ? "CLOSED (AWAITING APPROVAL)" : "BUSINESS DAY OPEN");
+  var statusColor = (st === "approved") ? "#059669" : (st === "closed" ? "#d97706" : "#0A63F8");
+  var printTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+
+  var T = { l: 0, s: 0, k: 0, d: 0 };
+  duties.forEach(function(d){
+    T.l += Number(d.litres || 0);
+    T.s += Number(d.sales || 0) + Number(d.lube || 0);
+    T.k += Number(d.collected || 0);
+    T.d += Number(d.diff || 0);
+  });
+
+  var contentHtml = '<div style="background:#fff;color:#0b192c;padding:12px;font-family:inherit">' +
+    '<!-- Header -->' +
+    '<div class="voucher-header" style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #062A6B;padding-bottom:10px;margin-bottom:12px">' +
+      '<div>' +
+        '<div style="font-size:18px;font-weight:900;color:#062A6B;letter-spacing:-0.2px">' + esc(bName.toUpperCase()) + '</div>' +
+        '<div style="font-size:11.5px;color:#475569;margin-top:2px">' + esc(bAddr) + ' · ' + esc(bGst) + '</div>' +
+        '<div style="font-size:12px;font-weight:800;color:#0A63F8;margin-top:4px;letter-spacing:0.5px">CONSOLIDATED SHIFT DUTIES &amp; DAY REGISTER</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="display:inline-block;padding:3px 8px;font-size:10.5px;font-weight:800;border-radius:4px;background:' + statusColor + ';color:#fff">' + statusBadge + '</div>' +
+        '<div style="font-size:11px;font-weight:700;margin-top:3px">Date: ' + dateStr + '</div>' +
+        '<div style="font-size:10px;color:#64748b">Printed: ' + printTime + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- KPI Summary Grid -->' +
+    '<div class="kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL SHIFT LITRES</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#0A63F8">' + Number(T.l).toFixed(2) + ' L</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">GROSS FORECOURT SALES</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800">' + inr(T.s) + '</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL CASH &amp; MODES</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#059669">' + inr(T.k) + '</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">NET CASH VARIANCE</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:' + (Math.abs(T.d) < 1 ? '#059669' : '#e11d48') + '">' + sgn(T.d) + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- Table: Duties -->' +
+    '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">ATTENDANTS &amp; SHIFT DUTIES SUMMARY:</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">' +
+      '<thead><tr style="background:#f1f5f9">' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Duty ID</th>' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Attendant Name</th>' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Shift</th>' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Status</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Dispensed Litres</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Total Sales (₹)</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Collected (₹)</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Variance (₹)</th>' +
+      '</tr></thead><tbody>';
+
+  if (!duties.length) {
+    contentHtml += '<tr><td colspan="8" class="empty" style="text-align:center;padding:12px">No submitted duties on this date (' + dateStr + ').</td></tr>';
+  } else {
+    duties.forEach(function(d){
+      contentHtml += '<tr>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px">#' + d.id + '</td>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(d.worker) + '</b></td>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(d.shift) + '</td>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(d.status) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + Number(d.litres || 0).toFixed(2) + ' L</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr((d.sales || 0) + (d.lube || 0)) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#059669">' + inr(d.collected || 0) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:' + (Math.abs(d.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(d.diff || 0) + '</td>' +
+      '</tr>';
+    });
+    contentHtml += '<tr style="background:#f8fafc;font-weight:800">' +
+      '<td colspan="4" style="border:1px solid #cbd5e1;padding:6px 8px">DAY TOTALS (' + duties.length + ' DUTIES)</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:#0A63F8">' + Number(T.l).toFixed(2) + ' L</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px">' + inr(T.s) + '</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:#059669">' + inr(T.k) + '</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:' + (Math.abs(T.d) < 1 ? '#059669' : '#e11d48') + '">' + sgn(T.d) + '</td>' +
+    '</tr>';
+  }
+  contentHtml += '</tbody></table>';
+
+  // Signatures
+  contentHtml += '<div class="sign-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:24px;padding-top:12px;border-top:1px solid #cbd5e1">' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">STATION SHIFT MANAGER</div>' +
+      '<div style="margin:28px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">' + esc((ME && ME.name) || "Manager") + '</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Duties Verified &amp; Balanced</div>' +
+    '</div>' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">DEALER / PROPRIETOR</div>' +
+      '<div style="margin:28px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">Station Licensee</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Approved &amp; Remitted to Bank</div>' +
+    '</div>' +
+  '</div>' +
+  '</div>';
+
+  var modalEl = document.getElementById("modal");
+  if (modalEl) modalEl.classList.add("print-active");
+
+  var h = '<div class="duty-voucher-preview">' +
+    '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px">' +
+      '<div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px">' +
+        '<span>🖨️</span> <span>Shift Duties Day Sheet — ' + dateStr + '</span>' +
+      '</div>' +
+      '<div style="display:inline-flex;align-items:center;gap:6px">' +
+        '<button type="button" class="print-keep" style="background:#0A63F8;color:#fff;font-weight:700;padding:7px 14px;font-size:13px;border-radius:8px" onclick="triggerDutyDirectPrint(\'day_' + dateStr + '\')">🖨️ Print Day Sheet</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="downloadDayDutiesPDF(\'' + dateStr + '\')">📄 Download PDF</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="dayReport()">📊 Detailed Report</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="closeM()">✕ Close</button>' +
+      '</div>' +
+    '</div>' +
+    '<div id="dutyVoucherPrintable">' +
+      contentHtml +
+    '</div>' +
+  '</div>';
+
+  openM(h, "840px");
+}
+
+function downloadDayDutiesPDF(dateStr){
+  dateStr = dateStr || DD || today();
+  var jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if (!jsPDF) {
+    toast("Opening print preview...");
+    printDutyDaySheet();
+    return;
+  }
+  toast("Preparing Daily Duties PDF...");
+  Promise.all([
+    api("GET", "/api/duties?d=" + dateStr),
+    api("GET", "/api/day-report?d=" + dateStr).catch(function(){ return null; })
+  ]).then(function(res){
+    var dutyRes = res[0] || {};
+    var duties = dutyRes.day || [];
+    var biz = (S && S.biz) || {};
+    var bName = biz.name || "PETRO NETRA FUEL PLAZA";
+    var bGst = biz.gst ? ("GSTIN: " + biz.gst) : "";
+
+    var doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    var runTable = function(opts) {
+      if (typeof doc.autoTable === "function") doc.autoTable(opts);
+      else if (window.jspdf && typeof window.jspdf.autoTable === "function") window.jspdf.autoTable(doc, opts);
+    };
+
+    doc.setFillColor(6, 42, 107);
+    doc.rect(0, 0, 595.28, 64, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(bName.toUpperCase(), 30, 24);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(205, 225, 248);
+    doc.text("CONSOLIDATED SHIFT DUTIES & DAY AUDIT REGISTER — " + dateStr, 30, 39);
+    if (bGst) doc.text(bGst + "   |   Status: " + (dutyRes.day_status || "open").toUpperCase(), 30, 52);
+
+    var curY = 78;
+    var T = { l: 0, s: 0, k: 0, d: 0 };
+    var rows = duties.map(function(d){
+      T.l += Number(d.litres || 0);
+      T.s += Number(d.sales || 0) + Number(d.lube || 0);
+      T.k += Number(d.collected || 0);
+      T.d += Number(d.diff || 0);
+      return [
+        "#" + d.id,
+        d.worker || "Attendant",
+        d.shift || "Morning",
+        d.status || "closed",
+        Number(d.litres || 0).toFixed(2) + " L",
+        "INR " + Number((d.sales || 0) + (d.lube || 0)).toLocaleString("en-IN", {minimumFractionDigits: 2}),
+        "INR " + Number(d.collected || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}),
+        (d.diff >= 0 ? "+" : "") + Number(d.diff || 0).toFixed(2)
+      ];
+    });
+
+    rows.push([
+      "TOTAL",
+      "",
+      "",
+      duties.length + " Duties",
+      Number(T.l).toFixed(2) + " L",
+      "INR " + Number(T.s).toLocaleString("en-IN", {minimumFractionDigits: 2}),
+      "INR " + Number(T.k).toLocaleString("en-IN", {minimumFractionDigits: 2}),
+      (T.d >= 0 ? "+" : "") + Number(T.d).toFixed(2)
+    ]);
+
+    runTable({
+      startY: curY,
+      margin: { left: 30, right: 30 },
+      head: [["Duty ID", "Attendant", "Shift", "Status", "Litres", "Gross Sales", "Collected", "Variance"]],
+      body: rows,
+      theme: "striped",
+      headStyles: { fillColor: [6, 42, 107], textColor: 255, fontSize: 8, fontStyle: "bold" },
+      styles: { fontSize: 8, cellPadding: 4 },
+      columnStyles: {
+        0: { cellWidth: 45 },
+        1: { cellWidth: 100, fontStyle: "bold" },
+        2: { cellWidth: 55 },
+        3: { cellWidth: 55 },
+        4: { halign: "right", cellWidth: 65, fontStyle: "bold" },
+        5: { halign: "right", cellWidth: 75 },
+        6: { halign: "right", cellWidth: 75, fontStyle: "bold" },
+        7: { halign: "right", cellWidth: 65 }
+      },
+      didParseCell: function(data){
+        if (data.row.index === rows.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [240, 245, 250];
+        }
+      }
+    });
+
+    var safeFileName = "Day_Shift_Duties_" + dateStr.replace(/[^a-zA-Z0-9_-]/g, "_") + ".pdf";
+    doc.save(safeFileName);
+    toast("PDF day duties sheet downloaded: " + safeFileName);
+  }).catch(function(e){
+    toast("Could not generate day PDF: " + ((e && e.error) || "Error"));
+  });
 }
 
 function downloadDutyPDF(dutyOrId) {
@@ -7687,14 +8410,14 @@ function wSave(sub){
 function reloadState(cb){api("GET","/api/state").then(function(r){VER=r.ver;S=r.state||emptyS();["c","inv","items","sup","bk","nozzles","tanks","deliv","rates","expcats","paymodes"].forEach(function(k){S[k]=S[k]||[]});S.ob=S.ob||{Cash:0,Bank:0,UPI:0};S.biz=S.biz||{name:"",addr:"",gst:""};pullDuty(cb)}).catch(function(){cb&&cb()})}
 function renderDutyTab(){var A=document.getElementById("app");if(!SRV){A.innerHTML=nav()+'<div class="empty">Duty entries need the server. They are not available in this preview.</div>';return}
 tab="duty";A.innerHTML=nav()+'<div class="empty">Loading\u2026</div>';
-api("GET","/api/duties?d="+DD).then(function(r){if(tab!="duty")return;var st=r.day_status,h=nav()+'<h1>Duty and nozzle readings</h1><div class="btns"><button onclick="assignForm()">Assign duty</button><button class="ghost" onclick="sumForm()">Daily summary</button><button class="ghost" onclick="dayReport()">Day report</button></div>';
+api("GET","/api/duties?d="+DD).then(function(r){if(tab!="duty")return;var st=r.day_status,h=nav()+'<h1>Duty and nozzle readings</h1><div class="btns"><button onclick="assignForm()">Assign duty</button><button class="ghost" onclick="sumForm()">Daily summary</button><button class="ghost" onclick="dayReport()">Day report</button><button class="ghost" style="display:inline-flex;align-items:center;gap:6px" onclick="printDutyDaySheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Day Duties</button></div>';
 h+='<label>Business day<input type="date" value="'+DD+'" onchange="DD=this.value;renderDutyTab()"></label><div class="cust" style="cursor:default;margin-top:10px"><div class="row"><b>'+DD+'</b><span style="flex:none;color:'+(st=="approved"?'var(--ok)':st=="closed"?'var(--warn)':'var(--ink)')+'">'+(st=="approved"?"Approved by owner":st=="closed"?"Closed, waiting for owner":"Open")+'</span></div><div class="sub">The business day runs from 6 AM to 6 AM.</div><div class="btns" style="margin:8px 0 0">'+(st=="open"?'<button onclick="dayAsk(\'close\')">Close day</button>':'')+(st=="closed"&&ME.role=="owner"?'<button onclick="dayAct(\'approve\')">Approve day</button>':'')+(st!="open"&&ME.role=="owner"?'<button class="ghost" onclick="dayAct(\'reopen\')">Reopen day</button>':'')+'</div></div>';
 if(r.open.length)h+='<div class="cust" style="cursor:default"><b>Duties in progress</b>'+r.open.map(function(d){return '<div class="row" style="margin-top:10px"><span>'+esc(d.worker)+' \u00b7 '+esc(d.shift)+'<div class="sub">'+d.lines.map(function(l){return esc(l.nozzle)}).join(", ")+' \u00b7 '+d.d+'</div></span><button class="ghost" style="flex:none;padding:6px 10px" onclick="cancelDuty('+d.id+')">Cancel</button></div>'}).join("")+'</div>';
 if(r.pending.length)h+='<div class="cust" style="cursor:default;border-color:var(--warn)"><b style="color:var(--warn)">'+r.pending.length+' dut'+(r.pending.length>1?'ies':'y')+' waiting to be closed</b>'+r.pending.map(function(d){return '<div class="row" style="margin-top:10px"><span>'+esc(d.worker)+' \u00b7 '+esc(d.shift)+' \u00b7 '+d.d+'<div class="sub">'+sgn(d.diff)+'</div></span><button style="flex:none" onclick="reviewDuty('+d.id+')">Review</button></div>'}).join("")+'</div>';
 var T={l:0,s:0,k:0,d:0},F={};
 h+='<div class="tbl" style="margin-top:12px"><table class="ops-table"><thead><tr><th>Worker</th><th class="r">Litres</th><th class="r">Sales</th><th class="r">Collected</th><th class="r">Short / excess</th><th>Action</th></tr></thead><tbody>';
 r.day.forEach(function(d){T.l+=d.litres;T.s+=d.sales+d.lube;T.k+=d.collected;T.d+=d.diff;d.lines.forEach(function(l){var k=l.fuel||"Other",f=F[k]||(F[k]={l:0,a:0});f.l+=l.litres;f.a+=l.amount});
-h+='<tr><td data-label="Worker"><b>'+esc(d.worker)+'</b><div class="sub">'+esc(d.shift)+' · '+(d.status=="closed"?"closed":"to close")+'</div></td><td data-label="Litres" class="r">'+d.litres+' L</td><td data-label="Sales" class="r">'+inr(d.sales+d.lube)+'</td><td data-label="Collected" class="r">'+inr(d.collected)+'</td><td data-label="Short / Excess" class="r" style="color:'+(Math.abs(d.diff)<1?'var(--ok)':'var(--due)')+'">'+sgn(d.diff)+'</td><td data-label="Action" style="white-space:nowrap"><button class="ghost" style="padding:5px 8px" onclick="reviewDuty('+d.id+')">Open</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Download PDF Report" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button></td></tr>';});
+h+='<tr><td data-label="Worker"><b>'+esc(d.worker)+'</b><div class="sub">'+esc(d.shift)+' · '+(d.status=="closed"?"closed":"to close")+'</div></td><td data-label="Litres" class="r">'+d.litres+' L</td><td data-label="Sales" class="r">'+inr(d.sales+d.lube)+'</td><td data-label="Collected" class="r">'+inr(d.collected)+'</td><td data-label="Short / Excess" class="r" style="color:'+(Math.abs(d.diff)<1?'var(--ok)':'var(--due)')+'">'+sgn(d.diff)+'</td><td data-label="Action" style="white-space:nowrap"><button class="ghost" style="padding:5px 8px" onclick="reviewDuty('+d.id+')">Open</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Print Duty Handover Voucher" onclick="printSingleDuty('+d.id+')">🖨️ Print</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Download PDF Report" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button></td></tr>';});
 if(!r.day.length)h+='<tr><td colspan="6" class="empty">No submitted duties on this date.</td></tr>';
 else h+='<tr><td data-label="Summary"><b>Day total</b></td><td data-label="Total Litres" class="r"><b>'+Math.round(T.l*100)/100+' L</b></td><td data-label="Total Sales" class="r"><b>'+inr(T.s)+'</b></td><td data-label="Total Collected" class="r"><b>'+inr(T.k)+'</b></td><td data-label="Net Difference" class="r"><b>'+sgn(T.d)+'</b></td><td></td></tr>';
 h+='</tbody></table></div>';
@@ -7709,7 +8432,7 @@ if(!r.nozzles.length)return toast("Add nozzles in Pump setup first (owner).");
 openM('<h2>Assign duty</h2><div class="sub">Business day '+r.date+'</div><label>Worker<select id="as_w">'+r.workers.map(function(w){return '<option value="'+w.id+'">'+esc(w.name)+'</option>'}).join("")+'</select></label><label>Shift<select id="as_s"><option>Morning</option><option>Evening</option><option>Night</option></select></label><div class="sub" style="margin-top:12px">Nozzles</div>'+r.nozzles.map(function(n){var why=n.busy_by?"with "+n.busy_by:n.rate==null?"no rate set":n.opening==null?"no opening reading":"";return '<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" class="an" value="'+n.id+'" style="width:auto;margin:0"'+(why?' disabled':'')+'>'+esc(n.name)+' \u00b7 '+esc(n.fuel)+(why?' <span class="sub">('+esc(why)+')</span>':' <span class="sub">(starts at '+(n.opening!=null?Number(n.opening).toFixed(2):'0.00')+', '+m2(n.rate)+'/L)</span>')+'</label>'}).join("")+'<div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="doAssign()">Assign duty</button></div>')}).catch(function(e){toast(e.error||"Could not load.")})}
 function doAssign(){var ids=[].slice.call(document.querySelectorAll(".an:checked")).map(function(x){return x.value});if(!ids.length)return er("Choose at least one nozzle.");api("POST","/api/duties/assign",{worker_id:v("as_w"),shift:v("as_s"),nozzle_ids:ids}).then(function(){close();renderDutyTab()}).catch(function(e){er(e.error||"Could not assign.")})}
 function reviewDuty(id){fetchCL();api("GET","/api/duties/"+id).then(function(d){var pay=d.pay||{};
-if(d.status=="closed"){document.getElementById("app").innerHTML=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><button class="ghost" onclick="downloadDutyPDF('+d.id+')" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF Report</button></div><div style="margin-top:10px">'+dutyBlock(d,mname())+'</div>'+(ME.role=="owner"?'<div class="btns noprint"><button class="ghost" onclick="reopenDuty('+d.id+')">Reopen for changes</button></div>':'');return}
+if(d.status=="closed"){document.getElementById("app").innerHTML=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><div style="display:inline-flex;gap:6px"><button class="ghost" onclick="printSingleDuty('+d.id+')" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Duty Voucher</button><button class="ghost" onclick="downloadDutyPDF('+d.id+')" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF</button></div></div><div style="margin-top:10px">'+dutyBlock(d,mname())+'</div>'+(ME.role=="owner"?'<div class="btns noprint"><button class="ghost" onclick="reopenDuty('+d.id+')">Reopen for changes</button></div>':'');return}
 var ms=allModes().filter(function(m){return m.active!==false||m.key=="cash"||pay[m.key]!=null}).map(function(m){return{key:m.key,name:m.name}}),ci=S.items.map(function(i){return{id:i.id,name:i.name,unit:i.unit,sell:i.sell,stock:i.stock}});
 DF=fromDuty(d,{modes:ms,cats:cats(),items:ci},"review");renderDF()}).catch(function(e){toast(e.error||"Could not open the duty.")})}
 function mSave(close){if(autoSaveTimer){clearTimeout(autoSaveTimer);autoSaveTimer=null}autoSavePending=false;var url="/api/duties/"+DF.id+(close?"?strict=1":"?strict=0");api("PUT",url,dpay()).then(function(){return close?api("POST","/api/duties/"+DF.id+"/close"):0}).then(function(){if(close){try{localStorage.removeItem("petrol_duty_draft_"+DF.id)}catch(e){}setAutoSaveStatus("","");reloadState(renderDutyTab)}else{setAutoSaveStatus("Changes saved \u2713","var(--ok)",false);msg("Changes saved.",1)}}).catch(function(e){msg(e.error||"Could not save.")})}
@@ -7778,12 +8501,594 @@ function doMgrClose(id){
   });
 }
 function reopenDuty(id){api("POST","/api/duties/"+id+"/reopen").then(function(){reloadState(function(){reviewDuty(id)})}).catch(function(e){toast(e.error||"Could not reopen.")})}
-function dayReport(){api("GET","/api/day-report?d="+DD).then(function(r){var mn={};r.modes.forEach(function(m){mn[m.key]=m.name});var s=r.summary,h=nav()+'<button class="ghost noprint" onclick="renderDutyTab()">Back to duty list</button><h1 style="margin-top:14px">Day report \u00b7 '+r.d+'</h1><div class="sub">Closed duties only. Day status: '+esc(r.day.status)+'</div><div class="row noprint" style="margin:10px 0;gap:6px"><button class="'+(RV=="sum"?'':'ghost')+'" onclick="RV=\'sum\';dayReport()">Summary</button><button class="'+(RV=="det"?'':'ghost')+'" onclick="RV=\'det\';dayReport()">Worker-wise detail</button><button class="ghost" style="flex:none" onclick="window.print()">Print</button></div>';
-if(!r.duties.length)h+='<div class="empty">No closed duties on this date.</div>';
-else if(RV=="det")r.duties.forEach(function(d){h+=dutyBlock(d,mn)});
-else{var tb=function(title,head,rows){return rows.length?sect(title)+'<div class="tbl"><table style="min-width:0"><tr>'+head.map(function(c,i){return '<th'+(i?' class="r"':'')+'>'+c+'</th>'}).join("")+'</tr>'+rows.map(function(x){return '<tr>'+x.map(function(c,i){return '<td'+(i?' class="r"':'')+'>'+c+'</td>'}).join("")+'</tr>'}).join("")+'</table></div>':''};
-h+=tb("Fuel sold",["Fuel","Litres","Amount"],Object.keys(s.fuel).map(function(k){return [esc(k),Math.round(s.fuel[k].litres*100)/100,m2(s.fuel[k].amount)]}))+tb("Lubes and shop",["Item","Qty","Amount"],Object.keys(s.shop).map(function(k){return [esc(k),s.shop[k].qty,m2(s.shop[k].amount)]}))+tb("Expenses by category",["Category","Amount"],Object.keys(s.exps).map(function(k){return [esc(k),m2(s.exps[k])]}))+tb("Collections",["Mode","Amount"],Object.keys(s.pay).map(function(k){return [esc(mn[k]||k),m2(s.pay[k])]}))+sect("Totals")+'<div class="cust" style="cursor:default">'+R2("Fuel sales",m2(s.sales))+R2("Lube and shop sales",m2(s.lube))+R2("<b>Total sales</b>","<b>"+m2(s.total)+"</b>")+R2("Credit sales",m2(s.credit))+R2("Expenses",m2(s.exp))+R2("Expected collection",m2(s.expected))+R2("Collected",m2(s.collected))+'<div class="amt" style="color:'+(Math.abs(s.diff)<1?'var(--ok)':'var(--due)')+'">'+R2("Difference",sgn(s.diff))+'</div><div class="sub">'+r.duties.length+' closed dut'+(r.duties.length>1?'ies':'y')+'</div></div>'}
-document.getElementById("app").innerHTML=h}).catch(function(e){toast(e.error||"Could not load the report.")})}
+function dayReport(){
+  api("GET","/api/day-report?d="+DD).then(function(r){
+    var mn = {};
+    (r.modes || []).forEach(function(m){ mn[m.key] = m.name; });
+    var s = r.summary || {};
+    var isSum = (RV === "sum" || !RV);
+    var isDet = (RV === "det");
+    var isPrint = (RV === "print");
+
+    var h = nav() +
+      '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px">' +
+          '<button class="ghost" onclick="renderDutyTab()">← Back to duty list</button>' +
+          '<label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;margin:0">Date: ' +
+            '<input type="date" value="' + esc(r.d) + '" onchange="DD=this.value;dayReport()" style="padding:4px 8px;font-size:12.5px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink)">' +
+          '</label>' +
+        '</div>' +
+        '<div style="display:inline-flex;gap:6px;flex-wrap:wrap">' +
+          '<button class="ghost" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px" onclick="printDayReportDirect(\'' + r.d + '\')">🖨️ Direct Print</button>' +
+          '<button class="ghost" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px" onclick="shareDayReportWhatsApp(\'' + r.d + '\')">📲 WhatsApp</button>' +
+          '<button class="ghost" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px;font-weight:700" onclick="downloadDayReportPDF(\'' + r.d + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> 📄 Export PDF (OMC/Dealer)</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="day-report-screen-header noprint">' +
+        '<h1>Day report · ' + esc(r.d) + '</h1>' +
+        '<div class="sub">Closed duties only. Day status: ' + esc((r.day && r.day.status) || "open") + '</div>' +
+      '</div>' +
+      '<div class="row noprint" style="margin:12px 0 16px;gap:6px;flex-wrap:wrap">' +
+        '<button class="' + (isSum ? '' : 'ghost') + '" onclick="RV=\'sum\';dayReport()">Summary</button>' +
+        '<button class="' + (isDet ? '' : 'ghost') + '" onclick="RV=\'det\';dayReport()">Worker-wise detail</button>' +
+        '<button class="' + (isPrint ? '' : 'ghost') + '" onclick="RV=\'print\';dayReport()">🖨️ Print Sheet</button>' +
+      '</div>';
+
+    if (isPrint) {
+      h += buildDayReportPrintableView(r, mn);
+    } else if (!r.duties.length) {
+      h += '<div class="empty">No closed duties on this date.</div>';
+    } else if (isDet) {
+      r.duties.forEach(function(d){ h += dutyBlock(d, mn); });
+    } else {
+      var tb = function(title,head,rows){
+        return rows.length ? sect(title)+'<div class="tbl"><table style="min-width:0"><tr>'+head.map(function(c,i){return '<th'+(i?' class="r"':'')+'>'+c+'</th>'}).join("")+'</tr>'+rows.map(function(x){return '<tr>'+x.map(function(c,i){return '<td'+(i?' class="r"':'')+'>'+c+'</td>'}).join("")+'</tr>'}).join("")+'</table></div>' : '';
+      };
+      h += tb("Fuel sold",["Fuel","Litres","Amount"],Object.keys(s.fuel||{}).map(function(k){return [esc(k),Math.round((s.fuel[k].litres||0)*100)/100,m2(s.fuel[k].amount||0)]})) +
+        tb("Lubes and shop",["Item","Qty","Amount"],Object.keys(s.shop||{}).map(function(k){return [esc(k),s.shop[k].qty,m2(s.shop[k].amount||0)]})) +
+        tb("Expenses by category",["Category","Amount"],Object.keys(s.exps||{}).map(function(k){return [esc(k),m2(s.exps[k])]})) +
+        tb("Collections",["Mode","Amount"],Object.keys(s.pay||{}).map(function(k){return [esc(mn[k]||k),m2(s.pay[k])]})) +
+        sect("Totals") +
+        '<div class="cust" style="cursor:default">' +
+          R2("Fuel sales",m2(s.sales)) +
+          R2("Lube and shop sales",m2(s.lube)) +
+          R2("<b>Total sales</b>","<b>"+m2(s.total)+"</b>") +
+          R2("Credit sales",m2(s.credit)) +
+          R2("Expenses",m2(s.exp)) +
+          R2("Expected collection",m2(s.expected)) +
+          R2("Collected",m2(s.collected)) +
+          '<div class="amt" style="color:'+(Math.abs(s.diff)<1?'var(--ok)':'var(--due)')+'">'+R2("Difference",sgn(s.diff))+'</div>' +
+          '<div class="sub">'+r.duties.length+' closed dut'+(r.duties.length>1?'ies':'y')+'</div>' +
+        '</div>';
+    }
+    document.getElementById("app").innerHTML = h;
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load the report.");
+  });
+}
+
+function buildDayReportPrintableView(r, mn) {
+  var s = r.summary || {};
+  var duties = r.duties || [];
+  var biz = (S && S.biz) || {};
+  var bName = biz.name || "PETRO NETRA FUEL PLAZA";
+  var bAddr = biz.addr || "Highway Retail Outlet";
+  var bGst = biz.gst ? ("GSTIN: " + esc(biz.gst)) : "GSTIN: Registered";
+  var st = (r.day && r.day.status) || "open";
+  var statusBadge = (st === "approved") ? "APPROVED BY OWNER" : (st === "closed" ? "CLOSED (AWAITING APPROVAL)" : "BUSINESS DAY OPEN");
+  var statusColor = (st === "approved") ? "#059669" : (st === "closed" ? "#d97706" : "#0A63F8");
+  var printTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+
+  var out = '<div id="dayReportPrintable" style="background:#fff;color:#0b192c;padding:16px 20px;border-radius:12px;border:1px solid #cbd5e1;box-shadow:0 4px 16px rgba(0,0,0,0.06);margin-top:8px">' +
+    '<!-- Action Bar (hidden in paper print) -->' +
+    '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;gap:8px">' +
+      '<div style="font-weight:700;font-size:13px;color:#062A6B;display:flex;align-items:center;gap:6px">' +
+        '<span>🖨️</span> <span>Day Report Audit Sheet Preview (' + esc(r.d) + ')</span>' +
+      '</div>' +
+      '<div style="display:inline-flex;gap:6px;flex-wrap:wrap">' +
+        '<button type="button" class="print-keep" style="background:#0A63F8;color:#fff;font-weight:700;padding:7px 14px;font-size:13px;border-radius:8px;display:inline-flex;align-items:center;gap:6px" onclick="triggerDayReportPrint()">🖨️ Print Report</button>' +
+        '<button type="button" class="ghost" style="padding:7px 14px;font-size:13px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;font-weight:700" onclick="downloadDayReportPDF(\'' + r.d + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> 📄 Export PDF (OMC/Dealer)</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px;display:inline-flex;align-items:center;gap:6px" onclick="shareDayReportWhatsApp(\'' + r.d + '\')">📲 WhatsApp Share</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="RV=\'sum\';dayReport()">← Back to Summary</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- Header -->' +
+    '<div class="voucher-header" style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #062A6B;padding-bottom:10px;margin-bottom:12px">' +
+      '<div>' +
+        '<div style="font-size:19px;font-weight:900;color:#062A6B;letter-spacing:-0.2px">' + esc(bName.toUpperCase()) + '</div>' +
+        '<div style="font-size:11.5px;color:#475569;margin-top:2px">' + esc(bAddr) + ' · ' + esc(bGst) + '</div>' +
+        '<div style="font-size:12.5px;font-weight:800;color:#0A63F8;margin-top:4px;letter-spacing:0.5px">DAILY SALES &amp; FORECOURT AUDIT REGISTER</div>' +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="display:inline-block;padding:3px 8px;font-size:10.5px;font-weight:800;border-radius:4px;background:' + statusColor + ';color:#fff">' + statusBadge + '</div>' +
+        '<div style="font-size:11px;font-weight:700;margin-top:3px">Date: ' + esc(r.d) + '</div>' +
+        '<div style="font-size:10px;color:#64748b">Generated: ' + printTime + '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- KPI Grid -->' +
+    '<div class="kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL SHIFT LITRES</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#0A63F8">' + Number(s.litres || 0).toFixed(2) + ' L</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">GROSS SALES</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800">' + inr(s.total || 0) + '</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL COLLECTED</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#059669">' + inr(s.collected || 0) + '</div>' +
+      '</div>' +
+      '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
+        '<div class="sub" style="font-size:10px;font-weight:700">NET CASH VARIANCE</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:' + (Math.abs(s.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(s.diff || 0) + '</div>' +
+      '</div>' +
+    '</div>';
+
+  // Table 1: Fuel Sold by Grade
+  var fuelKeys = Object.keys(s.fuel || {});
+  out += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">1. FUEL SALES BY GRADE:</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+      '<thead><tr style="background:#f1f5f9">' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Fuel Grade</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Litres Dispensed</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Gross Amount</th>' +
+      '</tr></thead><tbody>';
+  if (!fuelKeys.length) {
+    out += '<tr><td colspan="3" style="text-align:center;padding:8px;color:#64748b">No fuel sales recorded on this date.</td></tr>';
+  } else {
+    fuelKeys.forEach(function(k){
+      var fObj = s.fuel[k] || {};
+      out += '<tr>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(k) + '</b></td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + Number(fObj.litres || 0).toFixed(2) + ' L</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(fObj.amount || 0) + '</td>' +
+      '</tr>';
+    });
+    out += '<tr style="background:#f8fafc;font-weight:800">' +
+      '<td style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL FUEL</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#0A63F8">' + Number(s.litres || 0).toFixed(2) + ' L</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(s.sales || 0) + '</td>' +
+    '</tr>';
+  }
+  out += '</tbody></table>';
+
+  // Table 2: Lubes & Shop (if any)
+  var shopKeys = Object.keys(s.shop || {});
+  if (shopKeys.length) {
+    out += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">2. LUBRICANTS &amp; SHOP SALES:</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Item Name</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Quantity</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Amount</th>' +
+        '</tr></thead><tbody>';
+    shopKeys.forEach(function(k){
+      var sh = s.shop[k] || {};
+      out += '<tr>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(k) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + sh.qty + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(sh.amount || 0) + '</td>' +
+      '</tr>';
+    });
+    out += '<tr style="background:#f8fafc;font-weight:800">' +
+      '<td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL LUBES &amp; SHOP</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(s.lube || 0) + '</td>' +
+    '</tr></tbody></table>';
+  }
+
+  // Table 3: Expenses (if any)
+  var expKeys = Object.keys(s.exps || {});
+  if (expKeys.length) {
+    out += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">3. OPERATIONAL FORECOURT EXPENSES:</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Expense Category</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Amount (₹)</th>' +
+        '</tr></thead><tbody>';
+    expKeys.forEach(function(k){
+      out += '<tr>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(k) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">' + inr(s.exps[k] || 0) + '</td>' +
+      '</tr>';
+    });
+    out += '<tr style="background:#f8fafc;font-weight:800">' +
+      '<td style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL EXPENSES</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">' + inr(s.exp || 0) + '</td>' +
+    '</tr></tbody></table>';
+  }
+
+  // Table 4: Payment Collections & Reconciliation
+  var payKeys = Object.keys(s.pay || {}).filter(function(k){ return k[0] !== '_'; });
+  out += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">4. PAYMENT COLLECTIONS &amp; CASH RECONCILIATION:</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+      '<thead><tr style="background:#f1f5f9">' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Audit Head / Mode</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Amount (₹)</th>' +
+      '</tr></thead><tbody>' +
+      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Gross Total Sales (Fuel + Lubes)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(s.total || 0) + '</td></tr>' +
+      (s.credit ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(−) Credit Sales Given</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#475569">−' + inr(s.credit) + '</td></tr>' : '') +
+      (s.exp ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(−) Operational Expenses Paid</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">−' + inr(s.exp) + '</td></tr>' : '') +
+      (s.recovery ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(+) Credit Recoveries Collected</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(s.recovery) + '</td></tr>' : '') +
+      '<tr style="background:#f1f5f9;font-weight:700"><td style="border:1px solid #cbd5e1;padding:6px 8px">EXPECTED TOTAL COLLECTIONS</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px">' + inr(s.expected || 0) + '</td></tr>';
+
+  payKeys.forEach(function(k){
+    var mTitle = (mn && mn[k]) || (k.charAt(0).toUpperCase() + k.slice(1));
+    out += '<tr>' +
+      '<td style="border:1px solid #cbd5e1;padding:4px 7px;padding-left:18px;color:#334155">• Collected via ' + esc(mTitle) + '</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:4px 7px">' + inr(s.pay[k] || 0) + '</td>' +
+    '</tr>';
+  });
+
+  out += '<tr style="background:#ecfdf5;font-weight:800">' +
+      '<td style="border:1px solid #cbd5e1;padding:6px 8px">TOTAL ACTUAL COLLECTIONS RECEIVED</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:#059669;font-size:12.5px">' + inr(s.collected || 0) + '</td>' +
+    '</tr>' +
+    '<tr style="background:' + (Math.abs(s.diff || 0) < 1 ? '#f0fdf4' : '#fef2f2') + ';font-weight:800">' +
+      '<td style="border:1px solid #cbd5e1;padding:6px 8px">NET FORECOURT CASH VARIANCE</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:13px;color:' + (Math.abs(s.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(s.diff || 0) + (Math.abs(s.diff || 0) < 1 ? ' (BALANCED ✓)' : (s.diff < 0 ? ' (SHORTAGE ⚠)' : ' (EXCESS)')) + '</td>' +
+    '</tr></tbody></table>';
+
+  // Table 5: Staff Shift Duties Roster
+  out += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">5. WORKER-WISE SHIFT DUTY BREAKDOWN (' + duties.length + ' CLOSED DUTIES):</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+      '<thead><tr style="background:#f1f5f9">' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Duty ID</th>' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Attendant</th>' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Shift</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Litres</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Sales</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Collected</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Variance</th>' +
+        '<th class="noprint" style="border:1px solid #cbd5e1;padding:5px 7px;text-align:center">Action</th>' +
+      '</tr></thead><tbody>';
+
+  if (!duties.length) {
+    out += '<tr><td colspan="8" style="border:1px solid #cbd5e1;padding:12px;text-align:center;color:#64748b">No closed shift duties recorded yet for date ' + esc(r.d) + '.</td></tr>';
+  } else {
+    duties.forEach(function(d){
+      out += '<tr>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>#' + d.id + '</b></td>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(d.worker || "Attendant") + '</b></td>' +
+        '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(d.shift || "Morning") + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + Number(d.litres || 0).toFixed(2) + ' L</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr((d.sales || 0) + (d.lube || 0)) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">' + inr(d.collected || 0) + '</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:' + (Math.abs(d.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(d.diff || 0) + '</td>' +
+        '<td class="noprint" style="border:1px solid #cbd5e1;padding:4px 6px;text-align:center">' +
+          '<button class="ghost" style="padding:3px 8px;font-size:11px" onclick="printSingleDuty(' + d.id + ')">🖨️ Voucher</button>' +
+        '</td>' +
+      '</tr>';
+    });
+  }
+
+  out += '</tbody></table>';
+
+  // Signatures Grid
+  out += '<div class="sign-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px;padding-top:14px;border-top:1px solid #cbd5e1">' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">FORECOURT CASHIER / ATTENDANTS</div>' +
+      '<div style="margin:26px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">Cash Handed Over</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Verified with Nozzles</div>' +
+    '</div>' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">DUTY MANAGER</div>' +
+      '<div style="margin:26px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">Audited &amp; Reconciled</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Day Closed &amp; Verified</div>' +
+    '</div>' +
+    '<div class="sign-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:12px 8px;text-align:center;background:#fafafa">' +
+      '<div style="font-size:10px;font-weight:700;color:#64748b">STATION DEALER / OWNER</div>' +
+      '<div style="margin:26px 0 6px;border-top:1px solid #94a3b8"></div>' +
+      '<div style="font-size:11px;font-weight:700">Approved for Settlement</div>' +
+      '<div style="font-size:9.5px;color:#64748b">Bank Deposit Authorized</div>' +
+    '</div>' +
+  '</div>' +
+  '</div>';
+
+  return out;
+}
+
+function printDayReportDirect(dateStr) {
+  dateStr = dateStr || DD || today();
+  toast("Preparing Day Report for print...");
+  api("GET", "/api/day-report?d=" + dateStr).then(function(r){
+    var mn = {};
+    (r.modes || []).forEach(function(m){ mn[m.key] = m.name; });
+    var printableHtml = buildDayReportPrintableView(r, mn);
+
+    var modalHtml = '<div class="duty-voucher-preview">' +
+      '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px">' +
+        '<div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px">' +
+          '<span>🖨️</span> <span>Day Report Print Preview — ' + esc(dateStr) + '</span>' +
+        '</div>' +
+        '<div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+          '<button type="button" class="print-keep" style="background:#0A63F8;color:#fff;font-weight:700;padding:7px 14px;font-size:13px;border-radius:8px" onclick="triggerDutyDirectPrint(\'dayrep_' + dateStr + '\')">🖨️ Print Report</button>' +
+          '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px;font-weight:700" onclick="downloadDayReportPDF(\'' + dateStr + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> 📄 Export PDF (OMC/Dealer)</button>' +
+          '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="shareDayReportWhatsApp(\'' + dateStr + '\')">📲 WhatsApp</button>' +
+          '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="closeM()">✕ Close</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="dutyVoucherPrintable">' +
+        printableHtml +
+      '</div>' +
+    '</div>';
+
+    openM(modalHtml, "860px");
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load day report for print.");
+  });
+}
+
+function downloadDayReportPDF(dateStr) {
+  dateStr = dateStr || DD || today();
+  var jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if (!jsPDF) {
+    toast("PDF engine unavailable, opening print preview...");
+    printDayReportDirect(dateStr);
+    return;
+  }
+  toast("Preparing Day Report PDF for OMC / Dealer...");
+  api("GET", "/api/day-report?d=" + dateStr).then(function(r){
+    var s = r.summary || {};
+    var duties = r.duties || [];
+    var biz = (S && S.biz) || {};
+    var bName = biz.name || "PETRO NETRA FUEL PLAZA";
+    var bAddr = biz.addr || "Highway Retail Outlet";
+    var bGst = biz.gst ? ("GSTIN: " + biz.gst) : "GSTIN: Registered";
+    var omcBrand = (biz.omc || "HPCL").toUpperCase();
+    var st = (r.day && r.day.status) || "open";
+    var statusTitle = (st === "approved") ? "APPROVED BY DEALER" : (st === "closed" ? "CLOSED & AUDITED" : "BUSINESS DAY OPEN");
+    var printTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+    var mgrName = (ME && ME.name) || "Station Manager";
+
+    var doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    var runTable = function(opts) {
+      if (typeof doc.autoTable === "function") return doc.autoTable(opts);
+      if (typeof window.autoTable === "function") return window.autoTable(doc, opts);
+      if (window.jspdf && typeof window.jspdf.autoTable === "function") return window.jspdf.autoTable(doc, opts);
+      if (typeof window.jspdfAutoTable === "function") return window.jspdfAutoTable(doc, opts);
+    };
+
+    var pageW = 595.28;
+    var marginL = 32;
+    var marginR = 32;
+    var contentW = pageW - marginL - marginR;
+
+    // Official Deep Navy Header Banner with Gold Accent
+    doc.setFillColor(6, 42, 107);
+    doc.rect(0, 0, pageW, 70, "F");
+    doc.setFillColor(245, 158, 11);
+    doc.rect(0, 70, pageW, 3, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text(bName.toUpperCase(), marginL, 24);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(205, 225, 248);
+    doc.text("AUTHORISED " + omcBrand + " RETAIL OUTLET • " + bAddr + " • " + bGst, marginL, 38);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(255, 255, 255);
+    doc.text("DAILY RETAIL OUTLET SETTLEMENT & OMC AUDIT STATEMENT — " + dateStr, marginL, 52);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(205, 225, 248);
+    doc.text("Status: " + statusTitle + "   |   Manager: " + mgrName + "   |   Generated: " + printTime, marginL, 64);
+
+    var curY = 86;
+
+    // Executive KPI Summary 4-Column Cards
+    var kpiW = (contentW - 18) / 4;
+    var kpis = [
+      { label: "TOTAL SHIFT LITRES", val: Number(s.litres || 0).toFixed(2) + " L", color: [10, 99, 248] },
+      { label: "GROSS FORECOURT SALES", val: "INR " + Number(s.total || 0).toLocaleString("en-IN", {maximumFractionDigits: 0}), color: [15, 23, 42] },
+      { label: "TOTAL SETTLED / CASH", val: "INR " + Number(s.collected || 0).toLocaleString("en-IN", {maximumFractionDigits: 0}), color: [5, 150, 105] },
+      { label: "NET VARIANCE", val: (s.diff >= 0 ? "+" : "") + Number(s.diff || 0).toFixed(2), color: (Math.abs(s.diff || 0) < 1 ? [5, 150, 105] : [225, 29, 72]) }
+    ];
+
+    kpis.forEach(function(k, idx){
+      var kx = marginL + idx * (kpiW + 6);
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(kx, curY, kpiW, 36, 4, 4, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(k.label, kx + kpiW / 2, curY + 12, { align: "center" });
+
+      doc.setFontSize(9.5);
+      doc.setTextColor(k.color[0], k.color[1], k.color[2]);
+      doc.text(k.val, kx + kpiW / 2, curY + 27, { align: "center" });
+    });
+
+    curY += 46;
+
+    // Table 1: Fuel Sold by Grade
+    var fuelKeys = Object.keys(s.fuel || {});
+    var fuelRows = fuelKeys.map(function(k){
+      var fObj = s.fuel[k] || {};
+      var lt = Number(fObj.litres || 0);
+      var amt = Number(fObj.amount || 0);
+      var avgRate = lt > 0 ? (amt / lt).toFixed(2) : "-";
+      return [
+        k,
+        lt.toFixed(2) + " L",
+        avgRate !== "-" ? ("INR " + avgRate) : "-",
+        "INR " + amt.toLocaleString("en-IN", { minimumFractionDigits: 2 })
+      ];
+    });
+    if (!fuelRows.length) {
+      fuelRows.push(["No fuel sales recorded", "0.00 L", "-", "INR 0.00"]);
+    } else {
+      fuelRows.push([
+        "TOTAL FUEL DISPENSED",
+        Number(s.litres || 0).toFixed(2) + " L",
+        "-",
+        "INR " + Number(s.sales || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })
+      ]);
+    }
+
+    runTable({
+      startY: curY,
+      margin: { left: marginL, right: marginR },
+      head: [["Fuel Grade", "Volume Dispensed (L)", "Pump Rate (Avg)", "Gross Sales Value (INR)"]],
+      body: fuelRows,
+      theme: "striped",
+      headStyles: { fillColor: [6, 42, 107], textColor: 255, fontSize: 8, fontStyle: "bold" },
+      styles: { fontSize: 7.5, cellPadding: 3.5 },
+      columnStyles: {
+        0: { cellWidth: 160, fontStyle: "bold" },
+        1: { cellWidth: 120, halign: "right" },
+        2: { cellWidth: 100, halign: "right" },
+        3: { halign: "right", fontStyle: "bold" }
+      }
+    });
+
+    curY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : curY + 70) + 10;
+
+    // Table 2: Lubes & Shop (if any)
+    var shopKeys = Object.keys(s.shop || {});
+    if (shopKeys.length) {
+      var shopRows = shopKeys.map(function(k){
+        var sh = s.shop[k] || {};
+        return [k, String(sh.qty), "INR " + Number(sh.amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })];
+      });
+      shopRows.push(["TOTAL LUBRICANTS & SHOP", "-", "INR " + Number(s.lube || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })]);
+      runTable({
+        startY: curY,
+        margin: { left: marginL, right: marginR },
+        head: [["Lubricant Grade / C-Store Item", "Quantity", "Sales Value (INR)"]],
+        body: shopRows,
+        theme: "striped",
+        headStyles: { fillColor: [6, 42, 107], textColor: 255, fontSize: 8, fontStyle: "bold" },
+        styles: { fontSize: 7.5, cellPadding: 3.5 },
+        columnStyles: { 0: { cellWidth: 260 }, 1: { cellWidth: 100, halign: "right" }, 2: { halign: "right", fontStyle: "bold" } }
+      });
+      curY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : curY + 50) + 10;
+    }
+
+    // Table 3: Payment Reconciliation & Remittance Breakdown (Crucial for Dealer & OMC)
+    var payObj = s.pay || {};
+    var payKeys = Object.keys(payObj).filter(function(k){ return k[0] !== '_'; });
+    var payRows = [
+      ["Gross Forecourt Sales (Fuel + Lubes)", "INR " + Number(s.total || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })],
+      ["Less Credit Indent Sales Given", "INR " + Number(s.credit || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })],
+      ["Less Forecourt Operating Expenses Paid", "INR " + Number(s.exp || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })],
+      ["Plus Credit Recoveries Collected", "INR " + Number(s.recovery || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })],
+      ["EXPECTED FORECOURT REMITTANCE", "INR " + Number(s.expected || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })]
+    ];
+
+    payKeys.forEach(function(k){
+      var mTitle = (k === "cash" ? "Cash Remittance in Hand" : (k === "upi" ? "Digital UPI / QR (PhonePe/GPay/Paytm)" : (k === "card" ? "POS / EDC Card Swipes" : (k.charAt(0).toUpperCase() + k.slice(1)))));
+      payRows.push(["• Actual Remitted via " + mTitle, "INR " + Number(payObj[k] || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })]);
+    });
+
+    payRows.push(["TOTAL ACTUAL COLLECTIONS REMITTED", "INR " + Number(s.collected || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })]);
+    payRows.push(["NET SHORT / EXCESS VARIANCE", (s.diff >= 0 ? "+" : "") + Number(s.diff || 0).toFixed(2) + " " + (Math.abs(s.diff || 0) < 1 ? "(Balanced ✓)" : "(Variance ⚠)")]);
+
+    runTable({
+      startY: curY,
+      margin: { left: marginL, right: marginR },
+      head: [["Forecourt Remittance Audit & Reconciliation Head", "Value (INR)"]],
+      body: payRows,
+      theme: "plain",
+      headStyles: { fillColor: [10, 99, 248], textColor: 255, fontSize: 8, fontStyle: "bold" },
+      styles: { fontSize: 7.5, cellPadding: 3 },
+      columnStyles: { 0: { cellWidth: 360 }, 1: { halign: "right", fontStyle: "bold" } }
+    });
+
+    curY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : curY + 80) + 10;
+
+    // Table 4: Worker Shift Duty Log
+    if (curY > 640) {
+      doc.addPage();
+      curY = 40;
+    }
+    var dutyRows = duties.length ? duties.map(function(d){
+      return [
+        "#" + d.id,
+        d.worker || "Attendant",
+        d.shift || "Morning",
+        Number(d.litres || 0).toFixed(2) + " L",
+        "INR " + Number((d.sales || 0) + (d.lube || 0)).toLocaleString("en-IN", { minimumFractionDigits: 2 }),
+        "INR " + Number(d.collected || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 }),
+        (d.diff >= 0 ? "+" : "") + Number(d.diff || 0).toFixed(2),
+        (d.status || "closed").toUpperCase()
+      ];
+    }) : [["-", "No closed duties recorded for this date", "-", "0.00 L", "INR 0.00", "INR 0.00", "0.00", "OPEN / PENDING"]];
+
+    runTable({
+      startY: curY,
+      margin: { left: marginL, right: marginR },
+      head: [["Duty ID", "Staff / Attendant", "Shift", "Litres", "Gross Sales", "Collected", "Variance", "Status"]],
+      body: dutyRows,
+      theme: "striped",
+      headStyles: { fillColor: [6, 42, 107], textColor: 255, fontSize: 8, fontStyle: "bold" },
+      styles: { fontSize: 7, cellPadding: 3 }
+    });
+
+    curY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : curY + 60) + 12;
+
+    // Official Quadruple Signatures Block for OMC & Dealer
+    if (curY > 700) {
+      doc.addPage();
+      curY = 40;
+    }
+
+    doc.setFontSize(7.5);
+    doc.setTextColor(51, 65, 85);
+
+    var signColW = contentW / 4;
+    var signTitles = [
+      { role: "SHIFT ATTENDANTS", sub: "Meter & Till Handed Over" },
+      { role: "DUTY MANAGER", sub: mgrName },
+      { role: "RO DEALER / PROPRIETOR", sub: "Settlement Approved" },
+      { role: (omcBrand + " SALES OFFICER"), sub: "Field Inspection Seal & Sign" }
+    ];
+
+    signTitles.forEach(function(stItem, idx){
+      var sx = marginL + idx * signColW;
+      doc.setFont("helvetica", "bold");
+      doc.text(stItem.role, sx + signColW / 2, curY + 10, { align: "center" });
+
+      doc.setDrawColor(148, 163, 184);
+      doc.line(sx + 10, curY + 32, sx + signColW - 10, curY + 32);
+
+      doc.setFont("helvetica", "normal");
+      doc.text(stItem.sub, sx + signColW / 2, curY + 42, { align: "center" });
+    });
+
+    // Add footer on every page
+    var pageCount = doc.getNumberOfPages();
+    for (var p = 1; p <= pageCount; p++) {
+      doc.setPage(p);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(marginL, 818, pageW - marginR, 818);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text("Petro Netra Retail Outlet Management System • Authorised " + omcBrand + " Dealer & OMC Audit Record", marginL, 828);
+      doc.text("Page " + p + " of " + pageCount, pageW - marginR, 828, { align: "right" });
+    }
+
+    var fileName = "PetroNetra_Day_Report_" + dateStr + ".pdf";
+    doc.save(fileName);
+    toast("✓ Day Report PDF exported successfully (" + fileName + ")!");
+  }).catch(function(e){
+    console.error("PDF generation error:", e);
+    toast((e && e.error) || "Could not generate Day Report PDF.");
+  });
+}
 // ---- Petro Module Hub & App Store (Owner View)
 var MOD_SEARCH = "";
 var MOD_STATUS_FILTER = "all";
@@ -10473,8 +11778,10 @@ function inspectDutyModal(dutyId){
         +'</div>';
     }
 
-    h += '<div class="row" style="margin-top:14px;gap:8px;justify-content:flex-end">'
+    h += '<div class="row" style="margin-top:14px;gap:8px;justify-content:flex-end;flex-wrap:wrap">'
       +'<button type="button" class="ghost" onclick="renderDutyCalendarModal()">← Back to Calendar</button>'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="printSingleDuty('+d.id+')">🖨️ Print Voucher</button>'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button>'
       +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="close()">Done</button>'
       +'</div>';
 
@@ -10939,10 +12246,6 @@ function start(){
   if(!ME)return homeView();
   document.body.classList.add("logged-in");
   renderDrawerContent();
-  if(!window.SHOW_ALL_MODULES){
-    tab="wduty";
-    return loadW();
-  }
   if(ME.role==="admin"){
     return renderAdminConsole();
   }
