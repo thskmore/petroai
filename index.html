@@ -7581,12 +7581,11 @@ function renderWAssign(r){
   var cList=(r.colleagues||[]).filter(function(w){return w.role==='worker'});
   var otherColleagues=cList.filter(function(w){return w.id!=myId});
   var defaultTargetId=otherColleagues.length?otherColleagues[0].id:(cList[0]?cList[0].id:"");
-  var hasMultipleNozzles=(r.nozzles&&r.nozzles.length>1);
 
   if(!cList.length){
     h+='<div class="cust" style="background:#fff3cd;border-color:#ffeeba;color:#856404;padding:10px 12px;margin-bottom:12px">⚠️ No active workers are registered. Add workers in the Team tab to hand over duty.</div>';
-  }else if(!hasMultipleNozzles){
-    h+='<label>Incoming worker (handover to)<select id="wa_target_worker">'
+  }else{
+    h+='<label>Incoming worker (handover duty to)<select id="wa_target_worker">'
       +cList.map(function(w){
         var isSelf=(w.id==myId);
         var selfTag=isSelf?' (You)':'';
@@ -7605,54 +7604,17 @@ function renderWAssign(r){
 
   h+='<label>Handover note (optional)<input id="wa_note" placeholder="e.g. Cash till checked, dip taken, notes for incoming worker"></label>';
 
-  if(hasMultipleNozzles){
-    h+='<div style="background:rgba(11,122,95,0.06);border:1px solid rgba(11,122,95,0.25);border-radius:8px;padding:10px 12px;margin:16px 0 8px">';
-    h+='<div style="display:flex;align-items:center;gap:6px;font-weight:700;color:var(--ink)"><span>⛽ Multi-Nozzle Handover ('+r.nozzles.length+' nozzles)</span></div>';
-    h+='<div class="sub" style="margin-top:2px">You operated '+r.nozzles.length+' nozzles. Assign each nozzle to an incoming staff member below, or quick-assign all to one person.</div>';
-    h+='</div>';
-
-    h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">';
-    h+='<div><b style="font-size:13px;color:var(--ink)">⚡ Quick Assign:</b> <span class="sub">Set all nozzles to:</span></div>';
-    h+='<select id="wa_bulk_worker" style="margin:0;max-width:240px;padding:6px 10px;font-size:13px" onchange="setAllHandoverWorkers(this.value)">';
-    h+='<option value="">-- Choose staff for all nozzles --</option>';
-    cList.forEach(function(w){
-      var isSelf=(w.id==myId);
-      var selfTag=isSelf?' (You)':'';
-      var busyTag=w.busy?' - on duty':'';
-      h+='<option value="'+w.id+'">'+esc(w.name)+selfTag+busyTag+'</option>';
-    });
-    h+='</select>';
-    h+='</div>';
-  }
-
-  h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:16px 0 6px">Nozzle assignments & starting readings</div>';
-  h+='<div class="tbl"><table><tr><th>Nozzle & Fuel</th><th class="r">Starting opening</th><th class="r">Rate</th>'+(hasMultipleNozzles?'<th style="min-width:170px">Handover to Staff</th>':'')+'</tr>';
+  h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:16px 0 6px">Nozzle readings from closed duty ('+(r.nozzles?r.nozzles.length:0)+' nozzles)</div>';
+  h+='<div class="tbl"><table><tr><th>Nozzle & Fuel</th><th class="r">Starting opening</th><th class="r">Rate</th></tr>';
   (r.nozzles||[]).forEach(function(n){
     var busyNote=n.busy_by?'<div class="sub" style="color:var(--due)">Busy with '+esc(n.busy_by)+'</div>':'';
     h+='<tr>';
     h+='<td><b>'+esc(n.name)+'</b> <span class="sub">('+esc(n.fuel)+')</span>'+busyNote+'</td>';
     h+='<td class="r"><b>'+(n.opening!=null?Number(n.opening).toFixed(2):'-')+'</b></td>';
     h+='<td class="r">'+(n.rate!=null?(m2(n.rate)+'/L'):'-')+'</td>';
-    if(hasMultipleNozzles){
-      h+='<td>';
-      h+='<select class="wa_nozzle_worker" data-nozzle-id="'+n.id+'" data-nozzle-name="'+esc(n.name)+'" style="margin:0;padding:6px 8px;font-size:13px;width:100%" onchange="updateHandoverSummary()" '+(n.busy_by?'disabled':'')+'>';
-      cList.forEach(function(w){
-        var isSelf=(w.id==myId);
-        var selfTag=isSelf?' (You)':'';
-        var busyTag=w.busy?' - on duty':'';
-        var isSel=(w.id==defaultTargetId);
-        h+='<option value="'+w.id+'"'+(isSel?' selected':'')+'>'+esc(w.name)+selfTag+busyTag+'</option>';
-      });
-      h+='</select>';
-      h+='</td>';
-    }
     h+='</tr>';
   });
   h+='</table></div>';
-
-  if(hasMultipleNozzles){
-    h+='<div id="wa_summary_box" style="margin-top:10px;padding:10px 12px;background:rgba(11,122,95,0.06);border:1px solid rgba(11,122,95,0.25);border-radius:8px;font-size:13px"></div>';
-  }
 
   if(r.day!="open"){
     h+='<div class="cust" style="background:#fff3cd;border-color:#ffeeba;color:#856404;margin-top:12px;padding:10px 12px;cursor:default">'
@@ -7671,71 +7633,15 @@ function renderWAssign(r){
     +'</div>';
 
   document.getElementById("app").innerHTML=h;
-  if(hasMultipleNozzles){
-    setTimeout(updateHandoverSummary, 10);
-  }
-}
-function setAllHandoverWorkers(wId){
-  if(!wId)return;
-  var selects=document.querySelectorAll(".wa_nozzle_worker");
-  selects.forEach(function(s){
-    if(!s.disabled)s.value=wId;
-  });
-  updateHandoverSummary();
-}
-function updateHandoverSummary(){
-  var box=document.getElementById("wa_summary_box");
-  if(!box)return;
-  var selects=document.querySelectorAll(".wa_nozzle_worker");
-  var map={};
-  selects.forEach(function(s){
-    if(!s.disabled&&s.value){
-      var opt=s.options[s.selectedIndex];
-      var rawName=opt?opt.text.replace(/\s*\([^)]*\)/g,"").replace(/\s*-.*$/,"").trim():"Staff";
-      var nName=s.getAttribute("data-nozzle-name")||"Nozzle";
-      if(!map[rawName])map[rawName]=[];
-      map[rawName].push(nName);
-    }
-  });
-  var keys=Object.keys(map);
-  if(!keys.length){
-    box.innerHTML='<b>🤝 Handover Plan:</b> Please assign nozzles to staff members.';
-    return;
-  }
-  var lines=keys.map(function(k){
-    return '• <b>'+esc(k)+'</b> will take '+map[k].length+' nozzle'+(map[k].length>1?'s':'')+' ('+map[k].map(esc).join(', ')+')';
-  });
-  box.innerHTML='<div style="font-weight:700;color:var(--ok);margin-bottom:3px">📋 Handover Allocation Summary:</div>'+lines.join('<br/>');
 }
 function doWorkerAssign(){
   var btn=document.getElementById("btnDoAssign");
   var errDiv=document.getElementById("waErr");
   var note=v("wa_note");
   var shift=v("wa_shift");
-
-  var selects=document.querySelectorAll(".wa_nozzle_worker");
-  var nozzle_assignments=[];
   var singleTargetId=v("wa_target_worker");
 
-  if(selects.length>0){
-    for(var i=0;i<selects.length;i++){
-      var s=selects[i];
-      if(s.disabled)continue;
-      var nId=s.getAttribute("data-nozzle-id");
-      var wId=s.value;
-      if(!wId){
-        if(errDiv)errDiv.textContent="Please select a staff member for all active nozzles.";
-        return;
-      }
-      nozzle_assignments.push({nozzle_id:+nId,target_worker_id:+wId});
-    }
-    if(!nozzle_assignments.length){
-      if(errDiv)errDiv.textContent="No active nozzles available to hand over.";
-      return;
-    }
-  }else if(singleTargetId){
-    nozzle_assignments=[{nozzle_id:0,target_worker_id:+singleTargetId}];
-  }else{
+  if(!singleTargetId){
     if(errDiv)errDiv.textContent="Please select an incoming staff member.";
     return;
   }
@@ -7747,13 +7653,12 @@ function doWorkerAssign(){
 
   var payload={
     shift:shift,
-    nozzle_assignments:nozzle_assignments,
-    target_worker_id:singleTargetId||(nozzle_assignments[0]?nozzle_assignments[0].target_worker_id:null),
+    target_worker_id:+singleTargetId,
     note:note
   };
 
   api("POST","/api/worker/assign-duty",payload).then(function(res){
-    var successMsg=res.worker_summary?("Duty handed over: "+res.worker_summary):("Duty handed over to "+(res.target_name||"worker")+" successfully!");
+    var successMsg="Duty handed over to "+(res.target_name||"worker")+" successfully!";
     toast(successMsg);
     tab="wduty";
     loadW();

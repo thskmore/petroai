@@ -247,18 +247,118 @@ create table if not exists duty_handovers(
 
   // Ensure station 1 state is seeded into station_states
   const ss1 = db.prepare("select * from station_states where station_id=1").get();
-  if (!ss1) {
+  if (!ss1 || !ss1.json || ss1.json.length < 50) {
     const oldState = db.prepare("select * from state where id=1").get();
-    if (oldState) {
-      db.prepare("insert into station_states(station_id, ver, json) values(1, ?, ?)").run(oldState.ver, oldState.json);
+    if (oldState && oldState.json && oldState.json.length > 50) {
+      db.prepare("insert or replace into station_states(station_id, ver, json) values(1, ?, ?)").run(oldState.ver, oldState.json);
+    } else {
+      const defaultState = {
+        c: [
+          { id: 1, name: "Shivaji Roadways & Logistics", phone: "9822011223", veh: ["MH-12-RN-4402", "MH-12-Q-9912"], limit: 150000, active: true, e: [] },
+          { id: 2, name: "Balaji Earthmovers (JCB/Tipper)", phone: "9822455667", veh: ["MH-13-AX-1100"], limit: 80000, active: true, e: [] }
+        ],
+        inv: [],
+        items: [
+          { id: 1, name: "Engine Oil 15W40 (1L)", sell: 420, buy: 340, stock: 24, low: 5 },
+          { id: 2, name: "2T 2-Stroke Oil (40ml)", sell: 25, buy: 18, stock: 120, low: 20 },
+          { id: 3, name: "Coolant Ready Mix (1L)", sell: 260, buy: 195, stock: 18, low: 4 },
+          { id: 4, name: "DEF / AdBlue (10L Bucket)", sell: 650, buy: 510, stock: 15, low: 3 }
+        ],
+        sup: [
+          { id: 1, name: "HPCL Loni Terminal Depot", phone: "020-24458899", kind: "Oil company", e: [] }
+        ],
+        bk: [
+          { id: 1, name: "SBI Forecourt Current A/C", no: "38920192831", ifsc: "SBIN0001234" }
+        ],
+        nozzles: [
+          { id: 1, name: "N1 (MS-1)", fuel: "Petrol (MS)", tank_id: 1, op: 10540.20, active: true },
+          { id: 2, name: "N2 (MS-2)", fuel: "Petrol (MS)", tank_id: 1, op: 9812.50, active: true },
+          { id: 3, name: "N3 (HSD-1)", fuel: "Diesel (HSD)", tank_id: 2, op: 24890.10, active: true },
+          { id: 4, name: "N4 (HSD-2)", fuel: "Diesel (HSD)", tank_id: 2, op: 21300.80, active: true }
+        ],
+        tanks: [
+          { id: 1, name: "Tank 1 (Petrol MS)", fuel: "Petrol (MS)", cap: 20000, dip: 124.5, current_stock: 14200 },
+          { id: 2, name: "Tank 2 (Diesel HSD)", fuel: "Diesel (HSD)", cap: 25000, dip: 162.0, current_stock: 18950 }
+        ],
+        deliv: [],
+        rates: [
+          { id: 1, fuel: "Petrol (MS)", rate: 104.50, from: "2026-10-12" },
+          { id: 2, fuel: "Diesel (HSD)", rate: 92.80, from: "2026-10-12" }
+        ],
+        expcats: ["Staff Tea & Meals", "Repairs & Maintenance", "Electricity & DG Fuel", "Cleaning Supplies", "Transport / Other"],
+        paymodes: [
+          { key: "cash", name: "Cash", active: true },
+          { key: "upi", name: "UPI / QR", active: true },
+          { key: "card", name: "Card Swipe", active: true }
+        ],
+        ob: { Cash: 5000, Bank: 25000, UPI: 0 },
+        biz: {
+          name: "Sarita Petroleum Station",
+          omc: "HPCL",
+          addr: "Pune-Solapur Highway, Maharashtra",
+          phone: "9422556644",
+          gst: "27AABCS1429Q1ZB"
+        },
+        setup_done: true
+      };
+      db.prepare("insert or replace into station_states(station_id, ver, json) values(1, 1, ?)").run(JSON.stringify(defaultState));
+      db.prepare("insert or replace into state(id, ver, json) values(1, 1, ?)").run(JSON.stringify(defaultState));
     }
   }
 
-  // Ensure Super Admin user exists (mobile: 9999999999, pass: AdminPass123)
-  const adminUser = db.prepare("select * from users where mobile='9999999999'").get();
-  if (!adminUser) {
-    db.prepare("insert into users(name, mobile, hash, role, active, station_id, approval_status) values('Platform Super Admin', '9999999999', ?, 'admin', 1, 1, 'approved')")
-      .run(bcrypt.hashSync("AdminPass123", 10));
+  // Ensure Demo Users exist with valid passwords
+  const demoStaffList = [
+    { name: "Platform Super Admin", mobile: "9999999999", pass: "AdminPass123", role: "admin", station_id: 1, salary: 0 },
+    { name: "Sarita More", mobile: "9422556644", pass: "NewPass123", role: "owner", station_id: 1, salary: 0 },
+    { name: "Kapane", mobile: "9075395587", pass: "NewPass123", role: "manager", station_id: 1, salary: 28000 },
+    { name: "Vikram", mobile: "7387251048", pass: "NewPass123", role: "worker", station_id: 1, salary: 16500 },
+    { name: "Yedage", mobile: "9766553117", pass: "NewPass123", role: "worker", station_id: 1, salary: 15500 },
+    { name: "Bira", mobile: "7083446697", pass: "NewPass123", role: "worker", station_id: 1, salary: 15000 },
+    { name: "Ramesh Pawar", mobile: "9876543210", pass: "NewPass123", role: "owner", station_id: 2, salary: 0 }
+  ];
+  for (const du of demoStaffList) {
+    const existing = db.prepare("select id from users where mobile=?").get(du.mobile);
+    if (!existing) {
+      db.prepare(`
+        insert into users(name, mobile, hash, role, active, station_id, approval_status, pay_type, monthly_salary, epf_opted, esic_opted, uan_no, esic_no, standard_shifts_month)
+        values(?, ?, ?, ?, 1, ?, 'approved', 'duty', ?, 1, 1, '101294829102', '3100294819', 26)
+      `).run(du.name, du.mobile, bcrypt.hashSync(du.pass, 10), du.role, du.station_id, du.salary);
+    }
+  }
+
+  // Ensure today is an open business day
+  const todayDateStr = new Date().toISOString().slice(0, 10);
+  const curDay = db.prepare("select * from days where d=? and station_id=1").get(todayDateStr);
+  if (!curDay) {
+    db.prepare("insert or ignore into days(d, status, station_id) values(?, 'open', 1)").run(todayDateStr);
+  }
+
+  // Seed initial duties for demo worker Vikram (7387251048)
+  const vikramUser = db.prepare("select id from users where mobile='7387251048'").get();
+  if (vikramUser) {
+    const dCount = (db.prepare("select count(*) c from duties where worker_id=?").get(vikramUser.id) || {}).c || 0;
+    if (dCount === 0) {
+      // 1. Closed duty for handover history & testing
+      const closedDutyId = db.prepare(`
+        insert into duties(worker_id, d, shift, status, cash, upi, card, note, started, submitted, closed_by, closed_at, station_id)
+        values(?, ?, 'Morning', 'closed', 28500, 14200, 4500, 'Shift closed smoothly. Ready for handover to next shift.', ?, ?, 2, ?, 1)
+      `).run(vikramUser.id, todayDateStr, Math.floor(Date.now() / 1000) - 36000, Math.floor(Date.now() / 1000) - 18000, Math.floor(Date.now() / 1000) - 17000).lastInsertRowid;
+
+      db.prepare(`insert into duty_lines(duty_id, nozzle_id, opening, closing, testing, rate) values(?, '1', 10220.00, 10540.20, 5, 104.50)`).run(closedDutyId);
+      db.prepare(`insert into duty_lines(duty_id, nozzle_id, opening, closing, testing, rate) values(?, '3', 24350.00, 24890.10, 5, 92.80)`).run(closedDutyId);
+
+      // 3. Pay items & advance requests for Vikram
+      const curMonth = todayDateStr.slice(0, 7);
+      db.prepare(`
+        insert into pay_items(worker_id, month, kind, amount, note, d, created, station_id)
+        values(?, ?, 'advance', 3000, 'Mid-month cash advance (Festival)', ?, ?, 1)
+      `).run(vikramUser.id, curMonth, todayDateStr, Math.floor(Date.now() / 1000) - 86400 * 5);
+
+      db.prepare(`
+        insert into pay_advance_requests(station_id, worker_id, amount, reason, month, status, created_at, reviewed_at, reviewed_by)
+        values(1, ?, 3000, 'Festival advance', ?, 'approved', ?, ?, 2)
+      `).run(vikramUser.id, curMonth, Math.floor(Date.now() / 1000) - 86400 * 5, Math.floor(Date.now() / 1000) - 86400 * 4);
+    }
   }
   seedDutyHandoversIfEmpty(db);
   const { seedPetrolOperations } = require("./seed-petrol-operations");
@@ -1529,31 +1629,30 @@ app.post("/api/duties/assign", need("owner", "manager"), (q, s) => {
 app.get("/api/worker/assign-info", need(), (q, s) => {
   const d = bizDate(), st = stateNow();
   const open = openDuty(q.user.id);
-  if (open) {
-    return s.json({ has_open: true, duty: detail(open), date: d, day: dayStatus(d) });
-  }
+
   let lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
   if (!lastDuty) {
     lastDuty = db.prepare("select * from duties where status in ('closed', 'submitted') order by id desc limit 1").get();
   }
   if (!lastDuty) {
-    return s.json({ has_open: false, latest_closed: null, date: d, day: dayStatus(d) });
+    return s.json({ has_open: !!open, open_duty: open ? detail(open) : null, latest_closed: null, date: d, day: dayStatus(d) });
   }
   const nm = nozzleMap(st);
   const lines = db.prepare("select * from duty_lines where duty_id=? order by id").all(lastDuty.id);
   const busy = {};
-  db.prepare("select dl.nozzle_id n, u.name w from duty_lines dl join duties du on du.id=dl.duty_id join users u on u.id=du.worker_id where du.status='open'").all().forEach((x) => (busy[x.n] = x.w));
+  db.prepare("select dl.nozzle_id n, u.name w from duty_lines dl join duties du on du.id=dl.duty_id join users u on u.id=du.worker_id where du.status='open'").all().forEach((x) => (busy[String(x.n)] = x.w));
   const nozzles = lines.map((l) => {
-    const n = nm[l.nozzle_id] || { name: "Nozzle", fuel: "" };
+    const nIdStr = String(l.nozzle_id);
+    const n = nm[nIdStr] || nm[l.nozzle_id] || { name: "Nozzle", fuel: "" };
     const rate = rateFor(st, n.fuel, d);
-    const opening = l.closing != null ? l.closing : (lastClose(l.nozzle_id).c ?? (n.open ?? null));
+    const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (n.open ?? null));
     return {
-      id: l.nozzle_id,
+      id: nIdStr,
       name: n.name,
       fuel: n.fuel,
       rate,
       opening,
-      busy_by: busy[String(l.nozzle_id)] || null,
+      busy_by: busy[nIdStr] || null,
       active: n.active !== false
     };
   });
@@ -1564,7 +1663,8 @@ app.get("/api/worker/assign-info", need(), (q, s) => {
     busy: !!openDuty(w.id)
   }));
   s.json({
-    has_open: false,
+    has_open: !!open,
+    open_duty: open ? detail(open) : null,
     latest_closed: {
       id: lastDuty.id,
       d: lastDuty.d,
@@ -1619,18 +1719,19 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
   // Group by target worker
   const byWorker = {};
   for (const asgn of assignments) {
+    const nIdStr = String(asgn.nozzle_id);
     const nId = +asgn.nozzle_id;
     const wId = +(asgn.target_worker_id || target_worker_id || q.user.id);
 
-    const l = prevLines.find((pl) => pl.nozzle_id === nId);
+    const l = prevLines.find((pl) => String(pl.nozzle_id) === nIdStr || +pl.nozzle_id === nId);
     if (!l) {
-      return s.status(400).json({ error: `Nozzle ${nId} was not part of your shift duty.` });
+      return s.status(400).json({ error: `Nozzle ${nIdStr} was not part of your shift duty.` });
     }
-    const n = nm[nId];
+    const n = nm[nIdStr] || nm[nId];
     if (!n || n.active === false) {
-      return s.status(400).json({ error: `Nozzle ${n ? n.name : nId} is no longer active.` });
+      return s.status(400).json({ error: `Nozzle ${n ? n.name : nIdStr} is no longer active.` });
     }
-    const busy = db.prepare("select u.name w from duty_lines dl join duties du on du.id=dl.duty_id join users u on u.id=du.worker_id where dl.nozzle_id=? and du.status='open' limit 1").get(nId);
+    const busy = db.prepare("select u.name w from duty_lines dl join duties du on du.id=dl.duty_id join users u on u.id=du.worker_id where (dl.nozzle_id=? or dl.nozzle_id=?) and du.status='open' limit 1").get(nIdStr, nId);
     if (busy) {
       return s.status(409).json({ error: `${n.name} is currently open with ${busy.w}.` });
     }
@@ -1638,7 +1739,7 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
     if (rate == null) {
       return s.status(400).json({ error: `Set the ${n.fuel} rate in Pump setup first.` });
     }
-    const opening = l.closing != null ? l.closing : (lastClose(nId).c ?? (n.open ?? null));
+    const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (n.open ?? null));
     if (opening == null) {
       return s.status(400).json({ error: `Set the opening reading for ${n.name} in Pump setup first.` });
     }
@@ -1654,7 +1755,7 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
       byWorker[wId] = { worker: tw, lines: [] };
     }
 
-    byWorker[wId].lines.push({ id: nId, name: n.name, opening, rate });
+    byWorker[wId].lines.push({ id: nIdStr, name: n.name, opening, rate });
   }
 
   const customNote = String(note || "").trim();
@@ -5675,11 +5776,7 @@ app.get("/api/evaporation-loss", need(), (q, s) => {
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", (q, s) => s.status(404).json({ error: "Not found." }));
-app.get("*", (q, s) => {
-  const rootIndex = path.join(__dirname, "index.html");
-  if (fs.existsSync(rootIndex)) return s.sendFile(rootIndex);
-  s.sendFile(path.join(__dirname, "public", "index.html"));
-});
+app.get("*", (q, s) => s.sendFile(path.join(__dirname, "public", "index.html")));
 app.use((err, q, s, n) => s.status(err.status || 500).json({ error: err.status === 400 ? "Invalid request." : "Something went wrong." }));
 
 async function startServer() {
