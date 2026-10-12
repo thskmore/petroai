@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <title>Petrol Pump Manager</title>
@@ -282,11 +282,11 @@ tr:hover td{background:rgba(5,150,105,0.02)}
 .app-topbar-right{display:flex;align-items:center;gap:6px;flex:none}
 
 /* Drawer Backdrop (Mobile only) */
-.nav-drawer-backdrop{position:fixed;inset:0;background:rgba(10,25,47,0.65);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(0.16,1,0.3,1);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.nav-drawer-backdrop{position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(0.16,1,0.3,1);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .nav-drawer-backdrop.active{opacity:1;pointer-events:auto}
 
-/* Navigation Drawer Sidebar & Desktop Rail */
-.nav-drawer{position:fixed;top:0;bottom:0;left:0;width:min(320px,84vw);background:#0A192F;color:#F1F5F9;z-index:100;box-shadow:4px 0 28px rgba(0,0,0,0.25);transform:translateX(-100%);transition:transform .28s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);touch-action:pan-y;will-change:transform;border-right:1px solid #162B45}
+/* Navigation Drawer Sidebar & Desktop Rail - Light Theme */
+.nav-drawer{position:fixed;top:0;bottom:0;left:0;width:min(320px,84vw);background:var(--card);color:var(--ink);z-index:100;box-shadow:4px 0 24px rgba(15,23,42,0.08);transform:translateX(-100%);transition:transform .28s cubic-bezier(0.16,1,0.3,1);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);touch-action:pan-y;will-change:transform;border-right:1px solid var(--line)}
 .nav-drawer.open{transform:translateX(0)}
 .nav-drawer.dragging{transition:none!important}
 
@@ -300,26 +300,33 @@ tr:hover td{background:rgba(5,150,105,0.02)}
   .nav-drawer-edge-gutter,.nav-drawer-edge-handle{display:none!important}
 }
 
-.nav-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px;border-bottom:1px solid #162B45;background:#0A192F}
+div#navDrawer:nth-of-type(7) > div:nth-of-type(1),
+div#navDrawer > div:first-child,
+.nav-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px;border-bottom:1px solid var(--line);background:var(--card)}
 .nav-drawer-brand{display:flex;align-items:center;gap:10px}
-.nav-drawer-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, #059669 0%, #047857 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;box-shadow:0 3px 10px rgba(5,150,105,0.3);flex:none}
-.nav-drawer-close{width:36px;height:36px;border-radius:8px;background:transparent;border:1px solid #162B45;color:#E2E8F0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:background .15s}
-.nav-drawer-close:active{background:#162B45}
+.nav-drawer-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg, #059669 0%, #047857 100%);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;box-shadow:0 3px 10px rgba(5,150,105,0.25);flex:none}
+.nav-drawer-close{width:36px;height:36px;border-radius:8px;background:var(--bg);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:all .15s ease}
+.nav-drawer-close:hover{background:var(--card)}
+.nav-drawer-close:active{transform:scale(0.94)}
 
-.nav-drawer-body{flex:1;overflow-y:auto;padding:12px 10px;-webkit-overflow-scrolling:touch}
-.nav-drawer-section-title{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#64748B;padding:12px 12px 4px}
-.nav-drawer-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:8px;border:0;background:transparent;color:#94A3B8;font-size:13.5px;font-weight:600;text-align:left;cursor:pointer;margin-bottom:2px;position:relative;transition:background .15s,color .15s,transform .1s;-webkit-tap-highlight-color:transparent;min-height:42px}
-.nav-drawer-item:hover{background:rgba(255,255,255,0.06);color:#FFFFFF}
-.nav-drawer-item.active{background:#059669 !important;color:#FFFFFF !important;font-weight:700;box-shadow:0 3px 12px rgba(5,150,105,0.35)}
-.nav-drawer-item.active .nav-icon{color:#FFFFFF !important;opacity:1}
-.nav-drawer-item.active .nav-badge{background:rgba(255,255,255,0.25) !important;color:#FFFFFF !important}
-.nav-drawer-item .nav-icon{width:18px;height:18px;flex:none;opacity:.85}
+div#navDrawer:nth-of-type(7) > div#navDrawerBody:nth-of-type(2),
+#navDrawerBody,
+.nav-drawer-body{flex:1;overflow-y:auto;padding:12px 10px;background:var(--card);-webkit-overflow-scrolling:touch}
+.nav-drawer-section-title{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--mute);padding:12px 12px 4px}
+.nav-drawer-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--ink);font-size:13.5px;font-weight:600;text-align:left;cursor:pointer;margin-bottom:2px;position:relative;transition:background .15s,color .15s,border-color .15s;-webkit-tap-highlight-color:transparent;min-height:42px}
+.nav-drawer-item:hover{background:var(--bg);border-color:var(--line);color:var(--ink)}
+.nav-drawer-item.active{background:rgba(5,150,105,0.08) !important;color:#059669 !important;border-color:rgba(5,150,105,0.25) !important;font-weight:700}
+.nav-drawer-item.active .nav-icon{color:#059669 !important;opacity:1}
+.nav-drawer-item.active .nav-badge{background:rgba(5,150,105,0.15) !important;color:#059669 !important;border:none}
+.nav-drawer-item .nav-icon{width:18px;height:18px;flex:none;color:var(--mute);opacity:.85}
 .nav-drawer-item .nav-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nav-drawer-item .nav-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--due);color:#fff;margin-left:auto}
+.nav-drawer-item .nav-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;background:var(--bg);color:var(--mute);border:1px solid var(--line);margin-left:auto}
 
-.nav-drawer-footer{padding:12px 14px;border-top:1px solid #162B45;background:#061528;display:flex;flex-direction:column;gap:8px}
-.nav-drawer-user{font-size:13px;font-weight:600;color:#F1F5F9;display:flex;align-items:center;gap:8px}
-.nav-drawer-role{font-size:11px;color:#94A3B8;text-transform:capitalize}
+div#navDrawer:nth-of-type(7) > div#navDrawerFooter:nth-of-type(3),
+#navDrawerFooter,
+.nav-drawer-footer{padding:12px 14px;border-top:1px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:8px}
+.nav-drawer-user{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+.nav-drawer-role{font-size:11px;color:var(--mute);text-transform:capitalize}
 
 /* Desktop Header Topbar (Option 1) */
 .desktop-topbar{display:none;align-items:center;justify-content:space-between;padding:12px 0 18px;margin-bottom:18px;border-bottom:1px solid var(--line);gap:16px}
@@ -340,7 +347,7 @@ tr:hover td{background:rgba(5,150,105,0.02)}
 /* Option 1 Desktop Layout (screens >= 900px) */
 @media(min-width:900px){
   body.logged-in{padding-left:260px;background:var(--bg)}
-  body.logged-in .nav-drawer{position:fixed!important;top:0!important;bottom:0!important;left:0!important;width:260px!important;transform:translateX(0)!important;box-shadow:none!important;border-right:1px solid #162B45!important;z-index:50!important;display:flex!important;transition:none!important}
+  body.logged-in .nav-drawer{position:fixed!important;top:0!important;bottom:0!important;left:0!important;width:260px!important;transform:translateX(0)!important;box-shadow:none!important;border-right:1px solid var(--line)!important;z-index:50!important;display:flex!important;transition:none!important;background:var(--card)!important}
   body.logged-in .nav-drawer-backdrop{display:none!important;pointer-events:none!important}
   body.logged-in .nav-drawer-close{display:none!important}
   .app-topbar{display:none!important}
@@ -692,127 +699,245 @@ body:not(.logged-in) #navDrawerBackdrop {
   display: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PetroNetra Modern Authentication Styles (Redesigned)
+   ═══════════════════════════════════════════════════════════════ */
 .petro-auth {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  width: 100%;
+  grid-template-columns: minmax(380px, 1fr) minmax(440px, 1.15fr);
+  background: #f8fafc;
+  color: #0a192f;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 .petro-auth-side {
-  background: linear-gradient(165deg, #0A192F 0%, #061D38 50%, #0F2C4C 100%);
-  color: #fff;
-  padding: clamp(36px, 5vw, 64px) clamp(30px, 4.5vw, 56px);
+  background: linear-gradient(165deg, #0a192f 0%, #0d223f 50%, #061528 100%);
+  color: #ffffff;
+  padding: clamp(36px, 5vw, 64px) clamp(32px, 4.5vw, 56px);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   position: relative;
   overflow: hidden;
-  justify-content: space-between;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.petro-auth-side::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  opacity: 0.7;
 }
 .petro-auth-side::after {
   content: '';
   position: absolute;
-  width: 600px;
-  height: 600px;
-  right: -220px;
-  bottom: -240px;
+  width: 500px;
+  height: 500px;
+  right: -180px;
+  bottom: -200px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(5,150,105,0.18), transparent 65%);
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.22), transparent 70%);
   pointer-events: none;
 }
 .petro-auth-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  text-decoration: none;
+  color: inherit;
 }
 .petro-auth-logo-badge {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 12px;
-  background: #ffffff;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
   color: #059669;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   flex: none;
 }
 .petro-auth-brand-name {
-  font-size: 24px;
+  font-size: 23px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.03em;
   color: #ffffff;
   line-height: 1.1;
 }
 .petro-auth-brand-sub {
   font-size: 11px;
-  color: rgba(255,255,255,0.78);
+  color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.08em;
   font-weight: 700;
 }
-.petro-auth-quote {
+.petro-auth-hero-copy {
   position: relative;
-  z-index: 1;
-  margin: 40px 0 20px;
+  z-index: 2;
+  margin: 36px 0 24px;
 }
-.petro-auth-quote p {
-  font-size: clamp(22px, 2.3vw, 32px);
+.petro-auth-hero-kicker {
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.25;
-  color: #ffffff;
-  margin: 0;
-  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #34d399;
+  margin-bottom: 12px;
 }
-.petro-auth-quote cite {
-  display: block;
-  margin-top: 18px;
-  font-style: normal;
-  font-size: 14.5px;
-  color: rgba(255,255,255,0.82);
-  line-height: 1.45;
-}
-.petro-auth-stats {
-  display: flex;
-  gap: 28px;
-  margin-top: 36px;
-  position: relative;
-  z-index: 1;
-  flex-wrap: wrap;
-  border-top: 1px solid rgba(255,255,255,0.18);
-  padding-top: 24px;
-}
-.petro-auth-stat-item b {
-  display: block;
-  font-size: 26px;
+.petro-auth-hero-title {
+  font-size: clamp(26px, 2.8vw, 36px);
   font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
   color: #ffffff;
-  line-height: 1.1;
+  margin: 0 0 14px;
 }
-.petro-auth-stat-item span {
+.petro-auth-hero-desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0;
+}
+.petro-auth-staff-section {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 18px 20px;
+  backdrop-filter: blur(8px);
+  margin-bottom: 24px;
+}
+.petro-auth-staff-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.petro-auth-staff-hdr span {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+.petro-auth-staff-hdr small {
+  font-size: 11px;
+  color: #34d399;
+  font-weight: 600;
+}
+.petro-auth-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.petro-auth-role-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all .16s ease;
+  font-family: inherit;
+}
+.petro-auth-role-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #34d399;
+  transform: translateY(-1px);
+}
+.petro-auth-role-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.petro-auth-role-name {
   font-size: 13px;
-  color: rgba(255,255,255,0.76);
-  font-weight: 500;
+  font-weight: 700;
+  color: #ffffff;
+}
+.petro-auth-role-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.petro-auth-role-tag.admin { background: #1e3a8a; color: #93c5fd; }
+.petro-auth-role-tag.owner { background: #064e3b; color: #6ee7b7; }
+.petro-auth-role-tag.manager { background: #78350f; color: #fde68a; }
+.petro-auth-role-tag.worker { background: #374151; color: #d1d5db; }
+.petro-auth-role-mob {
+  font-size: 11px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+.petro-auth-side-ftr {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 18px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.petro-auth-side-ftr a {
+  color: #34d399;
+  text-decoration: none;
+  font-weight: 600;
+}
+.petro-auth-side-ftr a:hover {
+  text-decoration: underline;
 }
 
+/* Right Main Form Container */
 .petro-auth-main {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(32px, 5vw, 64px) clamp(20px, 4vw, 48px);
-  background: var(--bg);
+  padding: clamp(32px, 5vw, 64px) clamp(24px, 4.5vw, 48px);
+  background: #f8fafc;
   min-height: 100vh;
 }
 .petro-auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: clamp(28px, 4.5vw, 40px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 40px -8px rgba(15, 23, 42, 0.07);
+}
+.petro-auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: color .15s ease;
+}
+.petro-auth-back-link:hover {
+  color: #0a192f;
 }
 .petro-auth-tabs {
   display: flex;
   padding: 4px;
-  background: var(--card);
-  border: 1px solid var(--line);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   gap: 4px;
   margin-bottom: 24px;
@@ -820,14 +945,14 @@ body:not(.logged-in) #navDrawerBackdrop {
 .petro-auth-tab {
   flex: 1;
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: 9px;
   border: 0;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--mute);
+  color: #64748b;
   transition: all .16s ease;
   display: flex;
   align-items: center;
@@ -835,34 +960,34 @@ body:not(.logged-in) #navDrawerBackdrop {
   gap: 6px;
 }
 .petro-auth-tab.active {
-  background: var(--btn);
-  color: var(--btnt);
-  box-shadow: 0 2px 8px rgba(5,150,105,0.25);
+  background: #ffffff;
+  color: #0a192f;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 .petro-auth-title {
-  font-size: 34px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.8px;
-  color: var(--ink);
+  letter-spacing: -0.03em;
+  color: #0a192f;
   margin: 0;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 .petro-auth-subtitle {
-  font-size: 15.5px;
-  color: var(--mute);
-  margin: 8px 0 24px;
-  line-height: 1.45;
+  font-size: 14px;
+  color: #64748b;
+  margin: 6px 0 22px;
+  line-height: 1.5;
 }
 .petro-field {
   margin-bottom: 16px;
 }
 .petro-field label {
   display: block;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--ink);
+  letter-spacing: 0.04em;
+  color: #334155;
   margin: 0 0 6px;
 }
 .petro-input-wrap {
@@ -870,25 +995,38 @@ body:not(.logged-in) #navDrawerBackdrop {
   display: flex;
   align-items: center;
 }
+.petro-input-prefix {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
 .petro-field input, .petro-field select {
   width: 100%;
-  padding: 13px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--card);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
   font-family: inherit;
   font-size: 15px;
-  color: var(--ink);
-  transition: border-color .15s, box-shadow .15s;
+  color: #0a192f;
+  transition: all .15s ease;
   margin: 0;
+  box-sizing: border-box;
+}
+.petro-field input.has-prefix {
+  padding-left: 52px;
 }
 .petro-field input:focus, .petro-field select:focus {
-  border-color: var(--btn);
-  outline: 2px solid rgba(5,150,105,0.22);
+  border-color: #059669;
+  outline: 3px solid rgba(5, 150, 105, 0.16);
   outline-offset: 0;
 }
 .petro-field input.has-toggle {
-  padding-right: 42px;
+  padding-right: 44px;
 }
 .petro-pw-toggle {
   position: absolute;
@@ -897,20 +1035,21 @@ body:not(.logged-in) #navDrawerBackdrop {
   transform: translateY(-50%);
   background: transparent;
   border: 0;
-  color: var(--mute);
+  color: #64748b;
   padding: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
+  transition: color .15s;
 }
 .petro-pw-toggle:hover {
-  color: var(--ink);
+  color: #0a192f;
 }
 .petro-hint {
   font-size: 12px;
-  color: var(--mute);
+  color: #64748b;
   margin-top: 5px;
 }
 .petro-btn-submit {
@@ -919,98 +1058,46 @@ body:not(.logged-in) #navDrawerBackdrop {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 14px 24px;
+  padding: 13px 22px;
   border-radius: 10px;
   border: 0;
   cursor: pointer;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  color: #fff;
-  box-shadow: 0 4px 14px -2px rgba(5,150,105,0.35);
-  transition: transform .15s, box-shadow .15s, filter .15s;
-  margin-top: 6px;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28);
+  transition: all .15s ease;
+  margin-top: 8px;
 }
 .petro-btn-submit:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 6px 18px -2px rgba(5,150,105,0.45);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.38);
+  transform: translateY(-1px);
 }
 .petro-btn-submit:active {
-  transform: scale(0.985);
+  transform: translateY(0);
 }
 .petro-alert {
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 13.5px;
   line-height: 1.45;
   margin-bottom: 18px;
   display: none;
 }
 .petro-alert-bad {
-  background: rgba(214,69,69,0.12);
-  border: 1px solid rgba(214,69,69,0.35);
-  color: var(--due);
-}
-.petro-staff-box {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-}
-.petro-staff-title {
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--mute);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.petro-staff-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.petro-staff-pill {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 9px 12px;
-  border-radius: 10px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  cursor: pointer;
-  transition: all .15s;
-  font-size: 13px;
-  color: var(--ink);
-  text-align: left;
-}
-.petro-staff-pill:hover {
-  border-color: rgba(5,150,105,0.45);
-  background: var(--bg);
-  transform: translateY(-1px);
-}
-.petro-staff-pill b {
-  color: var(--ink);
-}
-.petro-staff-pill .role-badge {
-  font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  color: var(--mute);
-  font-weight: 600;
-  margin-left: 6px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
 }
 .petro-unlock-link {
   display: inline-block;
-  margin-top: 10px;
-  font-size: 12px;
+  margin-top: 14px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--mute);
+  color: #64748b;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -1018,43 +1105,50 @@ body:not(.logged-in) #navDrawerBackdrop {
   padding: 0;
 }
 .petro-unlock-link:hover {
-  color: var(--ink);
+  color: #0a192f;
 }
 
-/* Mobile responsive (screens < 900px) */
+/* Mobile responsive (< 900px) */
 @media (max-width: 899px) {
   .petro-auth {
     grid-template-columns: 1fr;
     min-height: 100vh;
   }
   .petro-auth-side {
-    padding: 24px 20px 20px;
-    border-radius: 0 0 20px 20px;
-    min-height: auto;
+    padding: 28px 20px 24px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
-  .petro-auth-quote {
+  .petro-auth-hero-copy {
+    margin: 20px 0 16px;
+  }
+  .petro-auth-hero-title {
+    font-size: 24px;
+  }
+  .petro-auth-hero-desc {
     display: none;
   }
-  .petro-auth-stats {
-    display: none !important;
+  .petro-auth-role-grid {
+    grid-template-columns: 1fr 1fr;
   }
   .petro-auth-main {
-    padding: 26px 18px 40px;
-    min-height: auto;
+    padding: 24px 16px 40px;
     align-items: flex-start;
   }
-  .petro-auth-title {
-    font-size: 28px;
+  .petro-auth-card {
+    padding: 24px 20px;
+    box-shadow: none;
+    border: 1px solid #e2e8f0;
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PetroNetra Modern Homepage Styles (Desktop & Mobile)
+   PetroNetra Modern Website Homepage Styles (Redesigned)
    ═══════════════════════════════════════════════════════════════ */
 .petro-home {
-  background: #020607;
-  color: #B9C4CE;
-  font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+  color: #334155;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
@@ -1064,13 +1158,13 @@ body:not(.logged-in) #navDrawerBackdrop {
   box-sizing: border-box;
 }
 .petro-home h1, .petro-home h2, .petro-home h3, .petro-home h4 {
-  color: #F7F8FA;
+  color: #0a192f;
   letter-spacing: -0.03em;
   font-weight: 800;
-  line-height: 1.12;
+  line-height: 1.15;
 }
 .petro-home-wrap {
-  width: min(1280px, 92vw);
+  width: min(1240px, 92vw);
   margin: 0 auto;
 }
 
@@ -1079,10 +1173,11 @@ body:not(.logged-in) #navDrawerBackdrop {
   position: sticky;
   top: 0;
   z-index: 80;
-  background: rgba(2, 6, 7, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(229, 231, 235, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 .petro-home-hdr-inner {
   display: flex;
@@ -1094,25 +1189,26 @@ body:not(.logged-in) #navDrawerBackdrop {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #F7F8FA;
+  color: #0a192f;
   font-size: 20px;
   font-weight: 800;
   text-decoration: none;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.03em;
 }
 .petro-home-logo b {
-  color: #0A63F8;
+  color: #059669;
 }
 .petro-home-logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: #ffffff;
-  color: #062A6B;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0a192f 0%, #059669 100%);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+  box-shadow: 0 3px 10px rgba(10, 25, 47, 0.18);
+  flex: none;
 }
 .petro-home-nav {
   display: flex;
@@ -1121,66 +1217,68 @@ body:not(.logged-in) #navDrawerBackdrop {
 }
 .petro-home-nav a {
   padding: 8px 14px;
-  border-radius: 999px;
-  color: #8493A0;
-  font-size: 14.5px;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: all .16s ease;
+  transition: all .15s ease;
 }
 .petro-home-nav a:hover {
-  color: #F7F8FA;
-  background: rgba(255, 255, 255, 0.08);
+  color: #0a192f;
+  background: #f1f5f9;
 }
 .petro-home-cta-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 .petro-btn-login-link {
-  color: #F7F8FA;
-  font-size: 14.5px;
+  color: #0a192f;
+  font-size: 14px;
   font-weight: 700;
   padding: 8px 16px;
   text-decoration: none;
-  border-radius: 999px;
+  border-radius: 8px;
   transition: all .15s;
   cursor: pointer;
-  background: transparent;
-  border: 0;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
 }
 .petro-btn-login-link:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
 .petro-btn-demo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);
+  padding: 9px 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   border: 0;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(10, 99, 248, 0.35);
-  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.28);
+  transition: all .15s ease;
 }
 .petro-btn-demo:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(10, 99, 248, 0.5);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.38);
 }
 .petro-home-burger {
   display: none;
-  width: 42px;
-  height: 42px;
-  background: transparent;
-  border: 1px solid rgba(229, 231, 235, 0.18);
-  border-radius: 10px;
-  color: #F7F8FA;
+  width: 40px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0a192f;
   cursor: pointer;
   align-items: center;
   justify-content: center;
@@ -1195,27 +1293,29 @@ body:not(.logged-in) #navDrawerBackdrop {
   display: none;
   flex-direction: column;
   padding: 16px 20px 24px;
-  background: #020607;
-  border-top: 1px solid rgba(229, 231, 235, 0.12);
-  gap: 10px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  gap: 8px;
 }
 .petro-home-mobile-drawer.open {
   display: flex;
 }
 .petro-home-mobile-drawer a {
-  padding: 11px 8px;
-  color: #B9C4CE;
-  font-size: 16px;
+  padding: 10px 8px;
+  color: #334155;
+  font-size: 15px;
   font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid #f1f5f9;
 }
 
-/* Hero Split */
+/* Hero Section */
 .petro-hero {
   position: relative;
-  padding: clamp(56px, 7vw, 100px) 0 clamp(64px, 8vw, 110px);
-  border-bottom: 1px solid rgba(229, 231, 235, 0.12);
+  padding: clamp(56px, 7vw, 96px) 0 clamp(64px, 8vw, 108px);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-bottom: 1px solid #e2e8f0;
   overflow: hidden;
 }
 .petro-hero::before {
@@ -1223,15 +1323,14 @@ body:not(.logged-in) #navDrawerBackdrop {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(10, 99, 248, 0.05) 1px, transparent 1px),
-              linear-gradient(rgba(10, 99, 248, 0.04) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent 85%);
+  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.55;
 }
 .petro-hero-grid {
   display: grid;
   grid-template-columns: minmax(360px, 1.05fr) minmax(420px, 0.95fr);
-  gap: clamp(40px, 5vw, 76px);
+  gap: clamp(40px, 5vw, 68px);
   align-items: center;
   position: relative;
   z-index: 2;
@@ -1239,62 +1338,56 @@ body:not(.logged-in) #navDrawerBackdrop {
 .petro-hero-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(10, 99, 248, 0.12);
-  border: 1px solid rgba(10, 99, 248, 0.35);
-  color: #0A63F8;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  margin-bottom: 24px;
+  color: #059669;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
 }
-.petro-pulse-dot {
-  width: 8px;
-  height: 8px;
+.petro-hero-eyebrow span.omc-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #0A63F8;
-  box-shadow: 0 0 0 4px rgba(10, 99, 248, 0.25);
-  animation: petroPulse 2s infinite;
-}
-@keyframes petroPulse {
-  0% { box-shadow: 0 0 0 2px rgba(10, 99, 248, 0.4); }
-  50% { box-shadow: 0 0 0 7px rgba(10, 99, 248, 0.05); }
-  100% { box-shadow: 0 0 0 2px rgba(10, 99, 248, 0.4); }
+  background: #059669;
+  display: inline-block;
 }
 .petro-hero-h1 {
-  font-size: clamp(42px, 4.8vw, 72px);
-  line-height: 1.02;
-  margin: 0 0 24px;
+  font-size: clamp(38px, 4.4vw, 62px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: #0a192f;
+  margin: 0 0 20px;
+  text-wrap: balance;
 }
 .petro-word-rotator {
   display: inline-block;
-  color: #0A63F8;
-  border-bottom: 3px solid rgba(10, 99, 248, 0.4);
+  color: #059669;
+  border-bottom: 3px solid rgba(5, 150, 105, 0.35);
   transition: opacity .2s, transform .2s;
   min-width: 220px;
 }
 .petro-hero-lede {
-  font-size: clamp(16px, 1.3vw, 18.5px);
+  font-size: clamp(16px, 1.25vw, 18.5px);
   line-height: 1.65;
-  color: #8493A0;
+  color: #475569;
   margin: 0 0 32px;
   max-width: 54ch;
 }
 .petro-hero-actions {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 40px;
+  margin-bottom: 38px;
 }
 .petro-btn-teal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 26px;
-  border-radius: 10px;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 9px;
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   color: #ffffff;
   font-size: 15px;
@@ -1302,91 +1395,77 @@ body:not(.logged-in) #navDrawerBackdrop {
   text-decoration: none;
   border: 0;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(5, 150, 105, 0.35);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28);
   transition: all .16s ease;
 }
 .petro-btn-teal:hover {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(5, 150, 105, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.38);
 }
 .petro-btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 14px 24px;
-  border-radius: 10px;
-  background: transparent;
-  color: #F7F8FA;
-  font-size: 15.5px;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #0a192f;
+  font-size: 15px;
   font-weight: 700;
   text-decoration: none;
-  border: 1px solid rgba(229, 231, 235, 0.25);
+  border: 1px solid #cbd5e1;
   cursor: pointer;
   transition: all .16s ease;
 }
 .petro-btn-outline:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-2px);
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
 }
 .petro-proof-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   padding-top: 24px;
-  border-top: 1px solid rgba(229, 231, 235, 0.12);
+  border-top: 1px solid #e2e8f0;
 }
 .petro-proof-col h4 {
   font-size: 14px;
-  color: #F7F8FA;
-  margin: 0 0 4px;
+  color: #0a192f;
+  margin: 0 0 3px;
+  font-weight: 700;
 }
 .petro-proof-col p {
   font-size: 12.5px;
-  color: #8493A0;
+  color: #64748b;
   margin: 0;
+  line-height: 1.45;
 }
 
-/* Forecourt HUD Card */
+/* Forecourt Live Console Preview Card */
 .petro-hud-card {
   position: relative;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #071018 0%, #03080d 100%);
-  border: 1px solid rgba(10, 99, 248, 0.38);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7), 0 0 60px rgba(10, 99, 248, 0.15);
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 48px -8px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(15, 23, 42, 0.05);
   padding: 24px;
   overflow: hidden;
-}
-.petro-hud-card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; width: 44px; height: 44px;
-  border-left: 2px solid #0A63F8;
-  border-top: 2px solid #0A63F8;
-  pointer-events: none;
-}
-.petro-hud-card::after {
-  content: "";
-  position: absolute;
-  bottom: 0; right: 0; width: 44px; height: 44px;
-  border-right: 2px solid #0A63F8;
-  border-bottom: 2px solid #0A63F8;
-  pointer-events: none;
 }
 .petro-hud-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.1);
+  border-bottom: 1px solid #f1f5f9;
 }
 .petro-hud-title {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 800;
-  color: #F7F8FA;
+  color: #0a192f;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1394,11 +1473,11 @@ body:not(.logged-in) #navDrawerBackdrop {
 .petro-hud-badge {
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(10, 99, 248, 0.15);
-  border: 1px solid rgba(10, 99, 248, 0.35);
-  color: #0A63F8;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
   text-transform: uppercase;
 }
 .petro-hud-stats {
@@ -1408,28 +1487,29 @@ body:not(.logged-in) #navDrawerBackdrop {
   margin-bottom: 16px;
 }
 .petro-hud-stat {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(229, 231, 235, 0.08);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 12px 14px;
 }
 .petro-hud-stat-lbl {
   font-size: 11px;
   font-weight: 700;
-  color: #8493A0;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
 }
 .petro-hud-stat-num {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
-  color: #F7F8FA;
+  color: #0a192f;
   margin-top: 3px;
+  font-variant-numeric: tabular-nums;
 }
 .petro-hud-tanks {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
   margin-bottom: 16px;
 }
 .petro-hud-tank-row {
@@ -1437,58 +1517,75 @@ body:not(.logged-in) #navDrawerBackdrop {
   align-items: center;
   justify-content: space-between;
   font-size: 12.5px;
-  padding: 6px 0;
-  border-bottom: 1px dashed rgba(229, 231, 235, 0.08);
+  padding: 4px 0;
 }
 .petro-hud-tank-name {
-  color: #F7F8FA;
+  color: #1e293b;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .petro-hud-tank-pct {
-  color: #0A63F8;
+  color: #059669;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 .petro-hud-bar {
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 .petro-hud-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #062A6B, #0A63F8);
+  background: linear-gradient(90deg, #059669, #10b981);
+}
+.petro-hud-callout {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.petro-hud-callout-text {
+  font-size: 12.5px;
+  color: #166534;
+  font-weight: 500;
 }
 
 /* Sections shared */
 .petro-section {
-  padding: clamp(72px, 9vw, 130px) 0;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.12);
+  padding: clamp(64px, 8vw, 112px) 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 .petro-sec-soft {
-  background: #070E12;
+  background: #ffffff;
 }
 .petro-sec-index {
-  color: #0A63F8;
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  color: #059669;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .petro-sec-head h2 {
-  font-size: clamp(32px, 4.2vw, 56px);
-  line-height: 1.08;
-  margin: 0 0 18px;
+  font-size: clamp(30px, 3.8vw, 50px);
+  line-height: 1.12;
+  margin: 0 0 16px;
+  color: #0a192f;
+  text-wrap: balance;
 }
 .petro-sec-head p {
-  color: #8493A0;
-  font-size: 16.5px;
+  color: #475569;
+  font-size: 16px;
   max-width: 62ch;
-  margin: 0 0 48px;
+  margin: 0 0 44px;
   line-height: 1.6;
 }
 
@@ -1496,143 +1593,150 @@ body:not(.logged-in) #navDrawerBackdrop {
 .petro-dialogue {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
-  border: 1px solid rgba(229, 231, 235, 0.15);
-  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
   overflow: hidden;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
 }
 .petro-dial-q {
-  padding: clamp(28px, 4vw, 52px);
-  background: #03080c;
-  border-right: 1px solid rgba(229, 231, 235, 0.15);
+  padding: clamp(28px, 4vw, 48px);
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
 }
 .petro-dial-a {
-  padding: clamp(28px, 4vw, 52px);
-  background: #061826;
+  padding: clamp(28px, 4vw, 48px);
+  background: #ffffff;
   display: flex;
-  gap: 20px;
+  gap: 18px;
   align-items: flex-start;
 }
 .petro-dial-badge {
-  color: #0A63F8;
-  font-size: 13px;
+  color: #059669;
+  font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin-bottom: 14px;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
 }
 .petro-dial-quote {
-  font-size: clamp(22px, 2.5vw, 34px);
+  font-size: clamp(20px, 2.3vw, 30px);
   font-weight: 700;
-  color: #F7F8FA;
+  color: #0a192f;
   margin: 0;
-  line-height: 1.22;
+  line-height: 1.25;
 }
 .petro-netra-avatar {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #062A6B 0%, #0A63F8 100%);
+  background: linear-gradient(135deg, #0a192f 0%, #059669 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  box-shadow: 0 4px 14px rgba(10,99,248,0.3);
+  box-shadow: 0 4px 12px rgba(10, 25, 47, 0.18);
 }
 .petro-dial-ans-p {
-  font-size: clamp(20px, 2.4vw, 32px);
+  font-size: clamp(18px, 2.1vw, 26px);
   font-weight: 700;
-  color: #F7F8FA;
-  margin: 0 0 14px;
-  line-height: 1.25;
+  color: #0a192f;
+  margin: 0 0 12px;
+  line-height: 1.3;
 }
 .petro-dial-sub {
   font-size: 13px;
-  color: #8493A0;
+  color: #64748b;
 }
 .petro-rail {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
+  gap: 24px;
 }
 .petro-rail-item {
   padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(229, 231, 235, 0.1);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
 }
 .petro-rail-item svg {
-  width: 32px;
-  height: 32px;
-  stroke: #0A63F8;
+  width: 30px;
+  height: 30px;
+  stroke: #059669;
   fill: none;
-  stroke-width: 1.8;
-  margin-bottom: 16px;
+  stroke-width: 2;
+  margin-bottom: 14px;
 }
 .petro-rail-item h3 {
-  font-size: 18px;
-  margin: 0 0 8px;
+  font-size: 17px;
+  margin: 0 0 6px;
+  color: #0a192f;
 }
 .petro-rail-item p {
-  font-size: 14px;
-  color: #8493A0;
+  font-size: 13.5px;
+  color: #64748b;
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 /* Forecourt Showcase Deck */
 .petro-deck {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
   gap: 20px;
 }
 .petro-deck-card {
-  background: #0C161C;
-  border: 1px solid rgba(229, 231, 235, 0.12);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transition: all .16s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
 }
 .petro-deck-card:hover {
-  border-color: rgba(10, 99, 248, 0.5);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+  border-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 .petro-deck-tag {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
-  color: #0A63F8;
+  color: #059669;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.06em;
   margin-bottom: 8px;
 }
 .petro-deck-card h3 {
-  font-size: 21px;
-  margin: 0 0 10px;
+  font-size: 20px;
+  margin: 0 0 8px;
+  color: #0a192f;
 }
 .petro-deck-card p {
-  font-size: 14px;
-  color: #8493A0;
+  font-size: 13.5px;
+  color: #64748b;
   margin: 0 0 18px;
+  line-height: 1.5;
 }
 .petro-deck-preview {
-  background: #03080d;
-  border: 1px solid rgba(229, 231, 235, 0.08);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 14px;
-  font-size: 13px;
-  color: #B9C4CE;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: #334155;
+  font-weight: 500;
 }
 
 /* Capabilities Grid */
 .petro-cap-grid {
   display: grid;
   grid-template-columns: 0.85fr 1.15fr;
-  gap: clamp(40px, 6vw, 80px);
+  gap: clamp(40px, 6vw, 72px);
   align-items: flex-start;
 }
 .petro-cap-list {
@@ -1641,23 +1745,24 @@ body:not(.logged-in) #navDrawerBackdrop {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 .petro-cap-list li {
-  padding: 20px 24px;
-  background: #0C161C;
-  border: 1px solid rgba(229, 231, 235, 0.1);
+  padding: 20px 22px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
 }
 .petro-cap-list strong {
   display: block;
-  font-size: 17px;
-  color: #F7F8FA;
-  margin-bottom: 6px;
+  font-size: 16.5px;
+  color: #0a192f;
+  margin-bottom: 4px;
 }
 .petro-cap-list span {
-  font-size: 14px;
-  color: #8493A0;
+  font-size: 13.5px;
+  color: #64748b;
   line-height: 1.55;
 }
 
@@ -1666,23 +1771,23 @@ body:not(.logged-in) #navDrawerBackdrop {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 860px;
+  max-width: 840px;
 }
 .petro-faq-item {
-  background: #0C161C;
-  border: 1px solid rgba(229, 231, 235, 0.12);
-  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   overflow: hidden;
   transition: border-color .15s;
 }
 .petro-faq-item[open] {
-  border-color: rgba(10, 99, 248, 0.45);
+  border-color: #059669;
 }
 .petro-faq-summary {
-  padding: 20px 24px;
-  font-size: 17px;
+  padding: 18px 22px;
+  font-size: 16px;
   font-weight: 700;
-  color: #F7F8FA;
+  color: #0a192f;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -1694,83 +1799,85 @@ body:not(.logged-in) #navDrawerBackdrop {
   display: none;
 }
 .petro-faq-summary span {
-  font-size: 22px;
-  color: #0A63F8;
-  font-weight: 300;
+  font-size: 20px;
+  color: #059669;
+  font-weight: 400;
   transition: transform .2s;
 }
 .petro-faq-item[open] .petro-faq-summary span {
   transform: rotate(45deg);
 }
 .petro-faq-content {
-  padding: 0 24px 22px;
-  font-size: 15px;
-  color: #8493A0;
-  line-height: 1.65;
+  padding: 0 22px 20px;
+  font-size: 14.5px;
+  color: #64748b;
+  line-height: 1.6;
 }
 
 /* Closing CTA */
 .petro-closing-card {
-  background: linear-gradient(145deg, #061826 0%, #03080e 100%);
-  border: 1px solid rgba(10, 99, 248, 0.35);
-  border-radius: 24px;
-  padding: clamp(36px, 6vw, 72px);
+  background: linear-gradient(145deg, #0a192f 0%, #06182c 100%);
+  border: 1px solid #1e3a5f;
+  border-radius: 22px;
+  padding: clamp(36px, 6vw, 64px);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: center;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 50px rgba(10, 25, 47, 0.25);
+  color: #ffffff;
 }
 .petro-closing-card h2 {
-  font-size: clamp(32px, 3.8vw, 54px);
-  line-height: 1.05;
+  font-size: clamp(30px, 3.6vw, 48px);
+  line-height: 1.1;
   margin: 12px 0 0;
+  color: #ffffff;
 }
 .petro-closing-card p {
-  font-size: 17px;
-  color: #8493A0;
-  margin: 0 0 28px;
+  font-size: 16px;
+  color: #cbd5e1;
+  margin: 0 0 24px;
 }
 
 /* Footer */
 .petro-home-ftr {
-  background: #020607;
-  border-top: 1px solid rgba(229, 231, 235, 0.12);
-  padding: 64px 0 36px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 60px 0 32px;
 }
 .petro-ftr-grid {
   display: grid;
   grid-template-columns: 1.5fr repeat(3, 1fr);
-  gap: 40px;
-  margin-bottom: 48px;
+  gap: 36px;
+  margin-bottom: 44px;
 }
 .petro-ftr-col h4 {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: #F7F8FA;
-  margin: 0 0 16px;
+  letter-spacing: 0.06em;
+  color: #0a192f;
+  margin: 0 0 14px;
 }
 .petro-ftr-col a {
   display: block;
-  color: #8493A0;
-  font-size: 14px;
+  color: #64748b;
+  font-size: 13.5px;
   text-decoration: none;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
   transition: color .15s;
 }
 .petro-ftr-col a:hover {
-  color: #F7F8FA;
+  color: #059669;
 }
 .petro-ftr-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 24px;
-  border-top: 1px solid rgba(229, 231, 235, 0.08);
-  font-size: 13px;
-  color: #8493A0;
+  padding-top: 22px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12.5px;
+  color: #64748b;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -1790,31 +1897,26 @@ body:not(.logged-in) #navDrawerBackdrop {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    background: linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
     color: #ffffff;
-    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 700;
-    padding: 7px 15px;
-    border-radius: 9999px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 0 2px 10px rgba(10, 99, 248, 0.35);
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 0;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
     cursor: pointer;
     text-decoration: none;
     line-height: 1;
     white-space: nowrap;
-    transition: transform 0.12s ease, opacity 0.12s ease;
-  }
-  .petro-mobile-signin-tab:active {
-    transform: scale(0.96);
-    opacity: 0.92;
   }
   .petro-home-burger {
     display: flex;
   }
   .petro-hero-grid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 36px;
   }
   .petro-cap-grid {
     grid-template-columns: 1fr;
@@ -1824,18 +1926,18 @@ body:not(.logged-in) #navDrawerBackdrop {
   }
   .petro-dial-q {
     border-right: none;
-    border-bottom: 1px solid rgba(229, 231, 235, 0.15);
+    border-bottom: 1px solid #e2e8f0;
   }
   .petro-rail {
     grid-template-columns: 1fr;
   }
   .petro-closing-card {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
   }
   .petro-ftr-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 28px;
   }
 }
 @media (max-width: 640px) {
@@ -2190,7 +2292,7 @@ body:not(.logged-in) #navDrawerBackdrop {
       <div class="nav-drawer-logo">⛽</div>
       <div>
         <div style="font-weight:800;font-size:16px;line-height:1.2;color:var(--ink)" id="drawerBizName">Petrol Pump</div>
-        <div class="sub" style="font-size:11px" id="drawerBizRole">Management System</div>
+        <div class="sub" style="font-size:11px;color:var(--mute)" id="drawerBizRole">Management System</div>
       </div>
     </div>
     <button type="button" class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Close navigation menu">
@@ -2201,7 +2303,10 @@ body:not(.logged-in) #navDrawerBackdrop {
   <div class="nav-drawer-footer" id="navDrawerFooter"></div>
 </div>
 <script>
-try{var _th=localStorage.getItem("petrol-theme");if(_th)document.documentElement.setAttribute("data-theme",_th)}catch(e){}
+try{
+  var _th=localStorage.getItem("petrol-theme") || "light";
+  document.documentElement.setAttribute("data-theme", _th);
+}catch(e){}
 function emptyS(){return{c:[],inv:[],items:[],sup:[],bk:[],nozzles:[],tanks:[],deliv:[],rates:[],expcats:[],paymodes:[],modules:{},ob:{Cash:0,Bank:0,UPI:0},biz:{name:"",addr:"",gst:""}}}
 var KEY="petrol-credit-ledger-v1",S=emptyS(),view=null,from="",to="",onlyDue=false,cb,tab="home",dr=null,iv=null,sv=null,bf="all",rf=today().slice(0,8)+"01",rt=today();
 
@@ -2558,9 +2663,13 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 function today(){return new Date().toISOString().slice(0,10)}
 function find(id){if(!S||!S.c)return null;return S.c.filter(function(c){return c.id==id})[0]}
 function render(){if(!S)S=emptyS();if(!S.c)S.c=[];if(SRV&&!ME)return;try{updateMobileBottomNav();}catch(e){}
+if(SRV&&ME&&ME.role=="worker"&&tab!="wduty"&&tab!="mypay"){tab="wduty";return loadW();}
 if(tab=="modules")return renderModulesTab();
 if(!isTabAllowedByModules(tab))return renderUninstalledModuleScreen(tab);
-if(tab=="home"||!tab)return renderHome();
+if(tab=="home"||!tab){
+  if(SRV&&ME&&ME.role=="worker"){tab="wduty";return loadW();}
+  return renderHome();
+}
 if(tab=="calibration"){window.WM_SUBTAB="daily5l";tab="wmvault";return renderWmVaultTab();}
 if(tab=="wmreseal"){window.WM_SUBTAB="reseal";tab="wmvault";return renderWmVaultTab();}
 if(tab=="waterdip"){window.DENSITY_SUBTAB="waterdip";tab="density";return renderWaterDipTab();}
@@ -3195,21 +3304,10 @@ function getNavTabsList(){
 
   if (SRV && ME && ME.role == "worker") {
     var workerTabs = [
-      { id: "home", label: "Forecourt Overview", icon: icons.home, group: "Overview" },
-      { id: "wduty", label: "My Duty", icon: icons.wduty, group: "Worker Tasks" },
-      { id: "pricerev", label: "Today's Fuel Rates", icon: icons.pricerev, group: "Worker Tasks" },
-      { id: "density", label: "Fuel Quality & Water Dip Log", icon: icons.density, group: "Worker Tasks" },
-      { id: "wmvault", label: "5L Measure & Stamping", icon: icons.wmvault, group: "Worker Tasks" },
-      { id: "indents", label: "Dispense Fleet Indents", icon: icons.indents, group: "Worker Tasks" },
-      { id: "bowser", label: "Doorstep Bowser Trips", icon: icons.bowser, group: "Worker Tasks" },
-      { id: "vault", label: "Cash Safe Drop", icon: icons.vault, group: "Worker Tasks" },
-      { id: "handover", label: "Handover History", icon: icons.handover, group: "Worker Tasks" },
-      { id: "lubes", label: "Bay Lube & DEF Sale", icon: icons.lubes, group: "Worker Tasks" },
-      { id: "amenities", label: "Amenities Checklist", icon: icons.amenities, group: "Worker Tasks" },
-      { id: "wdip", label: "Tank Dip", icon: icons.wdip, group: "Worker Tasks" },
+      { id: "wduty", label: "Duty & Shift", icon: icons.wduty, group: "Worker Tasks" },
       { id: "mypay", label: "My Pay & Advances", icon: icons.mypay, group: "Worker Tasks" }
     ];
-    return workerTabs.filter(function(item){ return isTabAllowedByModules(item.id); });
+    return workerTabs;
   }
 
   if (SRV) {
@@ -3282,6 +3380,9 @@ function selectNavTab(tabId){
   if(window.innerWidth < 900){
     closeNavDrawer();
   }
+  if(SRV && ME && ME.role === "worker" && tabId !== "wduty" && tabId !== "mypay"){
+    tabId = "wduty";
+  }
   if(tabId === "admin"){
     return renderAdminConsole();
   }
@@ -3318,6 +3419,49 @@ function updateMobileBottomNav(){
   var c = document.getElementById("mbNavCredit");
   var t = document.getElementById("mbNavTanks");
   var m = document.getElementById("mbNavMore");
+  var nav = document.getElementById("mobileBottomNav");
+
+  if(SRV && ME && ME.role === "worker"){
+    if(h) h.style.display = "none";
+    if(c) c.style.display = "none";
+    if(t){
+      t.style.display = "flex";
+      t.onclick = function(){ selectNavTab('mypay'); };
+      var lbl = t.querySelector('.mobile-nav-label');
+      if(lbl) lbl.textContent = "My Pay";
+      var icon = t.querySelector('.mobile-nav-icon');
+      if(icon) icon.innerHTML = '<rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line>';
+    }
+    if(d){
+      d.onclick = function(){ selectNavTab('wduty'); };
+      var dLbl = d.querySelector('.mobile-nav-label');
+      if(dLbl) dLbl.textContent = "Duty";
+    }
+    if(nav) nav.style.gridTemplateColumns = "repeat(3, 1fr)";
+    [d, t, m].forEach(function(el){ if(el) el.classList.remove("active"); });
+    if(tab === "wduty" || tab === "wassign") { if(d) d.classList.add("active"); }
+    else if(tab === "mypay") { if(t) t.classList.add("active"); }
+    else { if(m) m.classList.add("active"); }
+    return;
+  } else {
+    if(h) h.style.display = "";
+    if(c) c.style.display = "";
+    if(t){
+      t.style.display = "";
+      t.onclick = function(){ selectNavTab('tanks'); };
+      var lbl = t.querySelector('.mobile-nav-label');
+      if(lbl) lbl.textContent = "Tanks";
+      var icon = t.querySelector('.mobile-nav-icon');
+      if(icon) icon.innerHTML = '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 17 4 4 4-4"></path>';
+    }
+    if(d){
+      d.onclick = function(){ selectNavTab('duty'); };
+      var dLbl = d.querySelector('.mobile-nav-label');
+      if(dLbl) dLbl.textContent = "Duty";
+    }
+    if(nav) nav.style.gridTemplateColumns = "repeat(5, 1fr)";
+  }
+
   [h, d, c, t, m].forEach(function(el){ if(el) el.classList.remove("active"); });
   if(tab === "home" || !tab) { if(h) h.classList.add("active"); }
   else if(tab === "duty" || tab === "wduty" || tab === "handover") { if(d) d.classList.add("active"); }
@@ -3371,24 +3515,24 @@ function renderDrawerContent(){
   var footer = document.getElementById("navDrawerFooter");
   if(footer){
     var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-    var themeBtn = '<button type="button" class="ghost" style="padding:6px 10px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;flex:1" onclick="toggleTheme()">' + (isDark ? '☀️ Light' : '🌙 Dark') + '</button>';
+    var themeBtn = '<button type="button" class="ghost" style="padding:6px 10px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;flex:1;color:var(--ink);border-color:var(--line);background:var(--bg)" onclick="toggleTheme()">' + (isDark ? '☀️ Light' : '🌙 Dark') + '</button>';
     if(SRV && ME){
       footer.innerHTML = '<div class="nav-drawer-user">' +
         '<div style="width:30px;height:30px;border-radius:50%;background:var(--btn);color:var(--btnt);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">' + esc((ME.name||'U').slice(0,1).toUpperCase()) + '</div>' +
         '<div style="flex:1;min-width:0">' +
-          '<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(ME.name) + '</div>' +
-          '<div class="nav-drawer-role">' + esc(ME.role) + (ME.mobile ? (' • ' + esc(ME.mobile)) : '') + '</div>' +
+          '<div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)">' + esc(ME.name) + '</div>' +
+          '<div class="nav-drawer-role" style="color:var(--mute)">' + esc(ME.role) + (ME.mobile ? (' • ' + esc(ME.mobile)) : '') + '</div>' +
         '</div>' +
       '</div>' +
       '<div class="row" style="gap:6px;margin-top:6px">' +
         themeBtn +
-        '<button type="button" class="ghost" style="padding:6px 8px;font-size:12px;flex:1" onclick="if(window.innerWidth<900)closeNavDrawer();pwForm()">Password</button>' +
-        '<button type="button" class="ghost" style="padding:6px 8px;font-size:12px;flex:1;color:var(--due)" onclick="logout()">Log out</button>' +
+        '<button type="button" class="ghost" style="padding:6px 8px;font-size:12px;flex:1;color:var(--ink);border-color:var(--line);background:var(--bg)" onclick="if(window.innerWidth<900)closeNavDrawer();pwForm()">Password</button>' +
+        '<button type="button" class="ghost" style="padding:6px 8px;font-size:12px;flex:1;color:var(--due);border-color:rgba(225,29,72,0.25);background:rgba(225,29,72,0.06)" onclick="logout()">Log out</button>' +
       '</div>';
     } else {
       footer.innerHTML = '<div class="row" style="gap:6px">' +
         themeBtn +
-        '<div class="sub" style="font-size:11px;flex:1;text-align:center;align-self:center">Local / Offline</div>' +
+        '<div class="sub" style="font-size:11px;flex:1;text-align:center;align-self:center;color:var(--mute)">Local / Offline</div>' +
       '</div>';
     }
   }
@@ -6014,7 +6158,7 @@ function fnum(x){var n=parseFloat(x);return isNaN(n)?0:n}
 function R2(a,b){return '<div class="row"><span>'+a+'</span><span style="text-align:right">'+b+'</span></div>'}
 function sect(t){return '<h1 style="margin:16px 0 6px;color:var(--ink);font-size:17px;font-weight:800">'+t+'</h1>'}
 function wnav(){
-  var T=[["wduty","Duty","loadW","Duty & Shift"],["handover","Handovers","renderHandover","Handover History"],["wdip","Tank dip","loadDip","Tank Dip"],["mypay","My pay","loadMyPay","My Pay"]];
+  var T=[["wduty","Duty & Shift","loadW","Duty & Shift"],["mypay","My Pay & Advances","loadMyPay","My Pay & Advances"]];
   var curW = T.find(function(t){ return tab==t[0] || (tab=="wassign"&&t[0]=="wduty"); }) || T[0];
   var pumpTitle = (S&&S.biz&&S.biz.name) ? S.biz.name : "Rituraj Petrolieum";
 
@@ -6050,7 +6194,7 @@ function wnav(){
     '<div class="desktop-topbar-left">' +
       '<div class="desktop-topbar-icon">👷</div>' +
       '<div>' +
-        '<div class="desktop-topbar-breadcrumb">' + esc(pumpTitle) + ' <span style="opacity:0.4">/</span> <span>Worker Duty</span></div>' +
+        '<div class="desktop-topbar-breadcrumb">' + esc(pumpTitle) + ' <span style="opacity:0.4">/</span> <span>Worker Tasks</span></div>' +
         '<div class="desktop-topbar-title">' + esc(curW[3]||curW[1]) + '</div>' +
       '</div>' +
     '</div>' +
@@ -6063,7 +6207,12 @@ function wnav(){
     '</div>' +
   '</div>';
 
-  return workerMobileTopbar + workerDesktopTopbar;
+  var workerSegmentedTabs = '<div class="ops-subtabs noprint" style="margin-bottom:14px;display:flex;gap:8px">' +
+    '<button type="button" class="ops-subtab-btn ' + ((tab==="wduty"||tab==="wassign") ? "active" : "") + '" onclick="tab=\'wduty\';loadW()">Duty &amp; Shift</button>' +
+    '<button type="button" class="ops-subtab-btn ' + (tab==="mypay" ? "active" : "") + '" onclick="tab=\'mypay\';loadMyPay()">My Pay &amp; Advances</button>' +
+  '</div>';
+
+  return workerMobileTopbar + workerDesktopTopbar + workerSegmentedTabs;
 }
 var CASH_DENOMS=[500,200,100,50,20,10];
 var autoSaveTimer=null,autoSavePending=false,autoSaveInFlight=false,autoSaveLastText="",autoSaveLastColor="";
@@ -10725,7 +10874,7 @@ function bulkList(){var h="";BK.ids.forEach(function(id){var c=find(id);h+='<div
 function bulkSend(id){var c=find(id);BT=document.getElementById("bm").value;var m=BT.replace(/\{name\}/g,c.name).replace(/\{amount\}/g,inr(due(c)));openWaLink(c.phone,m);BK.sent[id]=1;c.reminded=today();save();bulkList()}
 function bulkNext(){var id=BK.ids.filter(function(i){return !BK.sent[i]})[0];if(id==null)return;bulkSend(id)}
 function ubar(){return SRV&&ME?'<div class="row noprint" style="margin-bottom:10px;gap:6px"><span class="sub" style="flex:1">'+esc(ME.name)+' ('+ME.role+')</span><button class="ghost" style="padding:5px 10px;flex:none" onclick="pwForm()">Password</button><button class="ghost" style="padding:5px 10px;flex:none" onclick="logout()">Log out</button></div>':''}
-var ROTATOR_WORDS = ["AI-powered", "effortless", "accountable", "profitable"];
+var ROTATOR_WORDS = ["balanced", "reconciled", "profitable", "accountable"];
 var rotatorIdx = 0;
 function startRotator() {
   if (window._rotatorInterval) clearInterval(window._rotatorInterval);
@@ -10781,20 +10930,27 @@ function homeView() {
   + '  <div class="petro-home-wrap petro-home-hdr-inner">'
   + '    <a class="petro-home-logo" href="javascript:void(0)" onclick="homeView()" aria-label="Petro Netra home">'
   + '      <span class="petro-home-logo-icon">'
-  + '        <svg viewBox="0 0 40 40" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20s5-12 16-12 16 12 16 12-5 12-16 12-16-12-16-12Z"/><circle cx="20" cy="20" r="5" fill="currentColor"/></svg>'
+  + '        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">'
+  + '          <path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17"></path>'
+  + '          <path d="M15 10h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9l-3-3"></path>'
+  + '          <path d="M6 8h6"></path>'
+  + '          <path d="M6 12h6"></path>'
+  + '          <circle cx="9" cy="16" r="1.5" fill="currentColor"></circle>'
+  + '        </svg>'
   + '      </span>'
   + '      <span>Petro <b>Netra</b></span>'
   + '    </a>'
   + '    <nav class="petro-home-nav">'
-  + '      <a href="#netra">NETRA Intelligence</a>'
-  + '      <a href="#live-product">Forecourt Screens</a>'
-  + '      <a href="#capabilities">Capabilities</a>'
+  + '      <a href="#overview">Forecourt Intelligence</a>'
+  + '      <a href="#features">Shift &amp; Meters</a>'
+  + '      <a href="#credit">Fleet Credit &amp; WhatsApp</a>'
+  + '      <a href="#compliance">Tanks &amp; MDG</a>'
   + '      <a href="#faq">FAQ</a>'
   + '    </nav>'
   + '    <div class="petro-home-cta-group">'
-  + '      <button type="button" class="petro-btn-login-link" onclick="authView(false)">Log in</button>'
+  + '      <button type="button" class="petro-btn-login-link" onclick="authView(false)">Station Sign In</button>'
   + '      <button type="button" class="petro-btn-demo" onclick="launchDemo()">'
-  + '        Open live demo &rarr;'
+  + '        Live Forecourt Demo &rarr;'
   + '      </button>'
   + '    </div>'
   + '    <div class="petro-home-mobile-right">'
@@ -10808,262 +10964,281 @@ function homeView() {
   + '    </div>'
   + '  </div>'
   + '  <div class="petro-home-mobile-drawer" id="homeNavDrawer">'
-  + '    <a href="#netra" onclick="toggleHomeDrawer()">NETRA Intelligence</a>'
-  + '    <a href="#live-product" onclick="toggleHomeDrawer()">Forecourt Screens</a>'
-  + '    <a href="#capabilities" onclick="toggleHomeDrawer()">Capabilities</a>'
+  + '    <a href="#overview" onclick="toggleHomeDrawer()">Forecourt Intelligence</a>'
+  + '    <a href="#features" onclick="toggleHomeDrawer()">Shift &amp; Meters</a>'
+  + '    <a href="#credit" onclick="toggleHomeDrawer()">Fleet Credit &amp; WhatsApp</a>'
+  + '    <a href="#compliance" onclick="toggleHomeDrawer()">Tanks &amp; MDG</a>'
   + '    <a href="#faq" onclick="toggleHomeDrawer()">FAQ</a>'
-  + '    <a href="javascript:void(0)" onclick="toggleHomeDrawer(); authView(false)">Log in</a>'
-  + '    <button type="button" class="petro-btn-teal" style="width:100%;margin-top:8px" onclick="launchDemo()">Open live demo &rarr;</button>'
+  + '    <a href="javascript:void(0)" onclick="toggleHomeDrawer(); authView(false)">Station Sign In</a>'
+  + '    <button type="button" class="petro-btn-teal" style="width:100%;margin-top:8px" onclick="launchDemo()">Live Forecourt Demo &rarr;</button>'
   + '  </div>'
   + '</header>'
 
-  + '<!-- Hero Split Section -->'
+  + '<!-- Hero Section -->'
   + '<section class="petro-hero">'
   + '  <div class="petro-home-wrap petro-hero-grid">'
   + '    <div class="petro-hero-copy">'
   + '      <div class="petro-hero-eyebrow">'
-  + '        <span class="petro-pulse-dot"></span>'
-  + '        <span>Station intelligence inside Petro Netra</span>'
+  + '        <span class="omc-dot"></span>'
+  + '        <span>Indian Fuel Retail Platform &bull; HPCL &bull; BPCL &bull; IOCL &bull; Nayara &bull; Reliance</span>'
   + '      </div>'
   + '      <h1 class="petro-hero-h1">'
-  + '        Make your petrol station<br>'
-  + '        <span class="petro-word-rotator" id="wordRotator">AI-powered</span>'
+  + '        Every drop accounted for.<br>'
+  + '        Every shift <span class="petro-word-rotator" id="wordRotator">balanced</span>.'
   + '      </h1>'
   + '      <p class="petro-hero-lede">'
-  + '        Ask what changed in sales, stock, settlements or shifts. NETRA reads the trusted station figures already inside Petro Netra and gives you a clear next step.'
+  + '        The dedicated forecourt operating system for Indian petrol pump dealers. Automate nozzle meter reconciliation, underground tank dips, 15-second customer credit billing, and OMC MDG compliance with zero guesswork.'
   + '      </p>'
   + '      <div class="petro-hero-actions">'
   + '        <button type="button" class="petro-btn-teal" onclick="launchDemo()">'
-  + '          Ask NETRA in the live demo &rarr;'
+  + '          Launch Live Forecourt Demo &rarr;'
+  + '        </button>'
+  + '        <button type="button" class="petro-btn-outline" onclick="authView(false)">'
+  + '          Station Sign In'
   + '        </button>'
   + '        <button type="button" class="petro-btn-outline" onclick="authView(true)">'
-  + '          Start free trial'
+  + '          Register Outlet'
   + '        </button>'
   + '      </div>'
   + '      <div class="petro-proof-row">'
   + '        <div class="petro-proof-col">'
-  + '          <h4>Speak naturally</h4>'
-  + '          <p>English, Hindi or Hinglish voice &amp; text</p>'
+  + '          <h4>&plusmn;0.00 L Meter Error</h4>'
+  + '          <p>Opening &amp; closing meter audits with auto-testing deduction</p>'
   + '        </div>'
   + '        <div class="petro-proof-col">'
-  + '          <h4>Station-aware</h4>'
-  + '          <p>Answers from your outlet figures</p>'
+  + '          <h4>15-Sec Credit Billing</h4>'
+  + '          <p>Instant vehicle lookup &amp; 1-tap WhatsApp statement reminders</p>'
   + '        </div>'
   + '        <div class="petro-proof-col">'
-  + '          <h4>Read-only safety</h4>'
-  + '          <p>Your books remain under your control</p>'
+  + '          <h4>OMC MDG Compliant</h4>'
+  + '          <p>15&deg;C density correction &amp; allowable transit loss tracking</p>'
   + '        </div>'
   + '      </div>'
   + '    </div>'
 
-  + '    <!-- Forecourt Station Telemetry HUD Card -->'
+  + '    <!-- Live Forecourt Station Console Preview Card -->'
   + '    <div class="petro-hud-card">'
   + '      <div class="petro-hud-header">'
   + '        <div class="petro-hud-title">'
-  + '          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0A63F8;box-shadow:0 0 8px #0A63F8"></span>'
-  + '          PETRO FORECOURT LIVE TELEMETRY'
+  + '          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#059669" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'
+  + '            <path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17"></path>'
+  + '            <path d="M15 10h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9l-3-3"></path>'
+  + '            <path d="M6 8h6"></path><path d="M6 12h6"></path>'
+  + '          </svg>'
+  + '          <span>Rituraj Petroleum &bull; HPCL Outlet 1042</span>'
   + '        </div>'
-  + '        <span class="petro-hud-badge">NETRA / station intelligence</span>'
+  + '        <span class="petro-hud-badge">Shift 1 Active &bull; Vikram P.</span>'
   + '      </div>'
   + '      <div class="petro-hud-stats">'
   + '        <div class="petro-hud-stat">'
-  + '          <div class="petro-hud-stat-lbl">Today\'s Net Sales</div>'
+  + '          <div class="petro-hud-stat-lbl">Today\'s Forecourt Sales</div>'
   + '          <div class="petro-hud-stat-num">&#8377; 4,82,650</div>'
+  + '          <div style="font-size:11.5px;color:#64748b;margin-top:2px">4,890.40 Liters across 8 nozzles</div>'
   + '        </div>'
   + '        <div class="petro-hud-stat">'
-  + '          <div class="petro-hud-stat-lbl">Active Nozzles</div>'
-  + '          <div class="petro-hud-stat-num">8 / 8 Online</div>'
+  + '          <div class="petro-hud-stat-lbl">Settlements &amp; Cash</div>'
+  + '          <div class="petro-hud-stat-num" style="color:#059669">&#8377; 1,94,200</div>'
+  + '          <div style="font-size:11.5px;color:#64748b;margin-top:2px">&#8377; 2,12,450 UPI &bull; &#8377; 76,000 Credit</div>'
   + '        </div>'
   + '      </div>'
   + '      <div class="petro-hud-tanks">'
   + '        <div>'
   + '          <div class="petro-hud-tank-row">'
-  + '            <span class="petro-hud-tank-name"><i class="dot-fuel ms"></i> Tank 1 (Petrol MS)</span>'
-  + '            <span class="petro-hud-tank-pct">78% &bull; 15,600 L</span>'
+  + '            <span class="petro-hud-tank-name">Tank 1 &bull; Petrol (MS)</span>'
+  + '            <span class="petro-hud-tank-pct">78% &bull; 15,620 L &bull; 742.8 kg/m&sup3;</span>'
   + '          </div>'
   + '          <div class="petro-hud-bar"><div class="petro-hud-bar-fill" style="width:78%"></div></div>'
   + '        </div>'
   + '        <div>'
   + '          <div class="petro-hud-tank-row">'
-  + '            <span class="petro-hud-tank-name"><i class="dot-fuel hsd"></i> Tank 2 (Diesel HSD)</span>'
-  + '            <span class="petro-hud-tank-pct">64% &bull; 12,800 L</span>'
+  + '            <span class="petro-hud-tank-name">Tank 2 &bull; Diesel (HSD)</span>'
+  + '            <span class="petro-hud-tank-pct">64% &bull; 12,800 L &bull; 828.4 kg/m&sup3;</span>'
   + '          </div>'
   + '          <div class="petro-hud-bar"><div class="petro-hud-bar-fill" style="width:64%"></div></div>'
   + '        </div>'
   + '        <div>'
   + '          <div class="petro-hud-tank-row">'
-  + '            <span class="petro-hud-tank-name"><i class="dot-fuel ms"></i> Tank 3 (Speed Petrol)</span>'
-  + '            <span class="petro-hud-tank-pct">42% &bull; 4,200 L</span>'
+  + '            <span class="petro-hud-tank-name">Tank 3 &bull; Power Petrol</span>'
+  + '            <span class="petro-hud-tank-pct">42% &bull; 4,200 L &bull; 744.1 kg/m&sup3;</span>'
   + '          </div>'
   + '          <div class="petro-hud-bar"><div class="petro-hud-bar-fill" style="width:42%"></div></div>'
   + '        </div>'
   + '      </div>'
-  + '      <div style="background:rgba(10,99,248,0.08);border:1px solid rgba(10,99,248,0.25);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-top:14px">'
-  + '        <span style="font-size:12.5px;color:#B9C4CE">&bull; Shift 1 Active &bull; Worker: Vikram Patil</span>'
-  + '        <button type="button" onclick="launchDemo()" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:999px;background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;border:0;cursor:pointer;box-shadow:0 2px 10px rgba(10,99,248,0.3)">Inspect &rarr;</button>'
+  + '      <div class="petro-hud-callout">'
+  + '        <div class="petro-hud-callout-text">'
+  + '          <b>NETRA Advisory:</b> T2 Diesel reaches safety buffer in 18 hrs based on highway traffic. Book HPCL TT indent by 14:00.'
+  + '        </div>'
+  + '        <button type="button" onclick="launchDemo()" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:8px;background:#059669;color:#fff;border:0;cursor:pointer;flex:none;margin-left:8px">Explore &rarr;</button>'
   + '      </div>'
   + '    </div>'
   + '  </div>'
   + '</section>'
 
-  + '<!-- NETRA Intelligence Dialogue Section -->'
-  + '<section class="petro-section petro-sec-soft" id="netra">'
+  + '<!-- Core Forecourt Capabilities Deck -->'
+  + '<section class="petro-section" id="features">'
   + '  <div class="petro-home-wrap">'
   + '    <div class="petro-sec-head">'
-  + '      <div class="petro-sec-index">NETRA intelligence</div>'
-  + '      <h2>Grounded in the figures<br>your station already knows.</h2>'
-  + '      <p>Ask in natural speech. NETRA synthesizes fuel throughput, daily dip readings, credit recoveries, and shift cash without risking your accounting ledger.</p>'
+  + '      <div class="petro-sec-index">The Forecourt Engine</div>'
+  + '      <h2>Built for the reality of Indian petrol pumps.</h2>'
+  + '      <p>Tested on high-throughput highway retail outlets. Designed for fast nozzle attendant shifts, strict credit limits, and stringent OMC inspection compliance.</p>'
+  + '    </div>'
+  + '    <div class="petro-deck">'
+  + '      <div class="petro-deck-card">'
+  + '        <div>'
+  + '          <div class="petro-deck-tag">Shift Control</div>'
+  + '          <h3>Digital Nozzle Meters</h3>'
+  + '          <p>Record opening &amp; closing meter totalizers, testing liters, and attendant cash bags with automatic discrepancy calculation.</p>'
+  + '        </div>'
+  + '        <div class="petro-deck-preview">Nozzle 1 MS: 1421.2 L sold &bull; Testing: 10 L &bull; Cash bag: &#8377; 78,400 &bull; 0 variance</div>'
+  + '      </div>'
+  + '      <div class="petro-deck-card" id="credit">'
+  + '        <div>'
+  + '          <div class="petro-deck-tag">Fleet Billing</div>'
+  + '          <h3>15-Sec Credit &amp; WhatsApp</h3>'
+  + '          <p>Log vehicle number indents against customer credit limits, capture driver signatures, and dispatch 1-tap WhatsApp statement reminders.</p>'
+  + '        </div>'
+  + '        <div class="petro-deck-preview">Vehicle MH-12-AB-1234 &bull; 50L HSD &bull; Total &#8377; 4,640 &bull; WhatsApp bill dispatched</div>'
+  + '      </div>'
+  + '      <div class="petro-deck-card" id="compliance">'
+  + '        <div>'
+  + '          <div class="petro-deck-tag">Tanks &amp; MDG</div>'
+  + '          <h3>Dip Charts &amp; Density Norms</h3>'
+  + '          <p>Calibrated dip rod conversion, 15&deg;C ASTM density correction, water paste verification, and allowable handling loss checks.</p>'
+  + '        </div>'
+  + '        <div class="petro-deck-preview">Tank 1: Within permissible norm (0.75% MS) &bull; Dip: 184.2 cm &bull; Volume: 15,620 L</div>'
+  + '      </div>'
+  + '      <div class="petro-deck-card">'
+  + '        <div>'
+  + '          <div class="petro-deck-tag">Rate Revision</div>'
+  + '          <h3>06:00 AM Price Broadcast</h3>'
+  + '          <p>Instantly publish daily petrol and diesel rates with 1 tap, automatically applying new prices to all active nozzles and shift receipts.</p>'
+  + '        </div>'
+  + '        <div class="petro-deck-preview">MS: &#8377; 104.20/L &bull; HSD: &#8377; 92.80/L &bull; Synchronized across all 8 nozzles</div>'
+  + '      </div>'
+  + '    </div>'
+  + '    <div style="text-align:center;margin-top:36px">'
+  + '      <button type="button" class="petro-btn-teal" onclick="launchDemo()">'
+  + '        Explore Interactive Forecourt Dashboard &rarr;'
+  + '      </button>'
+  + '    </div>'
+  + '  </div>'
+  + '</section>'
+
+  + '<!-- NETRA Intelligence Section -->'
+  + '<section class="petro-section petro-sec-soft" id="overview">'
+  + '  <div class="petro-home-wrap">'
+  + '    <div class="petro-sec-head">'
+  + '      <div class="petro-sec-index">NETRA Forecourt Intelligence</div>'
+  + '      <h2>Answers grounded in your station figures.</h2>'
+  + '      <p>Ask in natural speech or text. NETRA synthesizes nozzle throughput, tank dips, credit balances, and shift handovers without risking your accounts.</p>'
   + '    </div>'
   + '    <div class="petro-dialogue">'
   + '      <div class="petro-dial-q">'
-  + '        <div class="petro-dial-badge">You ask</div>'
-  + '        <p class="petro-dial-quote">\u201cWhich tank needs attention first?\u201d</p>'
+  + '        <div class="petro-dial-badge">Dealer asks</div>'
+  + '        <p class="petro-dial-quote">\u201cWhich underground tank needs reordering first?\u201d</p>'
   + '      </div>'
   + '      <div class="petro-dial-a">'
   + '        <div class="petro-netra-avatar">'
-  + '          <svg viewBox="0 0 40 40" width="26" height="26" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20s5-12 16-12 16 12 16 12-5 12-16 12-16-12-16-12Z"/><circle cx="20" cy="20" r="5" fill="#ffffff"/></svg>'
+  + '          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
+  + '            <circle cx="12" cy="12" r="10"></circle>'
+  + '            <polyline points="12 6 12 12 16 14"></polyline>'
+  + '          </svg>'
   + '        </div>'
   + '        <div>'
   + '          <div class="petro-dial-badge">NETRA answers</div>'
-  + '          <p class="petro-dial-ans-p">T2 Petrol is likely to run out first. It has 3,120 L left—about two days at the current draw.</p>'
-  + '          <div class="petro-dial-sub">Example grounded directly in your station\'s real-time tank dip records.</div>'
+  + '          <p class="petro-dial-ans-p">Tank 2 (Diesel) will reach safety buffer first. Current dip shows 12,800 L, drawing ~3,400 L/day. Next tanker delivery recommended tomorrow morning.</p>'
+  + '          <div class="petro-dial-sub">Calculated directly from your station\'s real-time dip register and daily nozzle sales flow.</div>'
   + '        </div>'
   + '      </div>'
   + '    </div>'
   + '    <div class="petro-rail">'
   + '      <div class="petro-rail-item">'
   + '        <svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M8 22h8"/></svg>'
-  + '        <h3>Talk or type</h3>'
-  + '        <p>Ask in English, Hindi, or Hinglish. Listen to answers on audio when reviewing forecourt shifts on the move.</p>'
+  + '        <h3>English &amp; Hindi Audio</h3>'
+  + '        <p>Ask in English, Hindi, or Hinglish. Listen to voice briefings on audio while inspecting forecourt nozzle islands on the move.</p>'
   + '      </div>'
   + '      <div class="petro-rail-item">'
   + '        <svg viewBox="0 0 24 24"><path d="M4 19V8l8-5 8 5v11M8 19v-5h8v5M2 19h20"/></svg>'
-  + '        <h3>Bound to one outlet</h3>'
-  + '        <p>NETRA receives compact, sanitized aggregates only—customer privacy and employee details remain sealed.</p>'
+  + '        <h3>Outlet-Sealed Privacy</h3>'
+  + '        <p>NETRA only sees sanitized totals for your outlet. Customer phone numbers, ledger details, and employee records remain strictly confidential.</p>'
   + '      </div>'
   + '      <div class="petro-rail-item">'
   + '        <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>'
-  + '        <h3>Advises, never edits</h3>'
-  + '        <p>NETRA explains discrepancies and suggests solutions. It cannot alter a customer bill, ledger entry, or shift record.</p>'
+  + '        <h3>Strictly Read-Only Safety</h3>'
+  + '        <p>NETRA advises and flags anomalies. It has zero capability to alter customer credit balances, nozzle meters, or cash receipts.</p>'
   + '      </div>'
   + '    </div>'
   + '  </div>'
   + '</section>'
 
-  + '<!-- Live Forecourt Screens Showcase Deck -->'
-  + '<section class="petro-section" id="live-product">'
-  + '  <div class="petro-home-wrap">'
-  + '    <div class="petro-sec-head">'
-  + '      <div class="petro-sec-index">The live product</div>'
-  + '      <h2>See the whole forecourt.<br>Ask what changed.</h2>'
-  + '      <p>Working dashboard modules designed specifically for Indian petrol pumps, dealer regulations, and OMC operations.</p>'
-  + '    </div>'
-  + '    <div class="petro-deck">'
-  + '      <div class="petro-deck-card">'
-  + '        <div>'
-  + '          <div class="petro-deck-tag">Billing Module</div>'
-  + '          <h3>15-Second Fuelling</h3>'
-  + '          <p>Instant invoice logging against vehicle numbers, customer credit limits, and fuel rates.</p>'
-  + '        </div>'
-  + '        <div class="petro-deck-preview">Vehicle: MH-12-AB-1234 &bull; HSD 50L &bull; Rate &#8377;92.80 &bull; Total &#8377;4,640</div>'
-  + '      </div>'
-  + '      <div class="petro-deck-card">'
-  + '        <div>'
-  + '          <div class="petro-deck-tag">Credit Ledger</div>'
-  + '          <h3>Fleet Indents &amp; WhatsApp</h3>'
-  + '          <p>Automated payment reminders with pre-filled WhatsApp templates and ageing analysis.</p>'
-  + '        </div>'
-  + '        <div class="petro-deck-preview">Overdue balance: &#8377;42,800 &bull; 1-tap WhatsApp statement dispatched</div>'
-  + '      </div>'
-  + '      <div class="petro-deck-card">'
-  + '        <div>'
-  + '          <div class="petro-deck-tag">Tank Books</div>'
-  + '          <h3>OMC MDG Reconciliation</h3>'
-  + '          <p>Daily dip variations compared automatically against permissible handling losses (MS 0.75%, HSD 0.25%).</p>'
-  + '        </div>'
-  + '        <div class="petro-deck-preview">Tank 1: Within permissible norm &bull; Dip: 184.2 cm &bull; Volume: 15,620 L</div>'
-  + '      </div>'
-  + '      <div class="petro-deck-card">'
-  + '        <div>'
-  + '          <div class="petro-deck-tag">Shift Control</div>'
-  + '          <h3>Digital Duty Handover</h3>'
-  + '          <p>Seamless transfer of nozzle readings, testing liters, cash bags, and UPI receipts across shifts.</p>'
-  + '        </div>'
-  + '        <div class="petro-deck-preview">Morning &rarr; Evening shift &bull; Cash handed: &#8377;78,400 &bull; 0 variance</div>'
-  + '      </div>'
-  + '    </div>'
-  + '    <div style="text-align:center;margin-top:36px">'
-  + '      <button type="button" class="petro-btn-teal" onclick="launchDemo()">'
-  + '        Launch Interactive Dashboard &rarr;'
-  + '      </button>'
-  + '    </div>'
-  + '  </div>'
-  + '</section>'
-
-  + '<!-- Capabilities Grid -->'
-  + '<section class="petro-section petro-sec-soft" id="capabilities">'
+  + '<!-- Forecourt Architecture & Zero-Hardware Setup -->'
+  + '<section class="petro-section" id="architecture">'
   + '  <div class="petro-home-wrap petro-cap-grid">'
   + '    <div class="petro-sec-head">'
   + '      <div class="petro-sec-index">Forecourt Architecture</div>'
-  + '      <h2>AI where it helps.<br>Human confirmation where it matters.</h2>'
-  + '      <p>Built for the reality of Indian forecourts: dust, intermittent connectivity, shift handovers, and strict dealer margins.</p>'
+  + '      <h2>Enterprise power.<br>Zero proprietary hardware.</h2>'
+  + '      <p>Works on the smartphones, tablets, and desktop computers you already own. Built for dust, shift changes, network drops, and dealer profitability.</p>'
   + '    </div>'
   + '    <ul class="petro-cap-list">'
-  + '      <li><strong>NETRA Intelligence</strong><span>Ask about daily draw, nozzle testing liters, and supplier bills in natural speech.</span></li>'
-  + '      <li><strong>Shift Duty Handover</strong><span>Record exact nozzle meter starts and closes with zero arithmetic discrepancy.</span></li>'
-  + '      <li><strong>OMC MDG Compliance</strong><span>Permissible density and temperature calculations grounded in Marketing Discipline Guidelines.</span></li>'
-  + '      <li><strong>Offline-Ready Staff Shell</strong><span>Workers can log transactions even in mobile network dead zones; data synchronizes once signal returns.</span></li>'
+  + '      <li><strong>Multi-Role Workspace Security</strong><span>Dedicated, isolated views for Station Dealers, Shift Managers, and Forecourt Attendants with granular role-based permissions.</span></li>'
+  + '      <li><strong>Offline Forecourt Continuity</strong><span>Attendants can log meter sales and credit indents during cellular dead zones; transactions sync automatically once connection returns.</span></li>'
+  + '      <li><strong>OMC Inspection &amp; MDG Readiness</strong><span>Daily density, temperature, and permissible handling loss records formatted for immediate presentation to OMC Sales Officers.</span></li>'
+  + '      <li><strong>100% Isolated Station Database</strong><span>Every dealer runs on dedicated data storage with automated daily backups and complete tenant isolation.</span></li>'
   + '    </ul>'
   + '  </div>'
   + '</section>'
 
   + '<!-- FAQ Accordion Section -->'
-  + '<section class="petro-section" id="faq">'
+  + '<section class="petro-section petro-sec-soft" id="faq">'
   + '  <div class="petro-home-wrap">'
   + '    <div class="petro-sec-head" style="text-align:center;margin:0 auto 40px">'
-  + '      <div class="petro-sec-index">Questions worth asking</div>'
-  + '      <h2>What NETRA can—and cannot—do.</h2>'
+  + '      <div class="petro-sec-index">Dealer Questions &amp; Answers</div>'
+  + '      <h2>Everything you need to know about Petro Netra.</h2>'
   + '    </div>'
   + '    <div class="petro-faq-list" style="margin:0 auto">'
   + '      <details class="petro-faq-item" open>'
-  + '        <summary class="petro-faq-summary">What can NETRA see?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">NETRA receives a small, fixed set of aggregates for the selected outlet—such as daily sales, tank stock levels, settlements, and shift totals. Customer personal information and confidential records remain sealed.</div>'
+  + '        <summary class="petro-faq-summary">Does Petro Netra comply with OMC Marketing Discipline Guidelines (MDG)?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">Yes. Petro Netra integrates ASTM 53B density conversion tables (converting observed hydrometer readings to standard 15&deg;C density) and validates tank variation against allowable handling loss norms (0.75% for Petrol / MS and 0.25% for Diesel / HSD).</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
-  + '        <summary class="petro-faq-summary">Can NETRA change my accounts?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">No. NETRA is strictly read-only. It has no authority or tool to create, modify, or erase any invoice, credit transaction, or stock record.</div>'
+  + '        <summary class="petro-faq-summary">Can forecourt workers use this on affordable Android phones?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">Yes. The worker interface is ultra-lightweight and streamlined to only two essential tasks: "Duty &amp; Shift" (opening/closing nozzle totalizers, testing liters, cash collections) and "My Pay &amp; Advances". It works smoothly on any standard Android smartphone or tablet.</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
-  + '        <summary class="petro-faq-summary">Can I ask questions in Hindi or Hinglish?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">Yes. NETRA understands natural speech and text queries in English, Hindi, and Hinglish, providing rapid answers suited for busy forecourt managers.</div>'
+  + '        <summary class="petro-faq-summary">What happens when internet connectivity drops on the highway?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">Petro Netra has built-in offline caching. Workers can continue recording nozzle meter handovers and cash collections without interruption. As soon as the connection is restored, all data synchronizes seamlessly with the central station ledger.</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
-  + '        <summary class="petro-faq-summary">Do I need an automated tank gauge (ATG)?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">No. Petro Netra works seamlessly with manual dip rods and daily confirmed readings. Electronic ATG sensors can be integrated optionally if your outlet has them.</div>'
+  + '        <summary class="petro-faq-summary">Do I need expensive automated tank gauge (ATG) hardware?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">No. Petro Netra works directly with manual dip rod measurements and calibrated station calibration charts. If you have electronic ATG sensors, they can optionally feed into Petro Netra as well.</div>'
   + '      </details>'
   + '      <details class="petro-faq-item">'
-  + '        <summary class="petro-faq-summary">Can I try the dashboard without an account?<span>+</span></summary>'
-  + '        <div class="petro-faq-content">Yes. You can tap "Open live demo" right now to explore the full dashboard, mock sales, credit books, and reports in demo mode.</div>'
+  + '        <summary class="petro-faq-summary">Can I test the full platform right now before signing up?<span>+</span></summary>'
+  + '        <div class="petro-faq-content">Yes. Click "Live Forecourt Demo" on this page to immediately launch the active station console with pre-configured nozzles, underground tanks, shift duties, and credit ledgers.</div>'
   + '      </details>'
   + '    </div>'
   + '  </div>'
   + '</section>'
 
-  + '<!-- Closing CTA -->'
+  + '<!-- Closing Call to Action -->'
   + '<section class="petro-section">'
   + '  <div class="petro-home-wrap">'
   + '    <div class="petro-closing-card">'
   + '      <div>'
-  + '        <span style="display:inline-block;width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:#062A6B">'
-  + '          <svg viewBox="0 0 40 40" width="22" height="22" fill="none" stroke="#062A6B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20s5-12 16-12 16 12 16 12-5 12-16 12-16-12-16-12Z"/><circle cx="20" cy="20" r="5" fill="#062A6B"/></svg>'
-  + '        </span>'
-  + '        <h2>Put NETRA on your forecourt.</h2>'
+  + '        <div style="width:42px;height:42px;border-radius:12px;background:#ffffff;color:#0a192f;display:flex;align-items:center;justify-content:center;margin-bottom:14px">'
+  + '          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#059669" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">'
+  + '            <path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17"></path>'
+  + '            <path d="M15 10h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9l-3-3"></path>'
+  + '            <path d="M6 8h6"></path><path d="M6 12h6"></path>'
+  + '          </svg>'
+  + '        </div>'
+  + '        <h2>Take complete control of your petrol station.</h2>'
   + '      </div>'
   + '      <div>'
-  + '        <p>Explore the working dashboard first. Start a 30-day trial when the records, controls, and answers make sense for your station.</p>'
+  + '        <p>Explore the live interactive forecourt first. Start a 30-day free trial when the records, controls, and answers make sense for your dealership.</p>'
   + '        <div style="display:flex;gap:12px;flex-wrap:wrap">'
-  + '          <button type="button" class="petro-btn-teal" onclick="launchDemo()">Open live demo &rarr;</button>'
-  + '          <button type="button" class="petro-btn-outline" onclick="authView(true)">Start free trial</button>'
+  + '          <button type="button" class="petro-btn-teal" onclick="launchDemo()">Launch Live Demo &rarr;</button>'
+  + '          <button type="button" class="petro-btn-outline" style="background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.25)" onclick="authView(true)">Register Petrol Pump</button>'
   + '        </div>'
   + '      </div>'
   + '    </div>'
@@ -11077,34 +11252,39 @@ function homeView() {
   + '      <div>'
   + '        <div class="petro-home-logo" style="margin-bottom:12px">'
   + '          <span class="petro-home-logo-icon">'
-  + '            <svg viewBox="0 0 40 40" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20s5-12 16-12 16 12 16 12-5 12-16 12-16-12-16-12Z"/><circle cx="20" cy="20" r="5" fill="currentColor"/></svg>'
+  + '            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">'
+  + '              <path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17"></path>'
+  + '              <path d="M15 10h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9l-3-3"></path>'
+  + '              <path d="M6 8h6"></path><path d="M6 12h6"></path>'
+  + '            </svg>'
   + '          </span>'
   + '          <span>Petro <b>Netra</b></span>'
   + '        </div>'
-  + '        <p style="font-size:14px;color:#8493A0;max-width:32ch">Billing, credit, stock, and station intelligence for Indian fuel retailers.</p>'
+  + '        <p style="font-size:13.5px;color:#64748b;max-width:32ch;line-height:1.5">Nozzle meters, credit ledgers, tank dips, and station intelligence for Indian fuel retailers.</p>'
   + '      </div>'
   + '      <div class="petro-ftr-col">'
-  + '        <h4>Product</h4>'
-  + '        <a href="#netra">NETRA Intelligence</a>'
-  + '        <a href="#live-product">Forecourt Screens</a>'
-  + '        <a href="javascript:void(0)" onclick="launchDemo()">Live Demo</a>'
+  + '        <h4>Product Modules</h4>'
+  + '        <a href="#overview">Forecourt Intelligence</a>'
+  + '        <a href="#features">Shift &amp; Nozzle Meters</a>'
+  + '        <a href="#credit">Fleet Credit &amp; WhatsApp</a>'
+  + '        <a href="javascript:void(0)" onclick="launchDemo()">Interactive Live Demo</a>'
   + '      </div>'
   + '      <div class="petro-ftr-col">'
-  + '        <h4>Account</h4>'
-  + '        <a href="javascript:void(0)" onclick="authView(false)">Log In</a>'
-  + '        <a href="javascript:void(0)" onclick="authView(true)">Create Account</a>'
-  + '        <a href="javascript:void(0)" onclick="clearLockout()">Account Unlock</a>'
+  + '        <h4>Station Access</h4>'
+  + '        <a href="javascript:void(0)" onclick="authView(false)">Station Sign In</a>'
+  + '        <a href="javascript:void(0)" onclick="authView(true)">Register New Outlet</a>'
+  + '        <a href="javascript:void(0)" onclick="clearLockout()">Account Unlock Helper</a>'
   + '      </div>'
   + '      <div class="petro-ftr-col">'
-  + '        <h4>Forecourt</h4>'
-  + '        <a href="#capabilities">Capabilities</a>'
-  + '        <a href="#faq">FAQ</a>'
-  + '        <a href="javascript:void(0)" onclick="launchDemo()">Station Dashboard</a>'
+  + '        <h4>Compliance</h4>'
+  + '        <a href="#compliance">OMC MDG Guidelines</a>'
+  + '        <a href="#compliance">15&deg;C Density ASTM 53B</a>'
+  + '        <a href="#faq">Frequently Asked Questions</a>'
   + '      </div>'
   + '    </div>'
   + '    <div class="petro-ftr-bottom">'
-  + '      <span>&copy; 2026 Petro Netra. All rights reserved.</span>'
-  + '      <span>Made for Indian fuel retail (HPCL, BPCL, IOCL, Nayara, Reliance).</span>'
+  + '      <span>&copy; 2026 Petro Netra &bull; Forecourt Operating System. All rights reserved.</span>'
+  + '      <span>Compatible with HPCL, BPCL, IOCL, Nayara Energy, Shell, and Reliance forecourts.</span>'
   + '    </div>'
   + '  </div>'
   + '</footer>'
@@ -11148,169 +11328,242 @@ function start(){
     render();
   });
 }
+
 var AUTH_MODE = "login";
 function toggleAuthPw(id){var el=document.getElementById(id);if(!el)return;el.type=el.type==="password"?"text":"password";}
-function switchAuthTab(mode){AUTH_MODE=mode;var lp=document.getElementById("petroPaneLogin"),sp=document.getElementById("petroPaneSignup"),tl=document.getElementById("petroTabLogin"),ts=document.getElementById("petroTabSignup"),er=document.getElementById("er");if(er){er.textContent="";er.style.display="none";}if(mode==="signup"){if(lp)lp.style.display="none";if(sp)sp.style.display="block";if(tl)tl.classList.remove("active");if(ts)ts.classList.add("active");}else{if(lp)lp.style.display="block";if(sp)sp.style.display="none";if(tl)tl.classList.add("active");if(ts)ts.classList.remove("active");}}
-function fillAuth(m,p){switchAuthTab("login");var e1=document.getElementById("a1"),e2=document.getElementById("a2");if(e1)e1.value=m;if(e2)e2.value=p||"NewPass123";var erEl=document.getElementById("er");if(erEl){erEl.textContent="";erEl.style.display="none";}}
-function clearLockout(){api("POST","/api/clear-lockout").then(function(){var erEl=document.getElementById("er");if(erEl){erEl.style.display="block";erEl.className="petro-alert";erEl.style.color="var(--ok)";erEl.innerHTML="<b>\u2713 Account unlocked!</b> You can now log in.";}toast("Lockout reset. Try logging in now.");}).catch(function(){toast("Lockout reset.");})}
-function authView(setup){document.body.classList.remove("logged-in");AUTH_MODE=setup?"signup":"login";
-var h='<div class="petro-auth">'
-+'<!-- Left Brand Hero Panel -->'
-+'<aside class="petro-auth-side">'
-+'<a href="javascript:void(0)" onclick="homeView()" style="text-decoration:none;color:inherit" class="petro-auth-brand">'
-+'<div class="petro-auth-logo-badge">'
-+'<svg viewBox="0 0 40 40" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20s5-12 16-12 16 12 16 12-5 12-16 12-16-12-16-12Z"/><circle cx="20" cy="20" r="5" fill="currentColor"/></svg>'
-+'</div>'
-+'<div>'
-+'<div class="petro-auth-brand-name">Petro Netra</div>'
-+'<div class="petro-auth-brand-sub">Station Intelligence</div>'
-+'</div>'
-+'</a>'
-+'<div class="petro-auth-quote">'
-+'<p>\u201cThe register never told me who was quietly financing their business on my account.\u201d</p>'
-+'<cite>\u2014 A dealer running two outlets, on why the credit book had to change</cite>'
-+'</div>'
-+'<div class="petro-auth-stats">'
-+'<div class="petro-auth-stat-item"><b>30 days</b><span>free trial, no card required</span></div>'
-+'<div class="petro-auth-stat-item"><b>Your data</b><span>separated per outlet &amp; shift</span></div>'
-+'<div class="petro-auth-stat-item"><b>Any OMC</b><span>HPCL, BPCL, IOCL, Nayara</span></div>'
-+'</div>'
-+'</aside>'
-+'<!-- Right Modern Form Panel -->'
-+'<main class="petro-auth-main">'
-+'<div class="petro-auth-card">'
-+'<a href="javascript:void(0)" onclick="homeView()" style="display:inline-flex; align-items:center; gap:8px; font-size:14.5px; font-weight:700; color:var(--mute); margin-bottom:20px; text-decoration:none"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Back to site</a>'
-+'<div class="petro-auth-tabs" role="tablist">'
-+'<button type="button" class="petro-auth-tab'+(AUTH_MODE==="login"?" active":"")+'" id="petroTabLogin" onclick="switchAuthTab(\'login\')">Log in</button>'
-+'<button type="button" class="petro-auth-tab'+(AUTH_MODE==="signup"?" active":"")+'" id="petroTabSignup" onclick="switchAuthTab(\'signup\')">'+(setup?"Owner Setup":"Create account")+'</button>'
-+'</div>'
-+'<div class="petro-alert petro-alert-bad" id="er"></div>'
-+'<!-- Log in Pane -->'
-+'<div id="petroPaneLogin" style="display:'+(AUTH_MODE==="login"?"block":"none")+'">'
-+'<h1 class="petro-auth-title">Welcome back.</h1>'
-+'<p class="petro-auth-subtitle">Pick up where the last shift left off.</p>'
-+'<form onsubmit="event.preventDefault(); doAuth(0);">'
-+'<div class="petro-field">'
-+'<label for="a1">Mobile number</label>'
-+'<input id="a1" inputmode="tel" autocomplete="username" placeholder="e.g. 9422556644" required>'
-+'<div class="petro-hint">10-digit registered mobile number</div>'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="a2">Password</label>'
-+'<div class="petro-input-wrap">'
-+'<input id="a2" type="password" class="has-toggle" autocomplete="current-password" placeholder="Enter your password" required>'
-+'<button type="button" class="petro-pw-toggle" onclick="toggleAuthPw(\'a2\')" aria-label="Toggle password visibility">'
-+'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
-+'</button>'
-+'</div>'
-+'</div>'
-+'<button type="submit" class="petro-btn-submit">'
-+'Log in'
-+'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
-+'</button>'
-+'</form>'
-+'<div class="petro-staff-box">'
-+'<div class="petro-staff-title">'
-+'<span>Platform Fast Access &bull; One-Click Credentials</span>'
-+'</div>'
-+'<div class="petro-staff-grid">'
-+'<button type="button" class="petro-staff-pill" style="border-left:3px solid #0A63F8" onclick="fillAuth(\'9999999999\',\'AdminPass123\')">'
-+'<span><b>Platform Super Admin</b><span class="role-badge" style="background:#0A63F8;color:#fff">Admin</span></span>'
-+'<span style="color:var(--mute);font-size:12px">9999999999 &rarr;</span>'
-+'</button>'
-+'<button type="button" class="petro-staff-pill" onclick="fillAuth(\'9422556644\',\'NewPass123\')">'
-+'<span><b>Sarita More</b><span class="role-badge">Owner</span></span>'
-+'<span style="color:var(--mute);font-size:12px">9422556644 &rarr;</span>'
-+'</button>'
-+'<button type="button" class="petro-staff-pill" onclick="fillAuth(\'9075395587\',\'NewPass123\')">'
-+'<span><b>Kapane</b><span class="role-badge">Manager</span></span>'
-+'<span style="color:var(--mute);font-size:12px">9075395587 &rarr;</span>'
-+'</button>'
-+'<button type="button" class="petro-staff-pill" onclick="fillAuth(\'7387251048\',\'NewPass123\')">'
-+'<span><b>Vikram</b><span class="role-badge">Worker</span></span>'
-+'<span style="color:var(--mute);font-size:12px">7387251048 &rarr;</span>'
-+'</button>'
-+'</div>'
-+'<div style="text-align:center;margin-top:12px">'
-+'<button type="button" class="petro-unlock-link" onclick="clearLockout()">Reset Lockout / Unlock Account</button>'
-+'</div>'
-+'</div>'
-+'</div>'
-+'<!-- Create Account / Owner Registration Pane -->'
-+'<div id="petroPaneSignup" style="display:'+(AUTH_MODE==="signup"?"block":"none")+'">'
-+'<h1 class="petro-auth-title">Register Petrol Pump.</h1>'
-+'<p class="petro-auth-subtitle">Submit your dealership details for Super Admin approval &amp; isolated app installation.</p>'
-+'<form onsubmit="event.preventDefault(); doOwnerRegister();">'
-+'<div class="petro-field">'
-+'<label for="reg_owner_name">Owner Full Name</label>'
-+'<input id="reg_owner_name" autocomplete="name" placeholder="e.g. Ramesh Patil" required>'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="reg_mobile">Owner Mobile Number (Login ID)</label>'
-+'<input id="reg_mobile" inputmode="tel" autocomplete="username" placeholder="10-digit mobile number" required>'
-+'<div class="petro-hint">Will be used as your master login mobile number</div>'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="reg_pass">Password (6+ characters)</label>'
-+'<div class="petro-input-wrap">'
-+'<input id="reg_pass" type="password" class="has-toggle" autocomplete="new-password" placeholder="Create a secure password" required minlength="6">'
-+'<button type="button" class="petro-pw-toggle" onclick="toggleAuthPw(\'reg_pass\')" aria-label="Toggle password visibility">'
-+'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
-+'</button>'
-+'</div>'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="reg_station_name">Petrol Pump / Station Name</label>'
-+'<input id="reg_station_name" placeholder="e.g. Shree Ganesh Petroleum" required>'
-+'</div>'
-+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-+'<div class="petro-field">'
-+'<label for="reg_omc">Oil Company (OMC)</label>'
-+'<select id="reg_omc">'
-+'<option value="HPCL">HPCL</option>'
-+'<option value="BPCL">BPCL</option>'
-+'<option value="IOCL">IOCL (IndianOil)</option>'
-+'<option value="Nayara">Nayara Energy</option>'
-+'<option value="Shell">Shell India</option>'
-+'<option value="Jio-bp">Jio-bp</option>'
-+'<option value="Reliance">Reliance</option>'
-+'<option value="Other">Other</option>'
-+'</select>'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="reg_city">City &amp; State</label>'
-+'<input id="reg_city" placeholder="e.g. Pune, Maharashtra" value="Solapur, Maharashtra">'
-+'</div>'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="reg_address">Station Address / Highway</label>'
-+'<input id="reg_address" placeholder="e.g. Pune-Solapur Highway, Mohol">'
-+'</div>'
-+'<div class="petro-field">'
-+'<label for="reg_scale">Initial Scale Estimate</label>'
-+'<select id="reg_scale">'
-+'<option value="4 Nozzles, 2 Tanks">4 Nozzles &bull; 2 Underground Tanks (Standard)</option>'
-+'<option value="6 Nozzles, 3 Tanks">6 Nozzles &bull; 3 Underground Tanks</option>'
-+'<option value="8 Nozzles, 4 Tanks">8 Nozzles &bull; 4 Underground Tanks (Highway Hub)</option>'
-+'<option value="2 Nozzles, 1 Tank">2 Nozzles &bull; 1 Underground Tank (Rural Outlet)</option>'
-+'</select>'
-+'</div>'
-+'<div style="background:rgba(10,99,248,0.06);border:1px solid rgba(10,99,248,0.25);border-radius:10px;padding:12px;margin:14px 0;font-size:12.5px;color:var(--ink);line-height:1.4">'
-+'🛡️ <b>Admin Approval Workflow:</b> After submitting, your registration goes to Platform Super Admin queue. Once approved, your dedicated pump application workspace is provisioned with 100% data separation, and you can log in immediately.'
-+'</div>'
-+'<button type="submit" id="btnOwnerReg" class="petro-btn-submit">'
-+'Register Pump &amp; Request App Installation'
-+'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
-+'</button>'
-+'</form>'
-+'<div style="margin-top:20px;font-size:13px;color:var(--mute);text-align:center">'
-+'Already registered? <a href="javascript:void(0)" onclick="switchAuthTab(\'login\')" style="color:var(--btn);font-weight:700;text-decoration:none">Back to Log in &rarr;</a>'
-+'</div>'
-+'</div>'
-+'</div>'
-+'</main>'
-+'</div>';
-document.getElementById("app").innerHTML=h;
+function switchAuthTab(mode){
+  AUTH_MODE=mode;
+  var lp=document.getElementById("petroPaneLogin"),sp=document.getElementById("petroPaneSignup"),tl=document.getElementById("petroTabLogin"),ts=document.getElementById("petroTabSignup"),er=document.getElementById("er");
+  if(er){er.textContent="";er.style.display="none";}
+  if(mode==="signup"){
+    if(lp)lp.style.display="none";
+    if(sp)sp.style.display="block";
+    if(tl)tl.classList.remove("active");
+    if(ts)ts.classList.add("active");
+  } else {
+    if(lp)lp.style.display="block";
+    if(sp)sp.style.display="none";
+    if(tl)tl.classList.add("active");
+    if(ts)ts.classList.remove("active");
+  }
+}
+function fillAuth(m,p){
+  switchAuthTab("login");
+  var e1=document.getElementById("a1"),e2=document.getElementById("a2");
+  if(e1){ e1.value=m; e1.focus(); }
+  if(e2) e2.value=p||"NewPass123";
+  var erEl=document.getElementById("er");
+  if(erEl){erEl.textContent="";erEl.style.display="none";}
+}
+function clearLockout(){
+  api("POST","/api/clear-lockout").then(function(){
+    var erEl=document.getElementById("er");
+    if(erEl){
+      erEl.style.display="block";
+      erEl.className="petro-alert";
+      erEl.style.color="var(--ok)";
+      erEl.style.background="#ecfdf5";
+      erEl.style.borderColor="#a7f3d0";
+      erEl.innerHTML="<b>\u2713 Account unlocked!</b> You can now log in.";
+    }
+    toast("Lockout reset. Try logging in now.");
+  }).catch(function(){
+    toast("Lockout reset.");
+  });
+}
+
+function authView(setup){
+  document.body.classList.remove("logged-in");
+  AUTH_MODE=setup?"signup":"login";
+  var h='<div class="petro-auth">'
+  + '<!-- Left Brand Hero & Instant Role Access Panel -->'
+  + '<aside class="petro-auth-side">'
+  + '  <div>'
+  + '    <a href="javascript:void(0)" onclick="homeView()" class="petro-auth-brand" aria-label="Petro Netra home">'
+  + '      <div class="petro-auth-logo-badge">'
+  + '        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">'
+  + '          <path d="M3 22V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17"></path>'
+  + '          <path d="M15 10h2a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9l-3-3"></path>'
+  + '          <path d="M6 8h6"></path><path d="M6 12h6"></path>'
+  + '          <circle cx="9" cy="16" r="1.5" fill="currentColor"></circle>'
+  + '        </svg>'
+  + '      </div>'
+  + '      <div>'
+  + '        <div class="petro-auth-brand-name">Petro Netra</div>'
+  + '        <div class="petro-auth-brand-sub">Forecourt Operating System</div>'
+  + '      </div>'
+  + '    </a>'
+  + '    <div class="petro-auth-hero-copy">'
+  + '      <div class="petro-auth-hero-kicker">High-Trust Forecourt Management</div>'
+  + '      <h2 class="petro-auth-hero-title">Precision records.<br>Zero shift discrepancies.</h2>'
+  + '      <p class="petro-auth-hero-desc">Direct access to nozzle totalizers, 15-second customer credit billing, and underground tank dip registers.</p>'
+  + '    </div>'
+  + '    <div class="petro-auth-staff-section">'
+  + '      <div class="petro-auth-staff-hdr">'
+  + '        <span>Instant Role Credentials</span>'
+  + '        <small>1-Click Auto Fill &rarr;</small>'
+  + '      </div>'
+  + '      <div class="petro-auth-role-grid">'
+  + '        <button type="button" class="petro-auth-role-btn" onclick="fillAuth(\'9999999999\',\'AdminPass123\')">'
+  + '          <div class="petro-auth-role-top">'
+  + '            <span class="petro-auth-role-name">Super Admin</span>'
+  + '            <span class="petro-auth-role-tag admin">Admin</span>'
+  + '          </div>'
+  + '          <span class="petro-auth-role-mob">9999999999</span>'
+  + '        </button>'
+  + '        <button type="button" class="petro-auth-role-btn" onclick="fillAuth(\'9422556644\',\'NewPass123\')">'
+  + '          <div class="petro-auth-role-top">'
+  + '            <span class="petro-auth-role-name">Sarita More</span>'
+  + '            <span class="petro-auth-role-tag owner">Owner</span>'
+  + '          </div>'
+  + '          <span class="petro-auth-role-mob">9422556644</span>'
+  + '        </button>'
+  + '        <button type="button" class="petro-auth-role-btn" onclick="fillAuth(\'9075395587\',\'NewPass123\')">'
+  + '          <div class="petro-auth-role-top">'
+  + '            <span class="petro-auth-role-name">Kapane</span>'
+  + '            <span class="petro-auth-role-tag manager">Manager</span>'
+  + '          </div>'
+  + '          <span class="petro-auth-role-mob">9075395587</span>'
+  + '        </button>'
+  + '        <button type="button" class="petro-auth-role-btn" onclick="fillAuth(\'7387251048\',\'NewPass123\')">'
+  + '          <div class="petro-auth-role-top">'
+  + '            <span class="petro-auth-role-name">Vikram</span>'
+  + '            <span class="petro-auth-role-tag worker">Worker</span>'
+  + '          </div>'
+  + '          <span class="petro-auth-role-mob">7387251048</span>'
+  + '        </button>'
+  + '      </div>'
+  + '    </div>'
+  + '  </div>'
+  + '  <div class="petro-auth-side-ftr">'
+  + '    <span>100% Isolated Station Data &bull; OMC MDG Ready</span>'
+  + '    <a href="javascript:void(0)" onclick="homeView()">&larr; Back to site</a>'
+  + '  </div>'
+  + '</aside>'
+
+  + '<!-- Right Clean Form Panel -->'
+  + '<main class="petro-auth-main">'
+  + '  <div class="petro-auth-card">'
+  + '    <a class="petro-auth-back-link" href="javascript:void(0)" onclick="homeView()">'
+  + '      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>'
+  + '      <span>Back to website</span>'
+  + '    </a>'
+  + '    <div class="petro-auth-tabs" role="tablist">'
+  + '      <button type="button" class="petro-auth-tab'+(AUTH_MODE==="login"?" active":"")+'" id="petroTabLogin" onclick="switchAuthTab(\'login\')">Station Log In</button>'
+  + '      <button type="button" class="petro-auth-tab'+(AUTH_MODE==="signup"?" active":"")+'" id="petroTabSignup" onclick="switchAuthTab(\'signup\')">'+(setup?"Owner Setup":"Register Outlet")+'</button>'
+  + '    </div>'
+  + '    <div class="petro-alert petro-alert-bad" id="er"></div>'
+
+  + '    <!-- Log in Pane -->'
+  + '    <div id="petroPaneLogin" style="display:'+(AUTH_MODE==="login"?"block":"none")+'">'
+  + '      <h1 class="petro-auth-title">Welcome back.</h1>'
+  + '      <p class="petro-auth-subtitle">Sign in to manage your station forecourt, shifts, and ledgers.</p>'
+  + '      <form onsubmit="event.preventDefault(); doAuth(0);">'
+  + '        <div class="petro-field">'
+  + '          <label for="a1">Registered Mobile Number</label>'
+  + '          <div class="petro-input-wrap">'
+  + '            <span class="petro-input-prefix">+91</span>'
+  + '            <input id="a1" class="has-prefix" inputmode="tel" autocomplete="username" placeholder="10-digit mobile number" required>'
+  + '          </div>'
+  + '          <div class="petro-hint">Enter your 10-digit registered dealer or staff number</div>'
+  + '        </div>'
+  + '        <div class="petro-field">'
+  + '          <label for="a2">Password</label>'
+  + '          <div class="petro-input-wrap">'
+  + '            <input id="a2" type="password" class="has-toggle" autocomplete="current-password" placeholder="Enter your password" required>'
+  + '            <button type="button" class="petro-pw-toggle" onclick="toggleAuthPw(\'a2\')" aria-label="Toggle password visibility">'
+  + '              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
+  + '            </button>'
+  + '          </div>'
+  + '        </div>'
+  + '        <button type="submit" class="petro-btn-submit">'
+  + '          Log In to Station &rarr;'
+  + '        </button>'
+  + '      </form>'
+  + '      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">'
+  + '        <button type="button" class="petro-unlock-link" onclick="clearLockout()">Reset Lockout / Unlock</button>'
+  + '        <a href="javascript:void(0)" onclick="switchAuthTab(\'signup\')" style="font-size:12.5px;color:#059669;font-weight:700;text-decoration:none">Register New Pump &rarr;</a>'
+  + '      </div>'
+  + '    </div>'
+
+  + '    <!-- Create Account / Owner Registration Pane -->'
+  + '    <div id="petroPaneSignup" style="display:'+(AUTH_MODE==="signup"?"block":"none")+'">'
+  + '      <h1 class="petro-auth-title">Register Petrol Pump.</h1>'
+  + '      <p class="petro-auth-subtitle">Submit your dealership details for isolated pump app activation.</p>'
+  + '      <form onsubmit="event.preventDefault(); doOwnerRegister();">'
+  + '        <div class="petro-field">'
+  + '          <label for="reg_owner_name">Dealer / Owner Full Name</label>'
+  + '          <input id="reg_owner_name" autocomplete="name" placeholder="e.g. Ramesh Patil" required>'
+  + '        </div>'
+  + '        <div class="petro-field">'
+  + '          <label for="reg_mobile">Owner Mobile Number (Login ID)</label>'
+  + '          <div class="petro-input-wrap">'
+  + '            <span class="petro-input-prefix">+91</span>'
+  + '            <input id="reg_mobile" class="has-prefix" inputmode="tel" autocomplete="username" placeholder="10-digit mobile number" required>'
+  + '          </div>'
+  + '          <div class="petro-hint">Will serve as your master dealer login</div>'
+  + '        </div>'
+  + '        <div class="petro-field">'
+  + '          <label for="reg_pass">Password (6+ characters)</label>'
+  + '          <div class="petro-input-wrap">'
+  + '            <input id="reg_pass" type="password" class="has-toggle" autocomplete="new-password" placeholder="Create a secure password" required minlength="6">'
+  + '            <button type="button" class="petro-pw-toggle" onclick="toggleAuthPw(\'reg_pass\')" aria-label="Toggle password visibility">'
+  + '              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>'
+  + '            </button>'
+  + '          </div>'
+  + '        </div>'
+  + '        <div class="petro-field">'
+  + '          <label for="reg_station_name">Petrol Pump / Station Name</label>'
+  + '          <input id="reg_station_name" placeholder="e.g. Shree Ganesh Petroleum" required>'
+  + '        </div>'
+  + '        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+  + '          <div class="petro-field">'
+  + '            <label for="reg_omc">Oil Company (OMC)</label>'
+  + '            <select id="reg_omc">'
+  + '              <option value="HPCL">HPCL</option>'
+  + '              <option value="BPCL">BPCL</option>'
+  + '              <option value="IOCL">IOCL (IndianOil)</option>'
+  + '              <option value="Nayara">Nayara Energy</option>'
+  + '              <option value="Shell">Shell India</option>'
+  + '              <option value="Jio-bp">Jio-bp</option>'
+  + '              <option value="Reliance">Reliance</option>'
+  + '              <option value="Other">Other</option>'
+  + '            </select>'
+  + '          </div>'
+  + '          <div class="petro-field">'
+  + '            <label for="reg_city">City &amp; State</label>'
+  + '            <input id="reg_city" placeholder="e.g. Solapur, Maharashtra" value="Solapur, Maharashtra">'
+  + '          </div>'
+  + '        </div>'
+  + '        <div class="petro-field">'
+  + '          <label for="reg_address">Station Location / Highway</label>'
+  + '          <input id="reg_address" placeholder="e.g. Pune-Solapur Highway, Mohol">'
+  + '        </div>'
+  + '        <div class="petro-field">'
+  + '          <label for="reg_scale">Nozzles &amp; Tanks Scale</label>'
+  + '          <select id="reg_scale">'
+  + '            <option value="4 Nozzles, 2 Tanks">4 Nozzles &bull; 2 Underground Tanks (Standard)</option>'
+  + '            <option value="6 Nozzles, 3 Tanks">6 Nozzles &bull; 3 Underground Tanks</option>'
+  + '            <option value="8 Nozzles, 4 Tanks">8 Nozzles &bull; 4 Underground Tanks (Highway Outlet)</option>'
+  + '            <option value="2 Nozzles, 1 Tank">2 Nozzles &bull; 1 Underground Tank (Rural Outlet)</option>'
+  + '          </select>'
+  + '        </div>'
+  + '        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;margin:14px 0;font-size:12.5px;color:#166534;line-height:1.45">'
+  + '          🛡️ <b>Admin Verification:</b> Once submitted, your pump registration is queued for Super Admin activation. Your isolated station environment will be ready immediately upon approval.'
+  + '        </div>'
+  + '        <button type="submit" id="btnOwnerReg" class="petro-btn-submit">'
+  + '          Register Pump &amp; Request Installation'
+  + '        </button>'
+  + '      </form>'
+  + '      <div style="margin-top:18px;font-size:13px;color:#64748b;text-align:center">'
+  + '        Already registered? <a href="javascript:void(0)" onclick="switchAuthTab(\'login\')" style="color:#059669;font-weight:700;text-decoration:none">Back to Log In &rarr;</a>'
+  + '      </div>'
+  + '    </div>'
+  + '  </div>'
+  + '</main>'
+  + '</div>';
+
+  document.getElementById("app").innerHTML=h;
 }
 
 function doOwnerRegister(){
@@ -11379,7 +11632,8 @@ function doOwnerRegister(){
 }
 
 function doAuth(setup, directMobile, directPass){
-  var mobile=directMobile||v("a1");
+  var rawMob = directMobile || v("a1");
+  var mobile = rawMob.replace(/\s+/g, "").replace(/^\+91/, "");
   var pEl=document.getElementById("a2");
   var password=directPass!==undefined?directPass:(pEl?pEl.value:"");
   var b={mobile:mobile,password:password};
