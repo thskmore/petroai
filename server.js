@@ -194,6 +194,23 @@ create table if not exists duty_handovers(
     console.warn("pay_items migration warning:", e.message);
   }
 
+  try {
+    const payCols = db.prepare("PRAGMA table_info(pay_items)").all();
+    if (!payCols.some(c => c.name === "duty_id")) {
+      db.exec("ALTER TABLE pay_items ADD COLUMN duty_id INTEGER");
+    }
+  } catch (e) {
+    console.warn("pay_items duty_id migration:", e.message);
+  }
+  try {
+    const dutyCols = db.prepare("PRAGMA table_info(duties)").all();
+    if (!dutyCols.some(c => c.name === "shortage_advance_id")) {
+      db.exec("ALTER TABLE duties ADD COLUMN shortage_advance_id INTEGER");
+    }
+  } catch (e) {
+    console.warn("duties shortage_advance_id migration:", e.message);
+  }
+
   db.exec(`
     create table if not exists stations(
       id integer primary key autoincrement,
@@ -1157,7 +1174,7 @@ function nozzleMap(st = stateNow()) {
 function rateFor(st, fuel, date) {
   let best = null;
   (st.rates || []).forEach((r) => {
-    if (r.fuel === fuel && r.from <= date && (!best || r.from > best.from || (r.from === best.from && r.id > best.id))) best = r;
+    if (r.fuel === fuel && r.active !== false && r.from <= date && (!best || r.from > best.from || (r.from === best.from && r.id > best.id))) best = r;
   });
   return best ? +best.rate : null;
 }
@@ -1226,11 +1243,16 @@ function detail(d) {
   try {
     w = db.prepare("select name from users where id=?").get(d.worker_id);
   } catch (_) {}
+  let linked_advance = null;
+  try {
+    linked_advance = db.prepare("select id, kind, amount, note, created from pay_items where duty_id=?").get(d.id) || null;
+  } catch (_) {}
   return {
     id: d.id, d: d.d, shift: d.shift, status: d.status, worker_id: d.worker_id, worker: w ? w.name : "", pay,
     cash: +pay.cash || 0, upi: +pay.upi || 0, card: +pay.card || 0, note: d.note || "",
     cash_denoms: (pay && pay._denoms) || null, slips: (pay && pay._slips) || null,
     lines, items, expenses, credit_sales, credit_recoveries, litres, sales, lube, exp, credit, recovery, expected, collected, diff: r2(collected - expected),
+    linked_advance,
   };
 }
 // Updates a duty's nozzle readings, shop items, expenses and collections.
@@ -1340,7 +1362,9 @@ const mine = (q, s, n) => {
 };
 const fillInfo = (st) => ({
   modes: activeModes(st).map((m) => ({ key: m.key, name: m.name })),
-  cats: st.expcats && st.expcats.length ? st.expcats : ["Tea and food", "Repairs", "Electricity", "Transport", "Other"],
+  cats: (st.expcats && st.expcats.length ? st.expcats : ["Tea and food", "Repairs", "Electricity", "Transport", "Other"])
+    .filter((c) => typeof c === "string" ? true : (c && c.active !== false))
+    .map((c) => typeof c === "string" ? c : c.name),
   items: (st.items || []).map((i) => ({ id: i.id, name: i.name, unit: i.unit, sell: i.sell, stock: i.stock })),
 });
 app.get("/api/duty/current", need(), (q, s) => {
@@ -1636,14 +1660,33 @@ app.post("/api/duties/assign", need("owner", "manager"), (q, s) => {
 app.get("/api/worker/assign-info", need(), (q, s) => {
   const d = bizDate(), st = stateNow();
   const open = openDuty(q.user.id);
+  const requestedDutyId = q.query.duty_id ? parseInt(q.query.duty_id, 10) : null;
 
-  let lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
+  let lastDuty = null;
+  if (requestedDutyId && !isNaN(requestedDutyId)) {
+    lastDuty = db.prepare("select * from duties where id=? and status in ('closed', 'submitted')").get(requestedDutyId);
+  }
+  if (!lastDuty) {
+    lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
+  }
   if (!lastDuty) {
     lastDuty = db.prepare("select * from duties where status in ('closed', 'submitted') order by id desc limit 1").get();
   }
+
+  // Get list of all worker's recently closed duties for selection
+  const closedDuties = db.prepare("select id, d, shift, status, closed_at, submitted from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 10").all(q.user.id);
+
   if (!lastDuty) {
-    return s.json({ has_open: !!open, open_duty: open ? detail(open) : null, latest_closed: null, date: d, day: dayStatus(d) });
+    return s.json({
+      has_open: !!open,
+      open_duty: open ? detail(open) : null,
+      latest_closed: null,
+      closed_duties: closedDuties,
+      date: d,
+      day: dayStatus(d)
+    });
   }
+
   const nm = nozzleMap(st);
   const lines = db.prepare("select * from duty_lines where duty_id=? order by id").all(lastDuty.id);
   const busy = {};
@@ -1652,7 +1695,7 @@ app.get("/api/worker/assign-info", need(), (q, s) => {
     const nIdStr = String(l.nozzle_id);
     const n = nm[nIdStr] || nm[l.nozzle_id] || { name: "Nozzle", fuel: "" };
     const rate = rateFor(st, n.fuel, d);
-    const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (n.open ?? null));
+    const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (l.opening ?? (n.open ?? 0)));
     return {
       id: nIdStr,
       name: n.name,
@@ -1669,17 +1712,26 @@ app.get("/api/worker/assign-info", need(), (q, s) => {
     role: w.role,
     busy: !!openDuty(w.id)
   }));
+
+  const existingHandover = db.prepare("select * from duty_handovers where duty_id=? or note like ? order by id desc limit 1").get(lastDuty.id, `%Duty #${lastDuty.id}%`);
+  const workerRow = db.prepare("select name from users where id=?").get(lastDuty.worker_id);
+
   s.json({
     has_open: !!open,
     open_duty: open ? detail(open) : null,
     latest_closed: {
       id: lastDuty.id,
+      worker_id: lastDuty.worker_id,
+      worker_name: workerRow ? workerRow.name : "Worker",
       d: lastDuty.d,
       shift: lastDuty.shift,
       status: lastDuty.status,
       closed_at: lastDuty.closed_at,
-      submitted: lastDuty.submitted
+      submitted: lastDuty.submitted,
+      already_handed_over: !!existingHandover,
+      handover_info: existingHandover || null
     },
+    closed_duties: closedDuties,
     nozzles,
     date: d,
     day: dayStatus(d),
@@ -1689,7 +1741,7 @@ app.get("/api/worker/assign-info", need(), (q, s) => {
 });
 
 app.post("/api/worker/assign-duty", need(), (q, s) => {
-  const { shift, target_worker_id, nozzle_assignments, note } = q.body || {};
+  const { shift, target_worker_id, nozzle_assignments, note, from_duty_id } = q.body || {};
   const st = stateNow(), d = bizDate();
 
   if (!SHIFTS.includes(shift)) {
@@ -1699,7 +1751,13 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
     return s.status(409).json({ error: "Today's business day is already closed. Ask the owner to reopen it." });
   }
 
-  let lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
+  let lastDuty = null;
+  if (from_duty_id && !isNaN(+from_duty_id)) {
+    lastDuty = db.prepare("select * from duties where id=? and status in ('closed', 'submitted')").get(+from_duty_id);
+  }
+  if (!lastDuty) {
+    lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
+  }
   if (!lastDuty) {
     lastDuty = db.prepare("select * from duties where status in ('closed', 'submitted') order by id desc limit 1").get();
   }
@@ -1710,7 +1768,7 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
   const nm = nozzleMap(st);
   const prevLines = db.prepare("select * from duty_lines where duty_id=? order by id").all(lastDuty.id);
   if (!prevLines.length) {
-    return s.status(400).json({ error: "No nozzles found in your latest closed duty." });
+    return s.status(400).json({ error: "No nozzles found in this closed duty." });
   }
 
   // Determine assignments: support both multi-nozzle mapping and single target worker
@@ -1732,7 +1790,7 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
 
     const l = prevLines.find((pl) => String(pl.nozzle_id) === nIdStr || +pl.nozzle_id === nId);
     if (!l) {
-      return s.status(400).json({ error: `Nozzle ${nIdStr} was not part of your shift duty.` });
+      return s.status(400).json({ error: `Nozzle ${nIdStr} was not part of Duty #${lastDuty.id}.` });
     }
     const n = nm[nIdStr] || nm[nId];
     if (!n || n.active === false) {
@@ -1740,13 +1798,13 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
     }
     const busy = db.prepare("select u.name w from duty_lines dl join duties du on du.id=dl.duty_id join users u on u.id=du.worker_id where (dl.nozzle_id=? or dl.nozzle_id=?) and du.status='open' limit 1").get(nIdStr, nId);
     if (busy) {
-      return s.status(409).json({ error: `${n.name} is currently open with ${busy.w}.` });
+      return s.status(409).json({ error: `${n.name} is currently open with ${busy.w}. That shift duty must be submitted or closed first.` });
     }
     const rate = rateFor(st, n.fuel, d);
     if (rate == null) {
       return s.status(400).json({ error: `Set the ${n.fuel} rate in Settings first.` });
     }
-    const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (n.open ?? null));
+    const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (l.opening ?? (n.open ?? 0)));
     if (opening == null) {
       return s.status(400).json({ error: `Set the opening reading for ${n.name} in Settings first.` });
     }
@@ -1767,11 +1825,14 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
 
   const customNote = String(note || "").trim();
   const created = [];
+  const sId = getStationId(q) || 1;
 
   db.transaction(() => {
     Object.values(byWorker).forEach(({ worker: tw, lines }) => {
       const isHandover = String(tw.id) !== String(q.user.id);
-      const dutyNote = isHandover ? (customNote ? `Handover from ${q.user.name}: ${customNote}` : `Handover from ${q.user.name}`) : customNote;
+      const dutyNote = isHandover
+        ? (customNote ? `Handover from ${q.user.name} (Duty #${lastDuty.id}): ${customNote}` : `Handover from ${q.user.name} (Duty #${lastDuty.id})`)
+        : (customNote ? `Self shift handover (Duty #${lastDuty.id}): ${customNote}` : `Self shift handover (Duty #${lastDuty.id})`);
 
       const did = db.prepare("insert into duties(worker_id,d,shift,started,assigned_by,note) values(?,?,?,?,?,?)")
         .run(tw.id, d, shift, now(), q.user.id, dutyNote).lastInsertRowid;
@@ -1782,8 +1843,8 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
       });
 
       // Record in duty_handovers log
-      db.prepare("insert into duty_handovers(duty_id, sender_id, receiver_id, d, shift, nozzles, note, created_at) values(?,?,?,?,?,?,?,?)")
-        .run(did, q.user.id, tw.id, d, shift, lines.map((l) => l.name).join(", "), customNote || dutyNote, now());
+      db.prepare("insert into duty_handovers(duty_id, sender_id, receiver_id, d, shift, nozzles, note, created_at, station_id) values(?,?,?,?,?,?,?,?,?)")
+        .run(did, q.user.id, tw.id, d, shift, lines.map((l) => l.name).join(", "), customNote || dutyNote, now(), sId);
 
       created.push({
         id: did,
@@ -4268,11 +4329,92 @@ app.post("/api/duties/:id/close", need("owner", "manager"), (q, s) => {
     if (dayStatus(d.d) !== "open") return { code: 409, error: "This business day is already closed." };
     db.prepare("update duties set status='closed', closed_by=?, closed_at=?, stock_done=1 where id=?").run(q.user.id, now(), d.id);
     if (!d.stock_done) adjustStock(d, -1);
+
+    const sId = getStationId(q);
+    const st = stateNow();
+    const bizFeats = (st.biz && st.biz.features) || {};
+    const shouldLinkAdvance = (q.body && q.body.link_advance !== undefined)
+      ? !!q.body.link_advance
+      : (bizFeats.link_shortage_advance !== false);
+
+    if (shouldLinkAdvance) {
+      const det = detail(d);
+      const diff = det ? (det.diff || 0) : 0;
+      const m = monthOf(d.d);
+      const existing = db.prepare("select id from pay_items where duty_id=?").get(d.id);
+      if (!existing) {
+        if (diff <= -1) {
+          const shortAmt = r2(-diff);
+          const itemId = db.prepare(`
+            insert into pay_items(worker_id, month, kind, amount, note, d, created, station_id, duty_id)
+            values(?, ?, 'advance', ?, ?, ?, ?, ?, ?)
+          `).run(d.worker_id, m, shortAmt, `Duty #${d.id} (${d.shift} ${d.d}) Cash Shortage`, d.d, now(), sId, d.id).lastInsertRowid;
+          db.prepare("update duties set shortage_advance_id=? where id=?").run(itemId, d.id);
+        } else if (diff >= 1) {
+          const excessAmt = r2(diff);
+          const itemId = db.prepare(`
+            insert into pay_items(worker_id, month, kind, amount, note, d, created, station_id, duty_id)
+            values(?, ?, 'excess', ?, ?, ?, ?, ?, ?)
+          `).run(d.worker_id, m, excessAmt, `Duty #${d.id} (${d.shift} ${d.d}) Cash Excess Adjustment`, d.d, now(), sId, d.id).lastInsertRowid;
+          db.prepare("update duties set shortage_advance_id=? where id=?").run(itemId, d.id);
+        }
+      }
+    }
+
     return { ok: true };
   })();
   if (out.error) return s.status(out.code).json({ error: out.error });
   s.json({ ok: true });
 });
+
+app.post("/api/duties/:id/link-advance", need("owner", "manager"), (q, s) => {
+  const d = db.prepare("select * from duties where id=?").get(+q.params.id);
+  if (!d) return s.status(404).json({ error: "Duty not found." });
+  const sId = getStationId(q);
+  const det = detail(d);
+  if (!det) return s.status(404).json({ error: "Could not calculate duty details." });
+  const { action, amount: customAmount, note: customNote } = q.body || {};
+
+  if (action === "unlink") {
+    const existing = db.prepare("select id from pay_items where duty_id=?").get(d.id);
+    if (!existing) return s.status(400).json({ error: "No advance record is linked to this duty." });
+    db.prepare("delete from pay_items where duty_id=?").run(d.id);
+    db.prepare("update duties set shortage_advance_id=null where id=?").run(d.id);
+    return s.json({ ok: true, message: "Duty advance link removed." });
+  }
+
+  const existing = db.prepare("select id, kind, amount from pay_items where duty_id=?").get(d.id);
+  if (existing) {
+    return s.status(400).json({ error: `Duty is already linked to worker ${existing.kind} (#${existing.id}, ₹${existing.amount}).` });
+  }
+
+  const diff = det.diff || 0;
+  if (Math.abs(diff) < 0.01) {
+    return s.status(400).json({ error: "This duty is balanced with ₹0 difference. Nothing to link." });
+  }
+
+  const m = monthOf(d.d);
+  if (diff < -0.01) {
+    const shortAmt = customAmount ? r2(num(customAmount)) : r2(-diff);
+    const note = customNote || `Duty #${d.id} (${d.shift} ${d.d}) Cash Shortage`;
+    const itemId = db.prepare(`
+      insert into pay_items(worker_id, month, kind, amount, note, d, created, station_id, duty_id)
+      values(?, ?, 'advance', ?, ?, ?, ?, ?, ?)
+    `).run(d.worker_id, m, shortAmt, note, d.d, now(), sId, d.id).lastInsertRowid;
+    db.prepare("update duties set shortage_advance_id=? where id=?").run(itemId, d.id);
+    return s.json({ ok: true, item_id: itemId, kind: "advance", amount: shortAmt, message: `Shortage of ₹${shortAmt} linked to ${det.worker}'s advance.` });
+  } else {
+    const excessAmt = customAmount ? r2(num(customAmount)) : r2(diff);
+    const note = customNote || `Duty #${d.id} (${d.shift} ${d.d}) Cash Excess Adjustment`;
+    const itemId = db.prepare(`
+      insert into pay_items(worker_id, month, kind, amount, note, d, created, station_id, duty_id)
+      values(?, ?, 'excess', ?, ?, ?, ?, ?, ?)
+    `).run(d.worker_id, m, excessAmt, note, d.d, now(), sId, d.id).lastInsertRowid;
+    db.prepare("update duties set shortage_advance_id=? where id=?").run(itemId, d.id);
+    return s.json({ ok: true, item_id: itemId, kind: "excess", amount: excessAmt, message: `Excess of ₹${excessAmt} linked to ${det.worker}'s advance credit.` });
+  }
+});
+
 app.post("/api/duties/:id/reopen", need("owner"), (q, s) => {
   const out = db.transaction(() => {
     const d = db.prepare("select * from duties where id=? and status='closed'").get(+q.params.id);
@@ -4280,6 +4422,10 @@ app.post("/api/duties/:id/reopen", need("owner"), (q, s) => {
     if (dayStatus(d.d) !== "open") return { code: 409, error: "Reopen the business day first." };
     db.prepare("update duties set status='submitted', stock_done=0 where id=?").run(d.id);
     if (d.stock_done) adjustStock(d, +1);
+    try {
+      db.prepare("delete from pay_items where duty_id=?").run(d.id);
+      db.prepare("update duties set shortage_advance_id=null where id=?").run(d.id);
+    } catch (_) {}
     return { ok: true };
   })();
   if (out.error) return s.status(out.code).json({ error: out.error });
@@ -4946,6 +5092,15 @@ function payFor(u, month) {
     };
   });
 
+  const linkedAdvanceDuties = new Set(
+    db.prepare("select duty_id from pay_items where worker_id=? and duty_id is not null and kind='advance'").all(u.id).map(r => r.duty_id)
+  );
+  const linkedExcessDuties = new Set(
+    db.prepare("select duty_id from pay_items where worker_id=? and duty_id is not null and kind='excess'").all(u.id).map(r => r.duty_id)
+  );
+
+  let unlinked_short = 0, unlinked_excess = 0;
+
   ds.forEach((d) => {
     dates_worked.add(d.d);
     date_counts[d.d] = (date_counts[d.d] || 0) + 1;
@@ -4955,22 +5110,28 @@ function payFor(u, month) {
     if (d.diff <= -1) {
       const diffAmt = r2(-d.diff);
       short += diffAmt;
+      const isLinked = linkedAdvanceDuties.has(d.id);
+      if (!isLinked) unlinked_short += diffAmt;
       short_list.push({
         duty_id: d.id,
         d: d.d,
         shift: d.shift,
         amount: diffAmt,
-        note: d.note || ""
+        note: d.note || "",
+        linked_to_advance: isLinked
       });
     } else if (d.diff >= 1) {
       const diffAmt = r2(d.diff);
       excess += diffAmt;
+      const isLinked = linkedExcessDuties.has(d.id);
+      if (!isLinked) unlinked_excess += diffAmt;
       excess_list.push({
         duty_id: d.id,
         d: d.d,
         shift: d.shift,
         amount: diffAmt,
-        note: d.note || ""
+        note: d.note || "",
+        linked_to_advance: isLinked
       });
     }
     if (Array.isArray(d.items)) {
@@ -5030,9 +5191,10 @@ function payFor(u, month) {
     }
   }
 
-  const items = db.prepare("select id,kind,amount,note,d,created from pay_items where worker_id=? and month=? order by id").all(u.id, month);
+  const items = db.prepare("select id,kind,amount,note,d,created,duty_id from pay_items where worker_id=? and month=? order by id").all(u.id, month);
   const sum = (k) => r2(items.filter((x) => x.kind === k).reduce((a, x) => a + x.amount, 0));
   const advance = sum("advance"), bonus = sum("bonus"), waived = sum("waive"), paid = sum("paid");
+  const excess_items = sum("excess");
   const manual_ot = sum("ot"), manual_incentive = sum("incentive"), loan_emi = sum("loan_emi"), deduction = sum("deduction");
   const uniform_deposit = sum("uniform_deposit"), deposit_refund = sum("deposit_refund");
 
@@ -5041,7 +5203,8 @@ function payFor(u, month) {
   earn = r2(base_earn);
   short = r2(short);
   excess = r2(excess);
-  const net_short = Math.max(0, short - waived);
+  const net_short = Math.max(0, unlinked_short - waived);
+  const total_excess = r2(unlinked_excess + excess_items);
 
   // Active loans for worker
   let loans = [];
@@ -5049,7 +5212,7 @@ function payFor(u, month) {
     loans = db.prepare("select * from pay_loans where worker_id=? and status='active'").all(u.id);
   } catch (_) {}
 
-  const gross = r2(earn + bonus + total_ot + total_incentive + auto_night_allowance + deposit_refund + excess);
+  const gross = r2(earn + bonus + total_ot + total_incentive + auto_night_allowance + deposit_refund + total_excess);
 
   // Statutory PF & ESIC
   let epf_ee = 0, epf_er = 0, esic_ee = 0, esic_er = 0;
@@ -5364,15 +5527,16 @@ app.post("/api/payroll/items", need("owner"), (q, s) => {
   const wId = +worker_id;
   const u = db.prepare("select id,name from users where id=?").get(wId);
   if (!u) return s.status(404).json({ error: "Worker not found." });
-  const validKinds = ["advance", "bonus", "waive", "paid", "ot", "incentive", "loan_emi", "deduction", "uniform_deposit", "deposit_refund"];
+  const validKinds = ["advance", "bonus", "waive", "paid", "ot", "incentive", "loan_emi", "deduction", "uniform_deposit", "deposit_refund", "excess"];
   if (!validKinds.includes(kind)) return s.status(400).json({ error: "Invalid entry type." });
   const a = num(amount);
   if (Number.isNaN(a) || a <= 0 || a > 1e7) return s.status(400).json({ error: "Enter an amount above zero." });
 
   const n = String(note || "").slice(0, 100);
+  const dId = q.body && q.body.duty_id ? parseInt(q.body.duty_id) : null;
 
-  db.prepare("insert into pay_items(worker_id,month,kind,amount,note,d,created,station_id) values(?,?,?,?,?,?,?,?)")
-    .run(wId, m, kind, r2(a), n, today(), now(), sId);
+  db.prepare("insert into pay_items(worker_id,month,kind,amount,note,d,created,station_id,duty_id) values(?,?,?,?,?,?,?,?,?)")
+    .run(wId, m, kind, r2(a), n, today(), now(), sId, dId);
 
   // If auto_cashbook requested for salary payment or advance, post to station Cash Book (Day Book)
   if (auto_cashbook && (kind === "paid" || kind === "advance")) {
@@ -5420,6 +5584,11 @@ app.delete("/api/payroll/items/:id", need("owner"), (q, s) => {
     const sId = getStationId(q);
     const isLocked = db.prepare("select 1 from pay_locks where station_id=? and month=?").get(sId, item.month);
     if (isLocked) return s.status(403).json({ error: `Payroll for ${item.month} is locked. Unlock before deleting entries.` });
+    if (item.duty_id) {
+      try {
+        db.prepare("update duties set shortage_advance_id=null where id=?").run(item.duty_id);
+      } catch (_) {}
+    }
   }
   db.prepare("delete from pay_items where id=?").run(+q.params.id);
   s.json({ ok: true });
