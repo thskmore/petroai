@@ -11,28 +11,32 @@
   "use strict";
 
   // State caches
-  var VAULT_DATA = null, VAULT_LOADING = false, VAULT_SUBTAB = "drops", VAULT_SEARCH = "", VAULT_SHIFT = "all";
-  var WATER_DATA = null, WATER_LOADING = false, WATER_FILTER_TANK = "all", WATER_SEARCH = "";
-  var COMPLIANCE_DATA = null, COMPLIANCE_LOADING = false, COMPLIANCE_CAT = "all", COMPLIANCE_STATUS = "all";
-  var EQUIP_DATA = null, EQUIP_LOADING = false, EQUIP_SUBTAB = "active", EQUIP_SEARCH = "", EQUIP_PRIORITY = "all";
-  var LOYALTY_DATA = null, LOYALTY_LOADING = false, LOYALTY_SUBTAB = "members", LOYALTY_SEARCH = "", LOYALTY_TYPE = "all";
-  var GEN_DATA = null, GEN_LOADING = false, GEN_SEARCH = "";
-  var AMEN_DATA = null, AMEN_LOADING = false, AMEN_SUBTAB = "checklist";
+  var VAULT_DATA = null, VAULT_LOADING = false, VAULT_ERROR = null, VAULT_SUBTAB = "drops", VAULT_SEARCH = "", VAULT_SHIFT = "all";
+  var WATER_DATA = null, WATER_LOADING = false, WATER_ERROR = null, WATER_FILTER_TANK = "all", WATER_SEARCH = "";
+  var COMPLIANCE_DATA = null, COMPLIANCE_LOADING = false, COMPLIANCE_ERROR = null, COMPLIANCE_CAT = "all", COMPLIANCE_STATUS = "all";
+  var EQUIP_DATA = null, EQUIP_LOADING = false, EQUIP_ERROR = null, EQUIP_SUBTAB = "active", EQUIP_SEARCH = "", EQUIP_PRIORITY = "all";
+  var LOYALTY_DATA = null, LOYALTY_LOADING = false, LOYALTY_ERROR = null, LOYALTY_SUBTAB = "members", LOYALTY_SEARCH = "", LOYALTY_TYPE = "all";
+  var GEN_DATA = null, GEN_LOADING = false, GEN_ERROR = null, GEN_SEARCH = "";
+  var AMEN_DATA = null, AMEN_LOADING = false, AMEN_ERROR = null, AMEN_SUBTAB = "checklist";
 
   // ==========================================
   // 1. SHIFT CASH HANDOVER & VAULT RECONCILIATION
   // ==========================================
   function loadVaultData(){
     VAULT_LOADING = true;
+    VAULT_ERROR = null;
     api("GET", "/api/vault-drops?shift=" + encodeURIComponent(VAULT_SHIFT) + "&search=" + encodeURIComponent(VAULT_SEARCH))
       .then(function(res){
         VAULT_DATA = res;
         VAULT_LOADING = false;
+        VAULT_ERROR = null;
         if (tab === "vault") renderVaultTab();
       })
       .catch(function(err){
         VAULT_LOADING = false;
-        toast(err.error || "Could not load vault records.");
+        VAULT_ERROR = (err && err.error) || "Could not load vault records.";
+        if (err && err.status === 401) return;
+        toast(VAULT_ERROR);
         if (tab === "vault") renderVaultTab();
       });
   }
@@ -44,6 +48,12 @@
 
     if (!SRV) {
       A.innerHTML = nav() + '<div class="empty">Cash vault records are managed on the server. Please log in.</div>';
+      return;
+    }
+
+    if (VAULT_ERROR && !VAULT_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load cash vault register", VAULT_ERROR, "loadVaultData") : '<div class="empty">' + esc(VAULT_ERROR) + '</div>');
       return;
     }
 
@@ -416,15 +426,19 @@
   // ==========================================
   function loadWaterDipData(){
     WATER_LOADING = true;
+    WATER_ERROR = null;
     api("GET", "/api/tank-water-dips?tank_id=" + encodeURIComponent(WATER_FILTER_TANK) + "&search=" + encodeURIComponent(WATER_SEARCH))
       .then(function(res){
         WATER_DATA = res;
         WATER_LOADING = false;
+        WATER_ERROR = null;
         if (tab === "waterdip") renderWaterDipTab();
       })
       .catch(function(err){
         WATER_LOADING = false;
-        toast(err.error || "Could not load water dip data.");
+        WATER_ERROR = (err && err.error) || "Could not load water dip data.";
+        if (err && err.status === 401) return;
+        toast(WATER_ERROR);
         if (tab === "waterdip") renderWaterDipTab();
       });
   }
@@ -433,6 +447,12 @@
     tab = "waterdip";
     var A = document.getElementById("app");
     if (!A) return;
+
+    if (WATER_ERROR && !WATER_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load tank water dip log", WATER_ERROR, "loadWaterDipData") : '<div class="empty">' + esc(WATER_ERROR) + '</div>');
+      return;
+    }
 
     if (!WATER_DATA && !WATER_LOADING) {
       A.innerHTML = nav() + '<div class="empty">Loading tank water finding paste register…</div>';
@@ -656,15 +676,19 @@
   // ==========================================
   function loadComplianceData(){
     COMPLIANCE_LOADING = true;
+    COMPLIANCE_ERROR = null;
     api("GET", "/api/statutory-licenses?category=" + encodeURIComponent(COMPLIANCE_CAT) + "&status=" + encodeURIComponent(COMPLIANCE_STATUS))
       .then(function(res){
         COMPLIANCE_DATA = res;
         COMPLIANCE_LOADING = false;
+        COMPLIANCE_ERROR = null;
         if (tab === "compliance") renderComplianceTab();
       })
       .catch(function(err){
         COMPLIANCE_LOADING = false;
-        toast(err.error || "Could not load statutory licenses.");
+        COMPLIANCE_ERROR = (err && err.error) || "Could not load statutory licenses.";
+        if (err && err.status === 401) return;
+        toast(COMPLIANCE_ERROR);
         if (tab === "compliance") renderComplianceTab();
       });
   }
@@ -673,6 +697,12 @@
     tab = "compliance";
     var A = document.getElementById("app");
     if (!A) return;
+
+    if (COMPLIANCE_ERROR && !COMPLIANCE_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load statutory licenses", COMPLIANCE_ERROR, "loadComplianceData") : '<div class="empty">' + esc(COMPLIANCE_ERROR) + '</div>');
+      return;
+    }
 
     if (!COMPLIANCE_DATA && !COMPLIANCE_LOADING) {
       A.innerHTML = nav() + '<div class="empty">Loading PESO and statutory compliance licenses…</div>';
@@ -907,15 +937,19 @@
   // ==========================================
   function loadEquipmentData(){
     EQUIP_LOADING = true;
+    EQUIP_ERROR = null;
     api("GET", "/api/equipment-tickets?status=" + encodeURIComponent(EQUIP_SUBTAB === "all" ? "all" : (EQUIP_SUBTAB === "active" ? "open" : "resolved")) + "&priority=" + encodeURIComponent(EQUIP_PRIORITY) + "&search=" + encodeURIComponent(EQUIP_SEARCH))
       .then(function(res){
         EQUIP_DATA = res;
         EQUIP_LOADING = false;
+        EQUIP_ERROR = null;
         if (tab === "equipment") renderEquipmentTab();
       })
       .catch(function(err){
         EQUIP_LOADING = false;
-        toast(err.error || "Could not load equipment tickets.");
+        EQUIP_ERROR = (err && err.error) || "Could not load equipment tickets.";
+        if (err && err.status === 401) return;
+        toast(EQUIP_ERROR);
         if (tab === "equipment") renderEquipmentTab();
       });
   }
@@ -924,6 +958,12 @@
     tab = "equipment";
     var A = document.getElementById("app");
     if (!A) return;
+
+    if (EQUIP_ERROR && !EQUIP_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load equipment maintenance records", EQUIP_ERROR, "loadEquipmentData") : '<div class="empty">' + esc(EQUIP_ERROR) + '</div>');
+      return;
+    }
 
     if (!EQUIP_DATA && !EQUIP_LOADING) {
       A.innerHTML = nav() + '<div class="empty">Loading equipment maintenance records…</div>';
@@ -1152,15 +1192,19 @@
   // ==========================================
   function loadLoyaltyData(){
     LOYALTY_LOADING = true;
+    LOYALTY_ERROR = null;
     api("GET", "/api/driver-loyalty?type=" + encodeURIComponent(LOYALTY_TYPE) + "&search=" + encodeURIComponent(LOYALTY_SEARCH))
       .then(function(res){
         LOYALTY_DATA = res;
         LOYALTY_LOADING = false;
+        LOYALTY_ERROR = null;
         if (tab === "loyalty") renderLoyaltyTab();
       })
       .catch(function(err){
         LOYALTY_LOADING = false;
-        toast(err.error || "Could not load driver loyalty data.");
+        LOYALTY_ERROR = (err && err.error) || "Could not load driver loyalty data.";
+        if (err && err.status === 401) return;
+        toast(LOYALTY_ERROR);
         if (tab === "loyalty") renderLoyaltyTab();
       });
   }
@@ -1169,6 +1213,12 @@
     tab = "loyalty";
     var A = document.getElementById("app");
     if (!A) return;
+
+    if (LOYALTY_ERROR && !LOYALTY_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load driver loyalty records", LOYALTY_ERROR, "loadLoyaltyData") : '<div class="empty">' + esc(LOYALTY_ERROR) + '</div>');
+      return;
+    }
 
     if (!LOYALTY_DATA && !LOYALTY_LOADING) {
       A.innerHTML = nav() + '<div class="empty">Loading driver loyalty and commercial khata…</div>';
@@ -1432,9 +1482,17 @@
       "Khata Balance Due: *" + inr(m.khata_balance) + "*\n\n" +
       "Thank you for fuelling with us! Show this message at bay for rewards.";
 
-    var cleanMob = "91" + m.mobile.replace(/\D/g, "");
-    var url = "https://wa.me/" + cleanMob + "?text=" + encodeURIComponent(text);
-    window.open(url, "_blank");
+    try {
+      var a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ if(a && a.parentNode) a.parentNode.removeChild(a); }, 100);
+    } catch(e) {
+      toast("WhatsApp link generated.");
+    }
   }
 
   // ==========================================
@@ -1442,15 +1500,19 @@
   // ==========================================
   function loadGeneratorData(){
     GEN_LOADING = true;
+    GEN_ERROR = null;
     api("GET", "/api/generator-power-logs")
       .then(function(res){
         GEN_DATA = res;
         GEN_LOADING = false;
+        GEN_ERROR = null;
         if (tab === "generator") renderGeneratorTab();
       })
       .catch(function(err){
         GEN_LOADING = false;
-        toast(err.error || "Could not load generator logs.");
+        GEN_ERROR = (err && err.error) || "Could not load generator logs.";
+        if (err && err.status === 401) return;
+        toast(GEN_ERROR);
         if (tab === "generator") renderGeneratorTab();
       });
   }
@@ -1459,6 +1521,12 @@
     tab = "generator";
     var A = document.getElementById("app");
     if (!A) return;
+
+    if (GEN_ERROR && !GEN_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load generator running logs", GEN_ERROR, "loadGeneratorData") : '<div class="empty">' + esc(GEN_ERROR) + '</div>');
+      return;
+    }
 
     if (!GEN_DATA && !GEN_LOADING) {
       A.innerHTML = nav() + '<div class="empty">Loading diesel generator running log…</div>';
@@ -1621,15 +1689,19 @@
   // ==========================================
   function loadAmenitiesData(){
     AMEN_LOADING = true;
+    AMEN_ERROR = null;
     api("GET", "/api/amenities-inspections")
       .then(function(res){
         AMEN_DATA = res;
         AMEN_LOADING = false;
+        AMEN_ERROR = null;
         if (tab === "amenities") renderAmenitiesTab();
       })
       .catch(function(err){
         AMEN_LOADING = false;
-        toast(err.error || "Could not load amenities inspection records.");
+        AMEN_ERROR = (err && err.error) || "Could not load amenities inspection records.";
+        if (err && err.status === 401) return;
+        toast(AMEN_ERROR);
         if (tab === "amenities") renderAmenitiesTab();
       });
   }
@@ -1638,6 +1710,12 @@
     tab = "amenities";
     var A = document.getElementById("app");
     if (!A) return;
+
+    if (AMEN_ERROR && !AMEN_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load amenities inspection records", AMEN_ERROR, "loadAmenitiesData") : '<div class="empty">' + esc(AMEN_ERROR) + '</div>');
+      return;
+    }
 
     if (!AMEN_DATA && !AMEN_LOADING) {
       A.innerHTML = nav() + '<div class="empty">Loading customer amenities and audit inspection checklist…</div>';

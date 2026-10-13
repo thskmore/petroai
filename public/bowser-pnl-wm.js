@@ -8,9 +8,9 @@
   "use strict";
 
   // State caches
-  var BOWSER_DATA = null, BOWSER_LOADING = false, BOWSER_SUBTAB = "trips", BOWSER_SEARCH = "", BOWSER_STATUS = "all";
-  var PNL_DATA = null, PNL_LOADING = false, PNL_RANGE = "7days", PNL_DATE_FROM = "", PNL_DATE_TO = "";
-  var WM_DATA = null, WM_LOADING = false, WM_SUBTAB = "stamping", WM_SEARCH = "";
+  var BOWSER_DATA = null, BOWSER_LOADING = false, BOWSER_ERROR = null, BOWSER_SUBTAB = "trips", BOWSER_SEARCH = "", BOWSER_STATUS = "all";
+  var PNL_DATA = null, PNL_LOADING = false, PNL_ERROR = null, PNL_RANGE = "7days", PNL_DATE_FROM = "", PNL_DATE_TO = "";
+  var WM_DATA = null, WM_LOADING = false, WM_ERROR = null, WM_SUBTAB = "stamping", WM_SEARCH = "";
 
   // Helper date
   function getTodayIso(){
@@ -22,15 +22,19 @@
   // ==========================================
   function loadBowserData(){
     BOWSER_LOADING = true;
+    BOWSER_ERROR = null;
     api("GET", "/api/bowsers")
       .then(function(res){
         BOWSER_DATA = res;
         BOWSER_LOADING = false;
+        BOWSER_ERROR = null;
         if (tab === "bowser") renderBowserTab();
       })
       .catch(function(err){
         BOWSER_LOADING = false;
-        toast(err.error || "Could not load bowser operations.");
+        BOWSER_ERROR = (err && err.error) || "Could not load bowser operations.";
+        if (err && err.status === 401) return;
+        toast(BOWSER_ERROR);
         if (tab === "bowser") renderBowserTab();
       });
   }
@@ -42,6 +46,12 @@
 
     if (!SRV) {
       A.innerHTML = nav() + '<div class="empty">Bowser doorstep delivery operations are managed on the server. Please log in.</div>';
+      return;
+    }
+
+    if (BOWSER_ERROR && !BOWSER_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load bowser operations", BOWSER_ERROR, "loadBowserData") : '<div class="empty">' + esc(BOWSER_ERROR) + '</div>');
       return;
     }
 
@@ -769,16 +779,20 @@
   // ==========================================
   function loadPnLData(){
     PNL_LOADING = true;
+    PNL_ERROR = null;
     var q = "?date_from=" + encodeURIComponent(PNL_DATE_FROM) + "&date_to=" + encodeURIComponent(PNL_DATE_TO);
     api("GET", "/api/pnl-analytics" + q)
       .then(function(res){
         PNL_DATA = res;
         PNL_LOADING = false;
+        PNL_ERROR = null;
         if (tab === "pnl") renderPnLTab();
       })
       .catch(function(err){
         PNL_LOADING = false;
-        toast(err.error || "Could not load Profit & Loss data.");
+        PNL_ERROR = (err && err.error) || "Could not load Profit & Loss data.";
+        if (err && err.status === 401) return;
+        toast(PNL_ERROR);
         if (tab === "pnl") renderPnLTab();
       });
   }
@@ -790,6 +804,12 @@
 
     if (!SRV) {
       A.innerHTML = nav() + '<div class="empty">Profit & Loss analytics are managed on the server. Please log in.</div>';
+      return;
+    }
+
+    if (PNL_ERROR && !PNL_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load Profit & Loss statement", PNL_ERROR, "loadPnLData") : '<div class="empty">' + esc(PNL_ERROR) + '</div>');
       return;
     }
 
@@ -1057,15 +1077,19 @@
   // ==========================================
   function loadWmVaultData(){
     WM_LOADING = true;
+    WM_ERROR = null;
     api("GET", "/api/wm-vault")
       .then(function(res){
         WM_DATA = res;
         WM_LOADING = false;
+        WM_ERROR = null;
         if (tab === "wmvault") renderWmVaultTab();
       })
       .catch(function(err){
         WM_LOADING = false;
-        toast(err.error || "Could not load Weights & Measures vault.");
+        WM_ERROR = (err && err.error) || "Could not load Weights & Measures vault.";
+        if (err && err.status === 401) return;
+        toast(WM_ERROR);
         if (tab === "wmvault") renderWmVaultTab();
       });
   }
@@ -1077,6 +1101,12 @@
 
     if (!SRV) {
       A.innerHTML = nav() + '<div class="empty">Weights & Measures compliance is managed on the server. Please log in.</div>';
+      return;
+    }
+
+    if (WM_ERROR && !WM_DATA) {
+      var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+      A.innerHTML = nav() + (errBox ? errBox("Could not load Weights & Measures vault", WM_ERROR, "loadWmVaultData") : '<div class="empty">' + esc(WM_ERROR) + '</div>');
       return;
     }
 
@@ -1547,7 +1577,17 @@
     var text = "Fuel Indent Slip: " + indentNo + "\nVehicle: " + vehicleNo + "\nIssued by Petrol Pump.\nPlease present this digital token to pump attendant for refueling.";
     var phone = mobile ? mobile.replace(/\D/g, "") : "";
     var url = "https://wa.me/" + (phone.length === 10 ? "91" + phone : phone) + "?text=" + encodeURIComponent(text);
-    window.open(url, "_blank");
+    try {
+      var a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){ if(a && a.parentNode) a.parentNode.removeChild(a); }, 100);
+    } catch(e) {
+      toast("WhatsApp link generated.");
+    }
   }
 
   // Export to window

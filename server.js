@@ -1562,7 +1562,7 @@ app.post("/api/reset-data", need("owner", "admin"), (q, s) => {
   }
 });
 app.get("/api/my-duties/:id", need(), (q, s) => {
-  const d = db.prepare("select * from duties where id=? and worker_id=? and status<>'open'").get(+q.params.id, q.user.id);
+  const d = db.prepare("select * from duties where id=? and worker_id=?").get(+q.params.id, q.user.id);
   if (!d) return s.status(404).json({ error: "Duty not found." });
   s.json({ duty: detail(d), modes: allModes(stateNow()).map((m) => ({ key: m.key, name: m.name })) });
 });

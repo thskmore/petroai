@@ -6,14 +6,17 @@
 
 var PRICE_REV_DATA = null;
 var PRICE_REV_LOADING = false;
+var PRICE_REV_ERROR = null;
 var PRICE_FILTER_FUEL = "all";
 
 var WM_RESEAL_DATA = null;
 var WM_RESEAL_LOADING = false;
+var WM_RESEAL_ERROR = null;
 var WM_RESEAL_FILTER_STATUS = "all";
 
 var GST_BREAKUP_DATA = null;
 var GST_BREAKUP_LOADING = false;
+var GST_BREAKUP_ERROR = null;
 var GST_BREAKUP_MONTH = "";
 
 // ========================================================
@@ -23,14 +26,18 @@ var GST_BREAKUP_MONTH = "";
 function loadPriceRevData(){
   if (PRICE_REV_LOADING) return;
   PRICE_REV_LOADING = true;
+  PRICE_REV_ERROR = null;
   var url = "/api/price-revisions?fuel_product=" + encodeURIComponent(PRICE_FILTER_FUEL);
   api("GET", url).then(function(res){
     PRICE_REV_DATA = res;
     PRICE_REV_LOADING = false;
+    PRICE_REV_ERROR = null;
     if (tab === "pricerev") renderPriceRevTab();
   }).catch(function(err){
     PRICE_REV_LOADING = false;
-    toast(err.error || "Could not load price revisions.");
+    PRICE_REV_ERROR = (err && err.error) || "Could not load price revisions.";
+    if (err && err.status === 401) return;
+    toast(PRICE_REV_ERROR);
     if (tab === "pricerev") renderPriceRevTab();
   });
 }
@@ -42,6 +49,12 @@ function renderPriceRevTab(){
 
   if (!SRV) {
     A.innerHTML = nav() + '<div class="empty">Price revision is managed on the server. Please log in.</div>';
+    return;
+  }
+
+  if (PRICE_REV_ERROR && !PRICE_REV_DATA) {
+    var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+    A.innerHTML = nav() + (errBox ? errBox("Could not load daily price revisions", PRICE_REV_ERROR, "loadPriceRevData") : '<div class="empty">' + esc(PRICE_REV_ERROR) + '</div>');
     return;
   }
 
@@ -319,14 +332,18 @@ function submitBroadcast(){
 function loadWmResealData(){
   if (WM_RESEAL_LOADING) return;
   WM_RESEAL_LOADING = true;
+  WM_RESEAL_ERROR = null;
   var url = "/api/wm-reseals?status=" + encodeURIComponent(WM_RESEAL_FILTER_STATUS);
   api("GET", url).then(function(res){
     WM_RESEAL_DATA = res;
     WM_RESEAL_LOADING = false;
+    WM_RESEAL_ERROR = null;
     if (tab === "wmreseal") renderWmResealTab();
   }).catch(function(err){
     WM_RESEAL_LOADING = false;
-    toast(err.error || "Could not load W&M reseal requests.");
+    WM_RESEAL_ERROR = (err && err.error) || "Could not load W&M reseal requests.";
+    if (err && err.status === 401) return;
+    toast(WM_RESEAL_ERROR);
     if (tab === "wmreseal") renderWmResealTab();
   });
 }
@@ -338,6 +355,12 @@ function renderWmResealTab(){
 
   if (!SRV) {
     A.innerHTML = nav() + '<div class="empty">Legal Metrology resealing is managed on the server. Please log in.</div>';
+    return;
+  }
+
+  if (WM_RESEAL_ERROR && !WM_RESEAL_DATA) {
+    var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+    A.innerHTML = nav() + (errBox ? errBox("Could not load W&M reseal requests", WM_RESEAL_ERROR, "loadWmResealData") : '<div class="empty">' + esc(WM_RESEAL_ERROR) + '</div>');
     return;
   }
 
@@ -579,15 +602,19 @@ function printResealRegister(){
 function loadGstBreakupData(){
   if (GST_BREAKUP_LOADING) return;
   GST_BREAKUP_LOADING = true;
+  GST_BREAKUP_ERROR = null;
   var targetM = GST_BREAKUP_MONTH || bizToday().slice(0, 7);
   var url = "/api/gst-tax-breakup?month=" + encodeURIComponent(targetM);
   api("GET", url).then(function(res){
     GST_BREAKUP_DATA = res;
     GST_BREAKUP_LOADING = false;
+    GST_BREAKUP_ERROR = null;
     if (tab === "gstbreakup") renderGstBreakupTab();
   }).catch(function(err){
     GST_BREAKUP_LOADING = false;
-    toast(err.error || "Could not load GST tax summary.");
+    GST_BREAKUP_ERROR = (err && err.error) || "Could not load GST tax summary.";
+    if (err && err.status === 401) return;
+    toast(GST_BREAKUP_ERROR);
     if (tab === "gstbreakup") renderGstBreakupTab();
   });
 }
@@ -599,6 +626,12 @@ function renderGstBreakupTab(){
 
   if (!SRV) {
     A.innerHTML = nav() + '<div class="empty">GST tax reporting is managed on the server. Please log in.</div>';
+    return;
+  }
+
+  if (GST_BREAKUP_ERROR && !GST_BREAKUP_DATA) {
+    var errBox = window.renderErrorBox || (typeof renderErrorBox === "function" ? renderErrorBox : null);
+    A.innerHTML = nav() + (errBox ? errBox("Could not load GST tax summary", GST_BREAKUP_ERROR, "loadGstBreakupData") : '<div class="empty">' + esc(GST_BREAKUP_ERROR) + '</div>');
     return;
   }
 

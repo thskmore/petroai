@@ -2610,18 +2610,28 @@ function toWaNumber(raw){
 
 function waLink(number, text){
   var n = toWaNumber(number);
-  if (!n) throw new Error("Please enter a valid 10-digit WhatsApp number.");
   var isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '') || window.innerWidth < 900;
-  var encoded = encodeURIComponent(text);
+  var encoded = encodeURIComponent(text || '');
+  if (!n) {
+    return isMob ? ('https://api.whatsapp.com/send?text=' + encoded) : ('https://web.whatsapp.com/send?text=' + encoded);
+  }
   return isMob ? ('https://wa.me/' + n + '?text=' + encoded) : ('https://web.whatsapp.com/send?phone=' + n + '&text=' + encoded);
 }
 
 function openWaLink(number, text){
   try {
     var url = waLink(number, text);
-    window.open(url, '_blank');
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      if (a && a.parentNode) a.parentNode.removeChild(a);
+    }, 150);
   } catch(e) {
-    toast(e.message || "Please provide a valid 10-digit WhatsApp phone number.");
+    toast((e && e.message) || "Please provide a valid 10-digit WhatsApp phone number.");
   }
 }
 
@@ -6547,7 +6557,98 @@ function saveLubeModal(){
   autoSaveDuty(true);
 }
 function onExpInput(val){if(!DF)return;if(!DF.exps.length){if(val!==""&&!isNaN(parseFloat(val))){DF.exps.push({cat:DF.cats[0]||"Other",note:"",amount:val})}}else if(DF.exps.length===1){DF.exps[0].amount=val}dsum();autoSaveDuty()}
-function dsum(){var e=document.getElementById("dsum");if(!e||!DF)return;var L=0,A=0,P=0,X=0,C=0,R=0;
+function renderShiftDiffHtml(df, obligation, accounted){
+  df = Math.round((parseFloat(df) || 0) * 100) / 100;
+  obligation = Math.round((parseFloat(obligation) || 0) * 100) / 100;
+  accounted = Math.round((parseFloat(accounted) || 0) * 100) / 100;
+  var isShort = (df < -0.01);
+  var isExcess = (df > 0.01);
+
+  var cardBg = isShort
+    ? "linear-gradient(135deg, rgba(225, 29, 72, 0.09) 0%, rgba(190, 18, 60, 0.04) 100%)"
+    : "linear-gradient(135deg, rgba(5, 150, 105, 0.09) 0%, rgba(4, 120, 87, 0.04) 100%)";
+  var cardBorder = isShort ? "var(--due, #e11d48)" : "var(--ok, #059669)";
+  var cardColor = isShort ? "var(--due, #e11d48)" : "var(--ok, #059669)";
+  var cardShadow = isShort ? "0 2px 10px rgba(225, 29, 72, 0.10)" : "0 2px 10px rgba(5, 150, 105, 0.10)";
+  var icon = isShort ? "⚠️" : (isExcess ? "📈" : "✅");
+  var title = isShort ? "Shift Shortage" : (isExcess ? "Shift Excess" : "Shift Tally (Balanced)");
+  var statusBadge = isShort ? "Shortage" : (isExcess ? "Excess" : "Balanced (Tally)");
+  var valStr = isShort ? ("− " + inr(Math.abs(df))) : (isExcess ? ("+ " + inr(Math.abs(df))) : "₹0");
+  var explanation = isShort
+    ? ("Short by " + inr(Math.abs(df)) + " (Accounted " + inr(accounted) + " < Obligation " + inr(obligation) + ")")
+    : (isExcess
+        ? ("Excess by +" + inr(Math.abs(df)) + " (Accounted " + inr(accounted) + " > Obligation " + inr(obligation) + ")")
+        : "Exact tally: Total accounted matches sales obligation perfectly");
+
+  return '<div id="shiftShortageExcessCard" class="cust" style="cursor:default;margin-top:10px;background:' + cardBg + ';border:2px solid ' + cardBorder + ';border-radius:12px;padding:12px 14px;box-shadow:' + cardShadow + '">'
+    + '<div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+    + '<div>'
+    + '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:' + cardColor + ';display:flex;align-items:center;gap:6px">'
+    + '<span>' + icon + '</span> <span>' + title + '</span>'
+    + '</div>'
+    + '<div id="shiftDiffExpl" class="sub" style="font-size:11.5px;margin-top:3px;font-weight:600;color:' + cardColor + '">'
+    + esc(explanation)
+    + '</div>'
+    + '</div>'
+    + '<div style="text-align:right">'
+    + '<div id="shiftDiffVal" style="font-size:21px;font-weight:900;color:' + cardColor + ';letter-spacing:-0.2px">'
+    + valStr
+    + '</div>'
+    + '<div id="shiftDiffStatus" class="sub" style="font-size:10.5px;font-weight:800;color:' + cardColor + '">'
+    + esc(statusBadge)
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+}
+function updateShiftDiffDisplay(df, obligation, accounted){
+  var card = document.getElementById("shiftShortageExcessCard");
+  if(!card) return;
+  df = Math.round((parseFloat(df) || 0) * 100) / 100;
+  obligation = Math.round((parseFloat(obligation) || 0) * 100) / 100;
+  accounted = Math.round((parseFloat(accounted) || 0) * 100) / 100;
+  var isShort = (df < -0.01);
+  var isExcess = (df > 0.01);
+
+  var cardBg = isShort
+    ? "linear-gradient(135deg, rgba(225, 29, 72, 0.09) 0%, rgba(190, 18, 60, 0.04) 100%)"
+    : "linear-gradient(135deg, rgba(5, 150, 105, 0.09) 0%, rgba(4, 120, 87, 0.04) 100%)";
+  var cardBorder = isShort ? "var(--due, #e11d48)" : "var(--ok, #059669)";
+  var cardColor = isShort ? "var(--due, #e11d48)" : "var(--ok, #059669)";
+  var cardShadow = isShort ? "0 2px 10px rgba(225, 29, 72, 0.10)" : "0 2px 10px rgba(5, 150, 105, 0.10)";
+  var icon = isShort ? "⚠️" : (isExcess ? "📈" : "✅");
+  var title = isShort ? "Shift Shortage" : (isExcess ? "Shift Excess" : "Shift Tally (Balanced)");
+  var statusBadge = isShort ? "Shortage" : (isExcess ? "Excess" : "Balanced (Tally)");
+  var valStr = isShort ? ("− " + inr(Math.abs(df))) : (isExcess ? ("+ " + inr(Math.abs(df))) : "₹0");
+  var explanation = isShort
+    ? ("Short by " + inr(Math.abs(df)) + " (Accounted " + inr(accounted) + " < Obligation " + inr(obligation) + ")")
+    : (isExcess
+        ? ("Excess by +" + inr(Math.abs(df)) + " (Accounted " + inr(accounted) + " > Obligation " + inr(obligation) + ")")
+        : "Exact tally: Total accounted matches sales obligation perfectly");
+
+  card.style.background = cardBg;
+  card.style.borderColor = cardBorder;
+  card.style.boxShadow = cardShadow;
+  card.innerHTML = '<div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+    + '<div>'
+    + '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:' + cardColor + ';display:flex;align-items:center;gap:6px">'
+    + '<span>' + icon + '</span> <span>' + title + '</span>'
+    + '</div>'
+    + '<div id="shiftDiffExpl" class="sub" style="font-size:11.5px;margin-top:3px;font-weight:600;color:' + cardColor + '">'
+    + esc(explanation)
+    + '</div>'
+    + '</div>'
+    + '<div style="text-align:right">'
+    + '<div id="shiftDiffVal" style="font-size:21px;font-weight:900;color:' + cardColor + ';letter-spacing:-0.2px">'
+    + valStr
+    + '</div>'
+    + '<div id="shiftDiffStatus" class="sub" style="font-size:10.5px;font-weight:800;color:' + cardColor + '">'
+    + esc(statusBadge)
+    + '</div>'
+    + '</div>'
+    + '</div>';
+}
+function dsum(){if(!DF)return;var L=0,A=0,P=0,X=0,C=0,R=0;
 DF.lines.forEach(function(l,i){var no=l.closing==="",lt=no?0:Math.round((fnum(l.closing)-fnum(l.opening)-fnum(l.testing))*100)/100,am=Math.round(lt*fnum(l.rate)*100)/100;L+=lt;A+=am;var x=document.getElementById("dl"+i);if(x)x.textContent=no?"Enter the closing reading":lt+" L sold = "+m2(am)});
 DF.items.forEach(function(it,i){var s=DF.stock.filter(function(x){return String(x.id)===String(it.item_id)})[0],am=s?Math.round(fnum(it.qty)*s.sell*100)/100:0;P+=am;var x=document.getElementById("il"+i);if(x)x.textContent=s?m2(am):""});
 DF.exps.forEach(function(x){X+=fnum(x.amount)});DF.modes.forEach(function(m){C+=fnum(DF.pay[m.key])});
@@ -6581,7 +6682,8 @@ if(collBrkEl){
   if(DF.credit>0)collParts.push("Credit: "+inr(DF.credit));
   collBrkEl.textContent=collParts.length?collParts.join(" + "):"Payments, Expenses & Credit Sales";
 }
-e.innerHTML=R2("Fuel sold",L.toFixed(2)+" L")+R2("Fuel sales",m2(A))+R2("Lube and shop sales",m2(P))+(R>0?R2("Credit recovery collections","+"+m2(R)):"")+R2("Less credit sales",m2(DF.credit))+R2("Less expense",m2(X))+R2("Expected collection",m2(ex))+R2("Collected",m2(C))+'<div class="amt" style="color:'+(Math.abs(df)<1?'var(--ok)':'var(--due)')+'">'+R2(df<=-1?"Short":df>=1?"Excess":"Tally",m2(Math.abs(df)))+'</div>'}
+updateShiftDiffDisplay(df,totalObligation,sectionTotal);
+var e=document.getElementById("dsum");if(e)e.innerHTML="";}
 function onNozInput(el,idx,field){var v=el.value;if(v.indexOf('.')!==-1){var parts=v.split('.');if(parts[1].length>2){v=parts[0]+'.'+parts[1].slice(0,2);el.value=v}}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty()}
 function onNozChange(el,idx,field){var v=el.value.trim();if(v!==""&&!isNaN(parseFloat(v))){var rounded=(Math.round(parseFloat(v)*100)/100).toFixed(2);el.value=rounded;v=rounded}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty(true)}
 function finNoz(label,idx,field,val,ed){var dispVal=(val===""||val==null)?"":(typeof val==="number"?val.toFixed(2):esc(val));return '<label>'+label+'<input '+(ed?'':'disabled ')+'type="number" step="0.01" inputmode="decimal" placeholder="0.00" value="'+esc(dispVal)+'" oninput="onNozInput(this,'+idx+',\''+field+'\')" onchange="onNozChange(this,'+idx+',\''+field+'\')"></label>'}
@@ -6699,8 +6801,9 @@ h+='<div id="totalCollectionCard" class="cust" style="cursor:default;margin-top:
   +'</div>'
   +'</div>'
   +'</div>';
-h+='<label style="margin-top:12px">Note (optional)<input value="'+esc(DF.note)+'" '+(mgrReview?'disabled style="background:var(--bg);color:var(--ink)" ':'oninput="DF.note=this.value;autoSaveDuty()" onchange="DF.note=this.value;autoSaveDuty(true)"')+'>';
-h+='<div class="cust" id="dsum" style="cursor:default;margin-top:12px"></div><div class="err" id="er"></div>';
+var initDiff = Math.round((initSectionTotal - initObligation) * 100) / 100;
+h += renderShiftDiffHtml(initDiff, initObligation, initSectionTotal);
+h+='<div class="err" id="er"></div>';
 setTimeout(dsum,0);return h}
 function fromDuty(d,ctx,mode){if(!d)return null;ctx=ctx||{};var pay={};if(d.pay&&typeof d.pay==="object"){Object.keys(d.pay).forEach(function(k){pay[k]=d.pay[k]||""})}
 var slips=(d.pay&&d.pay._slips)||d.slips||{},cash_denoms=(d.pay&&d.pay._denoms)||d.cash_denoms||{};
@@ -6713,7 +6816,7 @@ function msg(m,good){var e=document.getElementById("er");if(e){e.style.color=goo
 function renderDF(){var m=DF.meta,h;
 var autoBadge='<span id="autoSaveStatus" style="font-size:12px;font-weight:600;display:'+(autoSaveLastText?'inline-flex':'none')+';align-items:center;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:'+(autoSaveLastColor||'var(--ok)')+'">'+(autoSaveLastText||'')+'</span>';
 if(DF.mode=="worker"){
-  h=ubar()+wnav()+'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><h1>'+esc(m.shift)+' duty \u00b7 '+m.d+'</h1>'+autoBadge+'</div><div class="sub">Opening readings and rates are set by your manager. Entries are autosaved automatically.</div>';
+  h=ubar()+wnav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><span class="sub" style="font-weight:700">Active Shift Duty</span><div style="display:inline-flex;gap:6px;flex-wrap:wrap"><button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px" onclick="printSingleDuty(dutyFromDF())">🖨️ Print Voucher</button><button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(dutyFromDF())">📲 WhatsApp Share</button><button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px" onclick="downloadDutyPDF(dutyFromDF())">📄 PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><h1>'+esc(m.shift)+' duty \u00b7 '+m.d+'</h1>'+autoBadge+'</div><div class="sub">Opening readings and rates are set by your manager. Entries are autosaved automatically.</div>';
   var sbMatch=(DF.note||"").match(/\[Sent back by ([^:]+): (.*?)\]/);
   if(sbMatch){
     h+='<div class="cust" style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:12px 14px;margin-top:10px;margin-bottom:12px;border-radius:10px">'
@@ -6722,10 +6825,10 @@ if(DF.mode=="worker"){
       +'<div class="sub" style="margin-top:6px;color:#856404">Please make the corrections above and tap <b>Submit duty</b> again.</div>'
       +'</div>';
   }
-  h+=formHtml()+'<div class="row" style="margin-top:12px"><button class="ghost" onclick="wSave(0)">Save draft</button><button onclick="confirmDutyModal()">Submit duty</button></div>';
+  h+=formHtml()+'<div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="wSave(0)">Save draft</button><button class="ghost" type="button" style="display:inline-flex;align-items:center;gap:5px" onclick="printSingleDuty(dutyFromDF())">🖨️ Print</button><button class="ghost" type="button" style="display:inline-flex;align-items:center;gap:5px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(dutyFromDF())">📲 WhatsApp</button><button style="flex:1" onclick="confirmDutyModal()">Submit duty</button></div>';
 }else{
   var isManager=(ME&&ME.role=="manager");
-  h=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><div style="display:inline-flex;gap:6px"><button class="ghost" onclick="printSingleDuty(DF.id)" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Duty Voucher</button><button class="ghost" onclick="downloadDutyPDF(DF.id)" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px"><h1>'+esc(m.worker)+' \u00b7 '+esc(m.shift)+' \u00b7 '+m.d+'</h1>'+(isManager?'':autoBadge)+'</div>';
+  h=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><div style="display:inline-flex;gap:6px;flex-wrap:wrap"><button class="ghost" onclick="printSingleDuty(DF.id)" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Duty Voucher</button><button class="ghost" onclick="shareDutyWhatsApp(DF.id)" style="display:inline-flex;align-items:center;gap:6px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700">📲 WhatsApp</button><button class="ghost" onclick="downloadDutyPDF(DF.id)" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px"><h1>'+esc(m.worker)+' \u00b7 '+esc(m.shift)+' \u00b7 '+m.d+'</h1>'+(isManager?'':autoBadge)+'</div>';
   if(isManager){
     h+='<div class="cust" style="background:var(--card);border:1px solid var(--line);padding:10px 14px;margin:8px 0 14px;border-radius:8px"><b style="font-size:15px">📋 Manager Review (Read-only)</b><div class="sub" style="margin-top:4px">Review the figures submitted by <b>'+esc(m.worker)+'</b>. You cannot make direct changes. If any correction is needed, send the duty back to the worker with notes. If all figures are verified, close the duty.</div></div>';
   }else{
@@ -6909,8 +7012,20 @@ function confirmDutyModal(){
     h+=T(esc(p.name),p.amount);
   });
   h+=T("<b>Total collected</b>","<b>"+inr(totCollected)+"</b>");
-  h+=T("<b>Difference</b>","<b>"+sgn(diff)+"</b>",Math.abs(diff)<1?'var(--ok)':'var(--due)');
+  var diffColor = (diff < -0.01) ? 'var(--due)' : 'var(--ok)';
+  var diffLabel = (diff < -0.01) ? 'Shift Shortage' : (diff > 0.01 ? 'Shift Excess' : 'Shift Balanced (Tally)');
+  h+=T("<b>" + diffLabel + "</b>","<b>"+sgn(diff)+"</b>",diffColor);
   h+='</table></div>';
+  if(diff < -0.01){
+    h+='<div style="background:rgba(225,29,72,0.09);border:1.5px solid var(--due);color:var(--due);padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="display:flex;align-items:center;gap:6px"><span>⚠️</span> <span>Shift Shortage:</span></span><span style="font-size:18px;font-weight:900">− '+inr(Math.abs(diff))+'</span></div>';
+  } else if(diff > 0.01){
+    h+='<div style="background:rgba(5,150,105,0.09);border:1.5px solid var(--ok);color:var(--ok);padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="display:flex;align-items:center;gap:6px"><span>📈</span> <span>Shift Excess:</span></span><span style="font-size:18px;font-weight:900">+ '+inr(Math.abs(diff))+'</span></div>';
+  } else {
+    h+='<div style="background:rgba(5,150,105,0.05);border:1.5px solid var(--ok);color:var(--ok);padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="display:flex;align-items:center;gap:6px"><span>✅</span> <span>Shift Balanced (Tally):</span></span><span style="font-size:18px;font-weight:900">₹0</span></div>';
+  }
 
   if(DF.note){
     h+='<div class="sub" style="margin-bottom:10px"><b>Note:</b> '+esc(DF.note)+'</div>';
@@ -6918,10 +7033,15 @@ function confirmDutyModal(){
 
   h+='<div class="err" id="confirmDutyErr" style="font-weight:600;font-size:14px;margin-bottom:8px"></div>';
 
-  h+='<div class="row" style="margin-top:14px;gap:8px">'
-    +'<button class="ghost" onclick="closeM()" style="flex:1">Go back & edit</button>'
-    +'<button id="btnConfirmSubmit" onclick="doWorkerDutySubmit()" style="flex:1.4">Confirm & Submit duty</button>'
-    +'</div>';
+  h+='<div class="row noprint" style="justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid var(--line);gap:8px;flex-wrap:wrap">'
+    +'<div style="display:inline-flex;gap:6px">'
+    +'<button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:4px" onclick="printSingleDuty(dutyFromDF())">🖨️ Print</button>'
+    +'<button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:4px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(dutyFromDF())">📲 WhatsApp</button>'
+    +'</div>'
+    +'<div style="display:inline-flex;gap:8px;flex:1;justify-content:flex-end">'
+    +'<button class="ghost" onclick="closeM()">Go back & edit</button>'
+    +'<button id="btnConfirmSubmit" onclick="doWorkerDutySubmit()">Confirm & Submit duty</button>'
+    +'</div></div>';
 
   openM(h);
 }
@@ -6991,6 +7111,7 @@ function dutyBlock(d, mn) {
   h += '<div><b style="font-size:15px">' + esc(d.worker) + ' · ' + esc(d.shift) + '</b><div class="sub" style="margin-top:2px">' + d.d + ' · Duty #' + d.id + ' (' + (d.status == "closed" ? "Closed & Verified" : (d.status == "submitted" ? "Submitted" : "Open")) + ')</div></div>';
   h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
   h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="printSingleDuty(' + d.id + ')">🖨️ Print Voucher</button>';
+  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(' + d.id + ')">📲 WhatsApp Share</button>';
   h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF</button>';
   h += '</div></div>';
 
@@ -7027,6 +7148,9 @@ function dutyBlock(d, mn) {
     }).join("") + '</tbody></table></div>';
   }
 
+  var dutyDiff = parseFloat(d.diff) || 0;
+  var dCol = (dutyDiff < -0.01) ? 'var(--due)' : 'var(--ok)';
+  var dName = (dutyDiff < -0.01) ? 'Shift Shortage' : (dutyDiff > 0.01 ? 'Shift Excess' : 'Shift Balanced (Tally)');
   h += '<div class="tbl" style="margin-top:8px"><table class="ops-table" style="min-width:0"><thead><tr><th>Settlement Summary</th><th class="r">Amount</th></tr></thead><tbody>'
     + T("Fuel sales", m2(d.sales))
     + T("Lube and shop sales", m2(d.lube))
@@ -7038,27 +7162,434 @@ function dutyBlock(d, mn) {
         return T(esc((mn && mn[k]) || k), m2(d.pay[k]));
       }).join("")
     + T("<b>Collected</b>", "<b>" + m2(d.collected) + "</b>")
-    + T("<b>Difference</b>", "<b>" + sgn(d.diff) + "</b>", Math.abs(d.diff) < 1 ? 'var(--ok)' : 'var(--due)')
-    + '</tbody></table></div>'
-    + (d.note ? '<div class="sub" style="margin-top:6px">Note: ' + esc(d.note) + '</div>' : '')
+    + T("<b>" + dName + "</b>", "<b>" + sgn(dutyDiff) + "</b>", dCol)
+    + '</tbody></table></div>';
+  if (dutyDiff < -0.01) {
+    h += '<div class="cust" style="cursor:default;margin-top:8px;background:linear-gradient(135deg, rgba(225,29,72,0.09) 0%, rgba(190,18,60,0.04) 100%);border:2px solid var(--due,#e11d48);border-radius:10px;padding:10px 14px;box-shadow:0 2px 8px rgba(225,29,72,0.08)">'
+      + '<div class="row" style="align-items:center;justify-content:space-between;gap:8px">'
+      + '<div><b style="color:var(--due,#e11d48);display:flex;align-items:center;gap:6px"><span>⚠️</span> Shift Shortage</b><div class="sub" style="color:var(--due,#e11d48);margin-top:2px;font-weight:600">Collected less than sales obligation</div></div>'
+      + '<div class="amt" style="color:var(--due,#e11d48);font-size:20px;font-weight:900">' + sgn(dutyDiff) + '</div>'
+      + '</div></div>';
+  } else if (dutyDiff > 0.01) {
+    h += '<div class="cust" style="cursor:default;margin-top:8px;background:linear-gradient(135deg, rgba(5,150,105,0.09) 0%, rgba(4,120,87,0.04) 100%);border:2px solid var(--ok,#059669);border-radius:10px;padding:10px 14px;box-shadow:0 2px 8px rgba(5,150,105,0.08)">'
+      + '<div class="row" style="align-items:center;justify-content:space-between;gap:8px">'
+      + '<div><b style="color:var(--ok,#059669);display:flex;align-items:center;gap:6px"><span>📈</span> Shift Excess</b><div class="sub" style="color:var(--ok,#059669);margin-top:2px;font-weight:600">Collected more than sales obligation</div></div>'
+      + '<div class="amt" style="color:var(--ok,#059669);font-size:20px;font-weight:900">' + sgn(dutyDiff) + '</div>'
+      + '</div></div>';
+  } else {
+    h += '<div class="cust" style="cursor:default;margin-top:8px;background:linear-gradient(135deg, rgba(5,150,105,0.05) 0%, rgba(4,120,87,0.02) 100%);border:2px solid var(--ok,#059669);border-radius:10px;padding:10px 14px">'
+      + '<div class="row" style="align-items:center;justify-content:space-between;gap:8px">'
+      + '<div><b style="color:var(--ok,#059669);display:flex;align-items:center;gap:6px"><span>✅</span> Shift Balanced (Tally)</b><div class="sub" style="margin-top:2px">Exact match between collection and sales</div></div>'
+      + '<div class="amt" style="color:var(--ok,#059669);font-size:20px;font-weight:900">₹0</div>'
+      + '</div></div>';
+  }
+  h += (d.note ? '<div class="sub" style="margin-top:6px">Note: ' + esc(d.note) + '</div>' : '')
     + '</div>';
   return h;
 }
 
+function dutyFromDF(df) {
+  df = df || DF;
+  if (!df) return null;
+  var m = df.meta || {};
+  var totLitres = 0, totFuelSales = 0;
+  var lines = (df.lines || []).map(function(l){
+    var op = fnum(l.opening), cl = fnum(l.closing), ts = fnum(l.testing), r = fnum(l.rate);
+    var hasCl = l.closing !== "" && l.closing != null && !isNaN(cl);
+    var lt = hasCl ? Math.round(Math.max(0, cl - op - ts) * 100) / 100 : 0;
+    var amt = hasCl ? Math.round(lt * r * 100) / 100 : 0;
+    if (hasCl) { totLitres += lt; totFuelSales += amt; }
+    return {
+      nozzle_id: l.nozzle_id,
+      nozzle: l.name || ("Nozzle " + l.nozzle_id),
+      fuel: l.fuel || "",
+      opening: l.opening === "" ? null : op,
+      closing: hasCl ? cl : null,
+      testing: ts,
+      litres: hasCl ? lt : 0,
+      rate: r,
+      amount: amt
+    };
+  });
+
+  var totLube = 0;
+  var items = (df.items || []).map(function(it){
+    var s = (df.stock || (S && S.items) || []).find(function(x){ return String(x.id) === String(it.item_id); });
+    var qty = fnum(it.qty);
+    var price = s ? s.sell : 0;
+    var amt = Math.round(qty * price * 100) / 100;
+    if (qty > 0) totLube += amt;
+    return {
+      item_id: it.item_id,
+      name: s ? s.name : "Item",
+      unit: s ? s.unit : "pc",
+      qty: qty,
+      sell: price,
+      price: price,
+      amount: amt
+    };
+  }).filter(function(i){ return i.qty > 0; });
+
+  var totExp = (df.exps || []).reduce(function(acc, e){ return acc + fnum(e.amount); }, 0);
+  var totCredit = (df.credits || []).reduce(function(acc, c){ return acc + fnum(c.a); }, 0);
+  var totRec = (df.recoveries || []).reduce(function(acc, r){ return acc + fnum(r.a); }, 0);
+
+  var payObj = Object.assign({}, df.pay || {});
+  var totCollected = 0;
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    totCollected += fnum(payObj[k]);
+  });
+
+  var netSales = totFuelSales + totLube;
+  var expected = netSales + totRec - totCredit - totExp;
+  var diff = Math.round((totCollected - expected) * 100) / 100;
+
+  return {
+    id: df.id,
+    worker_id: m.worker_id || (ME && ME.id),
+    worker: m.worker || (ME && ME.name) || "Worker",
+    shift: m.shift || "Morning",
+    d: m.d || today(),
+    status: m.status || "open",
+    lines: lines,
+    items: items,
+    expenses: df.exps || [],
+    credit_sales: df.credits || [],
+    credit_recoveries: df.recoveries || [],
+    credit: totCredit,
+    recovery: totRec,
+    exp: totExp,
+    sales: totFuelSales,
+    lube: totLube,
+    total: netSales,
+    expected: expected,
+    collected: totCollected,
+    diff: diff,
+    litres: Math.round(totLitres * 100) / 100,
+    pay: payObj,
+    note: df.note || m.note || ""
+  };
+}
+
+function buildDutyWhatsAppText(d) {
+  var biz = (S && S.biz) || {};
+  var bName = biz.name || "PETROL PUMP MANAGEMENT";
+  var bAddr = biz.addr ? ("📍 " + biz.addr) : "";
+  var workerName = d.worker || (ME && ME.name) || "Attendant";
+  var shift = d.shift || "Shift";
+  var dutyDate = d.d || "";
+  var isClosed = (d.status === "closed");
+  var statusStr = isClosed ? "Closed & Verified ✓" : (d.status === "submitted" ? "Submitted to Manager ⏳" : "In Progress 📝");
+
+  var lines = d.lines || [];
+  var nozzleTexts = [];
+  var totalLitres = 0;
+  var totalFuelSales = 0;
+
+  lines.forEach(function(l) {
+    var nn = l.nozzle || l.name || ("Nozzle " + (l.nozzle_id || ""));
+    var fuel = l.fuel ? (" (" + l.fuel + ")") : "";
+    var op = l.opening != null ? Number(l.opening).toFixed(2) : "-";
+    var cl = l.closing != null ? Number(l.closing).toFixed(2) : "-";
+    var ts = (l.testing != null && Number(l.testing) > 0) ? (" | Test: " + Number(l.testing).toFixed(2) + "L") : "";
+    var lt = l.litres != null ? Number(l.litres).toFixed(2) : (
+      (l.closing != null && l.opening != null) ? Math.max(0, Number(l.closing) - Number(l.opening) - (Number(l.testing) || 0)).toFixed(2) : "0.00"
+    );
+    var rate = l.rate != null ? (" @ ₹" + Number(l.rate).toFixed(2)) : "";
+    var amt = l.amount != null ? Number(l.amount) : (
+      (parseFloat(lt) > 0 && l.rate != null) ? Math.round(parseFloat(lt) * Number(l.rate) * 100) / 100 : 0
+    );
+    totalLitres += parseFloat(lt) || 0;
+    totalFuelSales += amt;
+    nozzleTexts.push("⛽ *" + nn + fuel + "*\n   Opening: " + op + " ➔ Closing: " + cl + ts + "\n   Sold: *" + lt + " L*" + rate + " = *₹" + Number(amt).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  });
+
+  // Lubes / items
+  var lubeTexts = [];
+  var totalLube = Number(d.lube || 0);
+  if (d.items && d.items.length) {
+    d.items.forEach(function(it) {
+      var itName = it.name || it.item_name || "Lube Item";
+      var qty = it.qty || 0;
+      var price = it.price || it.sell || 0;
+      var amt = it.amount || (qty * price) || 0;
+      if (qty > 0) {
+        lubeTexts.push("• " + itName + " (" + qty + ") = ₹" + Number(amt).toLocaleString("en-IN", {minimumFractionDigits: 2}));
+      }
+    });
+  }
+
+  // Credit sales
+  var creditTexts = [];
+  var credits = d.credit_sales || d.credits || [];
+  if (credits.length) {
+    credits.forEach(function(c) {
+      var cn = c.cname || c.customer || "Credit";
+      var veh = c.veh ? (" [" + c.veh + "]") : "";
+      creditTexts.push("• " + cn + veh + ": ₹" + Number(c.a || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}));
+    });
+  }
+
+  // Credit recoveries
+  var recoveryTexts = [];
+  var recoveries = d.credit_recoveries || d.recoveries || [];
+  if (recoveries.length) {
+    recoveries.forEach(function(r) {
+      var cn = r.cname || r.customer || "Customer";
+      recoveryTexts.push("• " + cn + " (" + (r.mode || "Cash") + "): +₹" + Number(r.a || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}));
+    });
+  }
+
+  // Expenses
+  var expTexts = [];
+  var exps = d.expenses || d.exps || [];
+  if (exps.length) {
+    exps.forEach(function(e) {
+      expTexts.push("• " + (e.cat || "Expense") + (e.note ? (" - " + e.note) : "") + ": -₹" + Number(e.amount || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}));
+    });
+  }
+
+  // Payment Breakdown
+  var mn = (typeof mname === "function") ? mname() : { cash: "Cash", upi: "UPI / QR", card: "Card (POS)" };
+  var payObj = d.pay || {};
+  var payLines = [];
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    var amt = Number(payObj[k] || 0);
+    if (amt > 0) {
+      var mTitle = mn[k] || (k.charAt(0).toUpperCase() + k.slice(1));
+      payLines.push("• " + mTitle + ": *₹" + amt.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+    }
+  });
+
+  var netSales = (d.sales || totalFuelSales) + totalLube;
+  var expected = (d.expected != null) ? Number(d.expected) : (netSales + Number(d.recovery || 0) - Number(d.credit || 0) - Number(d.exp || 0));
+  var collected = Number(d.collected || 0);
+  var diff = (d.diff != null) ? Number(d.diff) : (collected - expected);
+  var diffLabel = (Math.abs(diff) < 1) ? "✅ Balanced (Tally ₹0.00)" : (diff < 0 ? ("⚠️ Shortage: -₹" + Math.abs(diff).toLocaleString("en-IN", {minimumFractionDigits: 2})) : ("📈 Excess: +₹" + diff.toLocaleString("en-IN", {minimumFractionDigits: 2})));
+
+  var parts = [
+    "⛽ *" + bName.toUpperCase() + "*",
+    bAddr,
+    "📋 *SHIFT DUTY HANDOVER VOUCHER*",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "👤 *Attendant:* " + workerName,
+    "⏰ *Shift:* " + shift + " | *Date:* " + dutyDate,
+    "🆔 *Duty ID:* #" + (d.id || "Draft") + " (" + statusStr + ")",
+    "",
+    "📊 *DISPENSER NOZZLE READINGS:*",
+    nozzleTexts.join("\n\n") || "No nozzle readings.",
+    "",
+    "⛽ *Total Fuel Sold:* *" + totalLitres.toFixed(2) + " L* = *₹" + Number(d.sales || totalFuelSales).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*"
+  ];
+
+  if (lubeTexts.length) {
+    parts.push("", "🛍️ *Lubes & Forecourt Items:*", lubeTexts.join("\n"), "Subtotal: *₹" + totalLube.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  if (creditTexts.length) {
+    parts.push("", "💳 *Credit Indents Given:*", creditTexts.join("\n"), "Total Credit: *-₹" + Number(d.credit || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  if (recoveryTexts.length) {
+    parts.push("", "💵 *Credit Recoveries Collected:*", recoveryTexts.join("\n"), "Total Recovery: *+₹" + Number(d.recovery || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  if (expTexts.length) {
+    parts.push("", "🧾 *Expenses Paid from Till:*", expTexts.join("\n"), "Total Expenses: *-₹" + Number(d.exp || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  parts.push(
+    "",
+    "💰 *COLLECTION & SETTLEMENT SUMMARY:*",
+    "• Total Forecourt Sales: *₹" + netSales.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*",
+    "• Expected Remittance: *₹" + expected.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*",
+    "",
+    "💵 *Collections Breakdown:*"
+  );
+
+  if (payLines.length) {
+    parts.push(payLines.join("\n"));
+  } else {
+    parts.push("• Total Collected: *₹" + collected.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  parts.push(
+    "• Total Collected: *₹" + collected.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "🎯 *Settlement Tally:* *" + diffLabel + "*"
+  );
+
+  if (d.note) {
+    parts.push("", "📝 *Handover Remarks:* " + d.note);
+  }
+
+  parts.push("", "_Sent via Petro Netra Retail Outlet Management System ⛽_");
+
+  return parts.filter(function(p){ return p !== null && p !== ""; }).join("\n");
+}
+
+function openDutyWhatsAppModal(duty) {
+  var text = buildDutyWhatsAppText(duty);
+  var biz = (S && S.biz) || {};
+  var defPhone = (biz.phone || biz.mobile || "").replace(/\D/g, "");
+  if (defPhone.length > 10) defPhone = defPhone.slice(-10);
+
+  var h = '<div style="padding:4px">' +
+    '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px">' +
+      '<div style="font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;color:#059669">' +
+        '<span>📲</span> <span>Share Shift Duty on WhatsApp</span>' +
+      '</div>' +
+      '<span class="sub" style="font-weight:700">Duty #' + (duty.id || "Current") + ' (' + esc(duty.shift || "Shift") + ' · ' + esc(duty.d || "") + ')</span>' +
+    '</div>' +
+    '<div class="sub" style="margin-bottom:12px">Send complete shift meter readings, sales, expenses, and collection tally directly to the manager, owner, or staff group.</div>' +
+    '<label style="margin-bottom:10px">Send to WhatsApp number (leave blank to choose inside WhatsApp)' +
+      '<div style="display:flex;gap:6px;margin-top:4px">' +
+        '<span style="padding:9px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-weight:700;color:var(--mute)">+91</span>' +
+        '<input id="waDutyPhone" inputmode="tel" placeholder="10-digit WhatsApp number (optional)" value="' + esc(defPhone) + '" style="flex:1">' +
+      '</div>' +
+    '</label>' +
+    '<div class="sub" style="margin-bottom:6px;font-weight:700">Message preview:</div>' +
+    '<textarea id="waDutyText" style="width:100%;height:220px;font:12px/1.45 monospace;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:10px;resize:vertical">' + esc(text) + '</textarea>' +
+    '<div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">' +
+      '<button type="button" class="ghost" onclick="closeM()">Cancel</button>' +
+      '<button type="button" class="ghost" style="display:inline-flex;align-items:center;gap:6px" onclick="copyDutyWhatsAppText()">📋 Copy Text</button>' +
+      '<button type="button" class="print-keep" style="flex:1;background:#25D366;border-color:#25D366;color:#fff;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;border-radius:8px;cursor:pointer" onclick="sendDutyWhatsAppNow()">' +
+        '<span>📲</span> <span>Open WhatsApp</span>' +
+      '</button>' +
+    '</div>' +
+  '</div>';
+
+  openM(h, "650px");
+}
+
+function copyDutyWhatsAppText() {
+  var el = document.getElementById("waDutyText");
+  if (!el) return;
+  el.select();
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(el.value).then(function(){
+        toast("Duty report copied to clipboard! ✓");
+      }).catch(function(){
+        document.execCommand("copy");
+        toast("Duty report copied! ✓");
+      });
+    } else {
+      document.execCommand("copy");
+      toast("Duty report copied to clipboard! ✓");
+    }
+  } catch(e) {
+    try {
+      document.execCommand("copy");
+      toast("Duty report copied! ✓");
+    } catch(_) {
+      toast("Please select the text and copy manually.");
+    }
+  }
+}
+
+function sendDutyWhatsAppNow() {
+  var phoneEl = document.getElementById("waDutyPhone");
+  var textEl = document.getElementById("waDutyText");
+  var phone = phoneEl ? phoneEl.value.trim() : "";
+  var text = textEl ? textEl.value : "";
+  openWaLink(phone, text);
+  closeM();
+  toast("WhatsApp opened 🚀");
+}
+
+function shareDutyWhatsApp(dutyOrId) {
+  var id = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) ? dutyOrId.id : dutyOrId;
+  if (!id && (!DF || !DF.id)) {
+    toast("No duty selected to share.");
+    return;
+  }
+  toast("Preparing shift duty details for WhatsApp...");
+  var req;
+  if (typeof dutyOrId === "object" && dutyOrId && ((dutyOrId.lines && dutyOrId.lines.length) || dutyOrId.worker)) {
+    req = Promise.resolve(dutyOrId);
+  } else if (DF && (DF.id === id || (!id && DF.id))) {
+    req = Promise.resolve(dutyFromDF(DF));
+  } else if (ME && ME.role === "worker") {
+    req = api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+  } else {
+    req = api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
+      return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+    });
+  }
+
+  req.then(function(duty){
+    if (!duty) {
+      toast("Duty record not found.");
+      return;
+    }
+    openDutyWhatsAppModal(duty);
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load duty details for WhatsApp share.");
+  });
+}
+
+function shareDayReportWhatsApp(dateStr) {
+  dateStr = dateStr || DD || today();
+  api("GET", "/api/day-report?d=" + dateStr).then(function(r){
+    var s = r.summary || {};
+    var duties = r.duties || [];
+    var biz = (S && S.biz) || {};
+    var bName = biz.name || "PETROL PUMP MANAGEMENT";
+    var bAddr = biz.addr ? ("📍 " + biz.addr) : "";
+    var totalLitres = Number(s.litres || 0).toFixed(2);
+    var totalSales = inr(s.total || 0);
+    var totalColl = inr(s.collected || 0);
+    var netDiff = (s.diff >= 0 ? "+" : "") + Number(s.diff || 0).toFixed(2);
+    var diffMsg = Math.abs(s.diff || 0) < 1 ? "✅ Balanced (Tally ₹0.00)" : (s.diff < 0 ? ("⚠️ Shortage: " + netDiff) : ("📈 Excess: " + netDiff));
+
+    var msg = [
+      "⛽ *" + bName.toUpperCase() + "*",
+      bAddr,
+      "📅 *DAILY SALES & AUDIT REPORT — " + dateStr + "*",
+      "━━━━━━━━━━━━━━━━━━━━",
+      "• Total Fuel Sold: *" + totalLitres + " L*",
+      "• Gross Sales: *" + totalSales + "*",
+      "• Total Collected: *" + totalColl + "*",
+      "• Net Shift Variance: *" + diffMsg + "*",
+      "",
+      "📋 *Shift Duties Log:*"
+    ];
+
+    if (duties.length) {
+      duties.forEach(function(d){
+        msg.push("• #" + d.id + " " + (d.worker || "Attendant") + " (" + (d.shift || "Shift") + "): " + Number(d.litres || 0).toFixed(2) + " L | Sales " + inr((d.sales || 0) + (d.lube || 0)) + " | Collected " + inr(d.collected || 0));
+      });
+    } else {
+      msg.push("No closed duties on this date.");
+    }
+
+    msg.push("", "_Sent via Petro Netra Retail Outlet Management_");
+    openWaLink("", msg.join("\n"));
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load day report for WhatsApp share.");
+  });
+}
+
 function printSingleDuty(dutyOrId) {
   var id = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) ? dutyOrId.id : dutyOrId;
-  if (!id) {
+  if (!id && (!DF || !DF.id)) {
     toast("No duty selected to print.");
     return;
   }
   toast("Preparing shift handover voucher for print...");
-  var req = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.lines && dutyOrId.lines.length)
-    ? Promise.resolve(dutyOrId)
-    : ((ME && ME.role === "worker")
-        ? api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; })
-        : api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
-            return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
-          }));
+  var req;
+  if (typeof dutyOrId === "object" && dutyOrId && ((dutyOrId.lines && dutyOrId.lines.length) || dutyOrId.worker)) {
+    req = Promise.resolve(dutyOrId);
+  } else if (DF && (DF.id === id || (!id && DF.id))) {
+    req = Promise.resolve(dutyFromDF(DF));
+  } else if (ME && ME.role === "worker") {
+    req = api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+  } else {
+    req = api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
+      return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+    });
+  }
 
   req.then(function(duty){
     if (!duty) {
@@ -7154,6 +7685,7 @@ function openDutyPrintModal(d) {
       '</div>' +
       '<div style="display:inline-flex;align-items:center;gap:6px">' +
         '<button type="button" class="print-keep" style="background:#0A63F8;color:#fff;font-weight:700;padding:7px 14px;font-size:13px;border-radius:8px" onclick="triggerDutyDirectPrint(' + d.id + ')">🖨️ Print Voucher</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px;color:#059669;border-color:rgba(5,150,105,0.4);font-weight:700;display:inline-flex;align-items:center;gap:5px" onclick="shareDutyWhatsApp(' + d.id + ')">📲 WhatsApp</button>' +
         '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF</button>' +
         '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="closeM()">✕ Close</button>' +
       '</div>' +
@@ -8251,7 +8783,20 @@ function renderW(){
     +'<h1 style="margin-top:22px">My recent duties</h1>';
   var recentList = (WD && Array.isArray(WD.recent)) ? WD.recent : [];
   if(!recentList.length)h+='<div class="empty">No duties yet.</div>';
-  else recentList.forEach(function(d){h+='<div class="cust" tabindex="0" onclick="viewMyDuty('+d.id+')"><div class="row"><b>'+esc(d.shift||"Shift")+' \u00b7 '+esc(d.d||"")+'</b><span class="sub" style="flex:none;color:'+(d.status=="closed"?'var(--ok)':'var(--warn)')+'">'+(d.status=="closed"?"Closed":"Waiting for manager")+'</span></div><div class="sub">'+(d.litres!=null?d.litres:0)+' L \u00b7 Sales '+inr((d.sales||0)+(d.lube||0))+' \u00b7 Collected '+inr(d.collected||0)+' \u00b7 '+sgn(d.diff)+'</div></div>'});
+  else recentList.forEach(function(d){
+    var dfNum = parseFloat(d.diff) || 0;
+    var dfCol = (dfNum < -0.01) ? 'var(--due)' : 'var(--ok)';
+    var dfText = (dfNum < -0.01) ? ('Shortage ' + sgn(dfNum)) : (dfNum > 0.01 ? ('Excess ' + sgn(dfNum)) : 'Balanced ₹0');
+    h+='<div class="cust" style="cursor:default;margin-bottom:12px;padding:12px 14px">'
+      +'<div class="row" style="cursor:pointer;align-items:center;justify-content:space-between;gap:8px" onclick="viewMyDuty('+d.id+')"><b>'+esc(d.shift||"Shift")+' · '+esc(d.d||"")+'</b><span class="sub" style="flex:none;color:'+(d.status=="closed"?'var(--ok)':'var(--warn)')+'">'+(d.status=="closed"?"Closed":"Waiting for manager")+'</span></div>'
+      +'<div class="sub" style="margin-top:2px">'+(d.litres!=null?d.litres:0)+' L · Sales '+inr((d.sales||0)+(d.lube||0))+' · Collected '+inr(d.collected||0)+' · <span style="font-weight:700;color:'+dfCol+'">'+dfText+'</span></div>'
+      +'<div class="row noprint" style="gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px" onclick="viewMyDuty('+d.id+')">🔍 View Details</button>'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="printSingleDuty('+d.id+')">🖨️ Print Voucher</button>'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp('+d.id+')">📲 WhatsApp Share</button>'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button>'
+      +'</div></div>';
+  });
   document.getElementById("app").innerHTML=h;
 }
 var WORKER_ASSIGN_DATA=null;
@@ -8394,7 +8939,7 @@ function doWorkerAssign(){
     else toast(e.error||"Could not complete handover.");
   });
 }
-function viewMyDuty(id){api("GET","/api/my-duties/"+id).then(function(r){var mn={};r.modes.forEach(function(m){mn[m.key]=m.name});document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="loadW()">← Back to my duties</button><button class="ghost" onclick="downloadDutyPDF('+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF Report</button></div><div style="margin-top:10px">'+dutyBlock(r.duty,mn)+'</div>'}).catch(function(e){toast(e.error||"Could not open the duty.")})}
+function viewMyDuty(id){api("GET","/api/my-duties/"+id).then(function(r){var mn={};r.modes.forEach(function(m){mn[m.key]=m.name});document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="loadW()">← Back to my duties</button><div style="display:inline-flex;gap:6px;flex-wrap:wrap"><button class="ghost" onclick="printSingleDuty('+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Voucher</button><button class="ghost" onclick="shareDutyWhatsApp('+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700">📲 WhatsApp Share</button><button class="ghost" onclick="downloadDutyPDF('+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF Report</button></div></div><div style="margin-top:10px">'+dutyBlock(r.duty,mn)+'</div>'}).catch(function(e){toast(e.error||"Could not open the duty.")})}
 function wSave(sub){
   if(sub){confirmDutyModal();return}
   if(autoSaveTimer){clearTimeout(autoSaveTimer);autoSaveTimer=null}
@@ -8413,13 +8958,13 @@ tab="duty";A.innerHTML=nav()+'<div class="empty">Loading\u2026</div>';
 api("GET","/api/duties?d="+DD).then(function(r){if(tab!="duty")return;var st=r.day_status,h=nav()+'<h1>Duty and nozzle readings</h1><div class="btns"><button onclick="assignForm()">Assign duty</button><button class="ghost" onclick="sumForm()">Daily summary</button><button class="ghost" onclick="dayReport()">Day report</button><button class="ghost" style="display:inline-flex;align-items:center;gap:6px" onclick="printDutyDaySheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Day Duties</button></div>';
 h+='<label>Business day<input type="date" value="'+DD+'" onchange="DD=this.value;renderDutyTab()"></label><div class="cust" style="cursor:default;margin-top:10px"><div class="row"><b>'+DD+'</b><span style="flex:none;color:'+(st=="approved"?'var(--ok)':st=="closed"?'var(--warn)':'var(--ink)')+'">'+(st=="approved"?"Approved by owner":st=="closed"?"Closed, waiting for owner":"Open")+'</span></div><div class="sub">The business day runs from 6 AM to 6 AM.</div><div class="btns" style="margin:8px 0 0">'+(st=="open"?'<button onclick="dayAsk(\'close\')">Close day</button>':'')+(st=="closed"&&ME.role=="owner"?'<button onclick="dayAct(\'approve\')">Approve day</button>':'')+(st!="open"&&ME.role=="owner"?'<button class="ghost" onclick="dayAct(\'reopen\')">Reopen day</button>':'')+'</div></div>';
 if(r.open.length)h+='<div class="cust" style="cursor:default"><b>Duties in progress</b>'+r.open.map(function(d){return '<div class="row" style="margin-top:10px"><span>'+esc(d.worker)+' \u00b7 '+esc(d.shift)+'<div class="sub">'+d.lines.map(function(l){return esc(l.nozzle)}).join(", ")+' \u00b7 '+d.d+'</div></span><button class="ghost" style="flex:none;padding:6px 10px" onclick="cancelDuty('+d.id+')">Cancel</button></div>'}).join("")+'</div>';
-if(r.pending.length)h+='<div class="cust" style="cursor:default;border-color:var(--warn)"><b style="color:var(--warn)">'+r.pending.length+' dut'+(r.pending.length>1?'ies':'y')+' waiting to be closed</b>'+r.pending.map(function(d){return '<div class="row" style="margin-top:10px"><span>'+esc(d.worker)+' \u00b7 '+esc(d.shift)+' \u00b7 '+d.d+'<div class="sub">'+sgn(d.diff)+'</div></span><button style="flex:none" onclick="reviewDuty('+d.id+')">Review</button></div>'}).join("")+'</div>';
+if(r.pending.length)h+='<div class="cust" style="cursor:default;border-color:var(--warn)"><b style="color:var(--warn)">'+r.pending.length+' dut'+(r.pending.length>1?'ies':'y')+' waiting to be closed</b>'+r.pending.map(function(d){return '<div class="row" style="margin-top:10px"><span>'+esc(d.worker)+' \u00b7 '+esc(d.shift)+' \u00b7 '+d.d+'<div class="sub" style="font-weight:700;color:'+(d.diff<-0.01?'var(--due)':'var(--ok)')+'">'+(d.diff<-0.01?'Shortage: ':d.diff>0.01?'Excess: ':'Tally: ')+sgn(d.diff)+'</div></span><button style="flex:none" onclick="reviewDuty('+d.id+')">Review</button></div>'}).join("")+'</div>';
 var T={l:0,s:0,k:0,d:0},F={};
 h+='<div class="tbl" style="margin-top:12px"><table class="ops-table"><thead><tr><th>Worker</th><th class="r">Litres</th><th class="r">Sales</th><th class="r">Collected</th><th class="r">Short / excess</th><th>Action</th></tr></thead><tbody>';
 r.day.forEach(function(d){T.l+=d.litres;T.s+=d.sales+d.lube;T.k+=d.collected;T.d+=d.diff;d.lines.forEach(function(l){var k=l.fuel||"Other",f=F[k]||(F[k]={l:0,a:0});f.l+=l.litres;f.a+=l.amount});
-h+='<tr><td data-label="Worker"><b>'+esc(d.worker)+'</b><div class="sub">'+esc(d.shift)+' · '+(d.status=="closed"?"closed":"to close")+'</div></td><td data-label="Litres" class="r">'+d.litres+' L</td><td data-label="Sales" class="r">'+inr(d.sales+d.lube)+'</td><td data-label="Collected" class="r">'+inr(d.collected)+'</td><td data-label="Short / Excess" class="r" style="color:'+(Math.abs(d.diff)<1?'var(--ok)':'var(--due)')+'">'+sgn(d.diff)+'</td><td data-label="Action" style="white-space:nowrap"><button class="ghost" style="padding:5px 8px" onclick="reviewDuty('+d.id+')">Open</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Print Duty Handover Voucher" onclick="printSingleDuty('+d.id+')">🖨️ Print</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Download PDF Report" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button></td></tr>';});
+h+='<tr><td data-label="Worker"><b>'+esc(d.worker)+'</b><div class="sub">'+esc(d.shift)+' · '+(d.status=="closed"?"closed":"to close")+'</div></td><td data-label="Litres" class="r">'+d.litres+' L</td><td data-label="Sales" class="r">'+inr(d.sales+d.lube)+'</td><td data-label="Collected" class="r">'+inr(d.collected)+'</td><td data-label="Short / Excess" class="r" style="font-weight:700;color:'+(d.diff<-0.01?'var(--due)':'var(--ok)')+'">'+sgn(d.diff)+'</td><td data-label="Action" style="white-space:nowrap"><button class="ghost" style="padding:5px 8px" onclick="reviewDuty('+d.id+')">Open</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Print Duty Handover Voucher" onclick="printSingleDuty('+d.id+')">🖨️ Print</button><button class="ghost" style="padding:5px 8px;margin-left:4px" title="Download PDF Report" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button></td></tr>';});
 if(!r.day.length)h+='<tr><td colspan="6" class="empty">No submitted duties on this date.</td></tr>';
-else h+='<tr><td data-label="Summary"><b>Day total</b></td><td data-label="Total Litres" class="r"><b>'+Math.round(T.l*100)/100+' L</b></td><td data-label="Total Sales" class="r"><b>'+inr(T.s)+'</b></td><td data-label="Total Collected" class="r"><b>'+inr(T.k)+'</b></td><td data-label="Net Difference" class="r"><b>'+sgn(T.d)+'</b></td><td></td></tr>';
+else h+='<tr><td data-label="Summary"><b>Day total</b></td><td data-label="Total Litres" class="r"><b>'+Math.round(T.l*100)/100+' L</b></td><td data-label="Total Sales" class="r"><b>'+inr(T.s)+'</b></td><td data-label="Total Collected" class="r"><b>'+inr(T.k)+'</b></td><td data-label="Net Difference" class="r" style="color:'+(T.d<-0.01?'var(--due)':'var(--ok)')+'"><b>'+sgn(T.d)+'</b></td><td></td></tr>';
 h+='</tbody></table></div>';
 A.innerHTML=h}).catch(function(e){badge(e.error||"Could not load duties.")})}
 function dayAct(a){api("POST","/api/days/"+DD+"/"+a).then(function(){renderDutyTab()}).catch(function(e){toast(e.error||"Could not update the day.")})}
