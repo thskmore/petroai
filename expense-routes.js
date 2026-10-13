@@ -279,10 +279,189 @@ function registerExpenseRoutes(app, dbOrGetDb, need, now, r2, num, getStationId,
   });
 
   // --------------------------------------------------------------------------
+  // 3b. GET /api/expenses/reports
+  // Full Vyapar Reports Suite (7 Reports + Summary Totals)
+  // --------------------------------------------------------------------------
+  app.get("/api/expenses/reports", need(), (q, s) => {
+    const stationId = getStationId ? getStationId(q) : 1;
+    const { type, from, to } = q.query || {};
+    const dFrom = (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) ? from : (bizDate ? bizDate().slice(0, 7) + "-01" : "2026-10-01");
+    const dTo = (to && /^\d{4}-\d{2}-\d{2}$/.test(to)) ? to : (bizDate ? bizDate() : "2026-10-31");
+
+    try {
+      // 1. Daily breakdown report
+      const dailyRows = getDb().prepare(`
+        SELECT d,
+               COUNT(*) as total_count,
+               COALESCE(SUM(amount), 0) as total_amount,
+               COALESCE(SUM(CASE WHEN payment_method='Cash' THEN amount ELSE 0 END), 0) as cash_amount,
+               COALESCE(SUM(CASE WHEN payment_method='UPI' THEN amount ELSE 0 END), 0) as upi_amount,
+               COALESCE(SUM(CASE WHEN payment_method='Bank' THEN amount ELSE 0 END), 0) as bank_amount,
+               COALESCE(SUM(CASE WHEN payment_method='Card' THEN amount ELSE 0 END), 0) as card_amount,
+               COALESCE(SUM(CASE WHEN status='approved' OR status='paid' THEN amount ELSE 0 END), 0) as approved_amount,
+               COALESCE(SUM(CASE WHEN status='pending_approval' THEN amount ELSE 0 END), 0) as pending_amount
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=?
+        GROUP BY d
+        ORDER BY d DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 2. Category-wise breakdown report with monthly budget comparison & direct/indirect type
+      const categoryRows = getDb().prepare(`
+        SELECT e.category,
+               COALESCE(c.expense_type, e.expense_type, 'Direct') as expense_type,
+               COUNT(e.id) as count,
+               COALESCE(SUM(e.amount), 0) as total_amount,
+               COALESCE(c.budget_monthly, 0) as monthly_budget,
+               c.color,
+               c.icon
+        FROM station_expenses e
+        LEFT JOIN expense_categories c ON c.name = e.category
+        WHERE e.station_id=? AND e.d>=? AND e.d<=? AND e.status IN ('approved', 'paid')
+        GROUP BY e.category
+        ORDER BY total_amount DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 3. Shift-wise report
+      const shiftRows = getDb().prepare(`
+        SELECT shift,
+               COUNT(*) as count,
+               COALESCE(SUM(amount), 0) as total_amount,
+               COALESCE(SUM(CASE WHEN payment_method='Cash' THEN amount ELSE 0 END), 0) as cash_amount
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
+        GROUP BY shift
+        ORDER BY total_amount DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 4. Payment method breakdown
+      const methodRows = getDb().prepare(`
+        SELECT payment_method,
+               COUNT(*) as count,
+               COALESCE(SUM(amount), 0) as total_amount
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
+        GROUP BY payment_method
+        ORDER BY total_amount DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 5. Item / Subcategory-wise breakdown (Vyapar granular item expense report)
+      const itemRows = getDb().prepare(`
+        SELECT e.category,
+               CASE WHEN e.subcategory IS NOT NULL AND e.subcategory != '' THEN e.subcategory ELSE 'General / Unspecified' END as item_name,
+               COUNT(*) as count,
+               COALESCE(SUM(e.amount), 0) as total_amount
+        FROM station_expenses e
+        WHERE e.station_id=? AND e.d>=? AND e.d<=? AND e.status IN ('approved', 'paid')
+        GROUP BY e.category, item_name
+        ORDER BY total_amount DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 6. Party / Vendor-wise expense report (Vyapar payee ledger)
+      const partyRows = getDb().prepare(`
+        SELECT CASE WHEN paid_to IS NOT NULL AND TRIM(paid_to) != '' THEN TRIM(paid_to) ELSE 'Cash Counter / Petty Vendor' END as party_name,
+               COUNT(*) as count,
+               COALESCE(SUM(amount), 0) as total_amount,
+               MAX(d) as last_date,
+               GROUP_CONCAT(DISTINCT payment_method) as payment_methods
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
+        GROUP BY party_name
+        ORDER BY total_amount DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 7. Direct vs Indirect expense analysis (Vyapar gross margin impact)
+      const typeRows = getDb().prepare(`
+        SELECT COALESCE(expense_type, 'Direct') as expense_type,
+               COUNT(*) as count,
+               COALESCE(SUM(amount), 0) as total_amount
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
+        GROUP BY expense_type
+      `).all(stationId, dFrom, dTo);
+
+      // 8. GST / Tax Expense Report (Input Tax Credit / ITC claiming for GSTR-3B)
+      const taxRows = getDb().prepare(`
+        SELECT id, expense_no, d, category, subcategory, paid_to, gstin, invoice_no, invoice_date,
+               amount, taxable_amount, tax_rate, tax_amount, payment_method, status
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
+          AND (tax_amount > 0 OR tax_rate > 0 OR (gstin IS NOT NULL AND gstin != ''))
+        ORDER BY d DESC, id DESC
+      `).all(stationId, dFrom, dTo);
+
+      // 9. All Transactions detailed ledger for the report period
+      const allTxRows = getDb().prepare(`
+        SELECT id, expense_no, d, shift, category, subcategory, amount, payment_method, is_shift_cash,
+               paid_by, paid_to, description, status, expense_type, tax_rate, taxable_amount,
+               tax_amount, gstin, invoice_no, invoice_date, payment_status, payment_ref, created_at
+        FROM station_expenses
+        WHERE station_id=? AND d>=? AND d<=?
+        ORDER BY d DESC, id DESC
+        LIMIT 1000
+      `).all(stationId, dFrom, dTo);
+
+      // Overall aggregates
+      let grandTotal = 0;
+      let grandCash = 0;
+      let grandDigital = 0;
+      let grandDirect = 0;
+      let grandIndirect = 0;
+      let grandTax = 0;
+      let grandTaxable = 0;
+      let vouchersCount = 0;
+
+      allTxRows.forEach(r => {
+        if (r.status === "approved" || r.status === "paid") {
+          grandTotal += r.amount || 0;
+          if (r.payment_method === "Cash") grandCash += r.amount || 0;
+          else grandDigital += r.amount || 0;
+
+          if (r.expense_type === "Indirect") grandIndirect += r.amount || 0;
+          else grandDirect += r.amount || 0;
+
+          grandTax += r.tax_amount || 0;
+          grandTaxable += r.taxable_amount || (r.amount || 0);
+          vouchersCount++;
+        }
+      });
+
+      s.json({
+        ok: true,
+        from: dFrom,
+        to: dTo,
+        totals: {
+          grand_total: r2(grandTotal),
+          cash_total: r2(grandCash),
+          digital_total: r2(grandDigital),
+          direct_total: r2(grandDirect),
+          indirect_total: r2(grandIndirect),
+          tax_total: r2(grandTax),
+          taxable_total: r2(grandTaxable),
+          days_count: dailyRows.length,
+          vouchers_count: vouchersCount
+        },
+        daily: dailyRows.map(r => ({ ...r, total_amount: r2(r.total_amount), cash_amount: r2(r.cash_amount) })),
+        by_category: categoryRows.map(r => ({ ...r, total_amount: r2(r.total_amount) })),
+        by_shift: shiftRows.map(r => ({ ...r, total_amount: r2(r.total_amount), cash_amount: r2(r.cash_amount) })),
+        by_method: methodRows.map(r => ({ ...r, total_amount: r2(r.total_amount) })),
+        by_item: itemRows.map(r => ({ ...r, total_amount: r2(r.total_amount) })),
+        by_party: partyRows.map(r => ({ ...r, total_amount: r2(r.total_amount) })),
+        by_type: typeRows.map(r => ({ ...r, total_amount: r2(r.total_amount) })),
+        by_tax: taxRows.map(r => ({ ...r, amount: r2(r.amount), taxable_amount: r2(r.taxable_amount || 0), tax_amount: r2(r.tax_amount || 0) })),
+        all_transactions: allTxRows
+      });
+    } catch (err) {
+      console.error("[Expense Reports] Error:", err);
+      s.status(500).json({ error: "Could not generate expense reports: " + err.message });
+    }
+  });
+
+  // --------------------------------------------------------------------------
   // 4. GET /api/expenses/:id
   // Single expense detail with audit history
   // --------------------------------------------------------------------------
-  app.get("/api/expenses/:id", need(), (q, s) => {
+  app.get("/api/expenses/:id(\\d+)", need(), (q, s) => {
     const stationId = getStationId ? getStationId(q) : 1;
     const expId = parseInt(q.params.id, 10);
     try {
@@ -339,6 +518,14 @@ function registerExpenseRoutes(app, dbOrGetDb, need, now, r2, num, getStationId,
     const receiptNameVal = String(b.receipt_name || "").trim();
     const paymentRefVal = String(b.payment_ref || "").trim();
     const dutyIdVal = b.duty_id ? parseInt(b.duty_id, 10) : null;
+    const expenseTypeVal = b.expense_type === "Indirect" ? "Indirect" : "Direct";
+    const taxRateVal = num(b.tax_rate) || 0;
+    const taxableAmtVal = num(b.taxable_amount) || (taxRateVal > 0 ? r2(amt / (1 + taxRateVal / 100)) : amt);
+    const taxAmtVal = num(b.tax_amount) || (taxRateVal > 0 ? r2(amt - taxableAmtVal) : 0);
+    const gstinVal = String(b.gstin || "").trim().toUpperCase();
+    const invoiceNoVal = String(b.invoice_no || "").trim();
+    const invoiceDateVal = String(b.invoice_date || "").trim();
+    const payStatusVal = b.payment_status === "unpaid" ? "unpaid" : "paid";
 
     // Status: if created by Manager or Owner, they can choose to auto-approve directly,
     // otherwise default to 'pending_approval' for Operator/worker
@@ -364,13 +551,17 @@ function registerExpenseRoutes(app, dbOrGetDb, need, now, r2, num, getStationId,
           amount, payment_method, is_shift_cash, paid_by, paid_to,
           description, remarks, receipt_url, receipt_name, status,
           created_by, created_by_name, approved_by, approved_by_name, approved_at,
-          rejection_reason, payment_ref, created_at, updated_at
+          rejection_reason, payment_ref, expense_type, tax_rate, taxable_amount,
+          tax_amount, gstin, invoice_no, invoice_date, payment_status,
+          created_at, updated_at
         ) VALUES (
           ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
-          NULL, ?, ?, ?
+          NULL, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?
         )
       `);
 
@@ -379,7 +570,9 @@ function registerExpenseRoutes(app, dbOrGetDb, need, now, r2, num, getStationId,
         r2(amt), payMethodVal, isShiftCashVal, paidByVal, paidToVal,
         descVal, remarksVal, receiptUrlVal, receiptNameVal, initialStatus,
         q.user.id, q.user.name || "Operator", approvedBy, approvedByName, approvedAt,
-        paymentRefVal, createdAt, createdAt
+        paymentRefVal, expenseTypeVal, taxRateVal, r2(taxableAmtVal),
+        r2(taxAmtVal), gstinVal, invoiceNoVal, invoiceDateVal, payStatusVal,
+        createdAt, createdAt
       );
 
       const expId = info.lastInsertRowid;
@@ -461,17 +654,27 @@ function registerExpenseRoutes(app, dbOrGetDb, need, now, r2, num, getStationId,
       const receiptUrlVal = b.receipt_url !== undefined ? b.receipt_url : exp.receipt_url;
       const receiptNameVal = b.receipt_name !== undefined ? b.receipt_name : exp.receipt_name;
       const paymentRefVal = b.payment_ref !== undefined ? b.payment_ref : exp.payment_ref;
+      const expenseTypeVal = b.expense_type !== undefined ? (b.expense_type === "Indirect" ? "Indirect" : "Direct") : (exp.expense_type || "Direct");
+      const taxRateVal = b.tax_rate !== undefined ? (num(b.tax_rate) || 0) : (exp.tax_rate || 0);
+      const taxableAmtVal = b.taxable_amount !== undefined ? (num(b.taxable_amount) || 0) : (exp.taxable_amount || amt);
+      const taxAmtVal = b.tax_amount !== undefined ? (num(b.tax_amount) || 0) : (exp.tax_amount || 0);
+      const gstinVal = b.gstin !== undefined ? String(b.gstin).trim().toUpperCase() : (exp.gstin || "");
+      const invoiceNoVal = b.invoice_no !== undefined ? String(b.invoice_no).trim() : (exp.invoice_no || "");
+      const invoiceDateVal = b.invoice_date !== undefined ? String(b.invoice_date).trim() : (exp.invoice_date || "");
+      const payStatusVal = b.payment_status !== undefined ? (b.payment_status === "unpaid" ? "unpaid" : "paid") : (exp.payment_status || "paid");
 
       getDb().prepare(`
         UPDATE station_expenses SET
           d=?, shift=?, category=?, subcategory=?, amount=?, payment_method=?, is_shift_cash=?,
           paid_by=?, paid_to=?, description=?, remarks=?, receipt_url=?, receipt_name=?,
-          payment_ref=?, updated_at=?
+          payment_ref=?, expense_type=?, tax_rate=?, taxable_amount=?, tax_amount=?,
+          gstin=?, invoice_no=?, invoice_date=?, payment_status=?, updated_at=?
         WHERE id=? AND station_id=?
       `).run(
         dVal, shiftVal, categoryVal, subcategoryVal, r2(amt), payMethodVal, isShiftCashVal,
         paidByVal, paidToVal, descVal, remarksVal, receiptUrlVal, receiptNameVal,
-        paymentRefVal, now(), expId, stationId
+        paymentRefVal, expenseTypeVal, taxRateVal, r2(taxableAmtVal), r2(taxAmtVal),
+        gstinVal, invoiceNoVal, invoiceDateVal, payStatusVal, now(), expId, stationId
       );
 
       logAudit(
@@ -752,99 +955,6 @@ function registerExpenseRoutes(app, dbOrGetDb, need, now, r2, num, getStationId,
       s.json({ ok: true, message: `Category '${cur.name}' deleted.` });
     } catch (err) {
       s.status(500).json({ error: "Could not delete category: " + err.message });
-    }
-  });
-
-  // --------------------------------------------------------------------------
-  // 12. EXPENSE REPORTS: Daily, Monthly, Category-wise, Shift-wise
-  // --------------------------------------------------------------------------
-  app.get("/api/expenses/reports", need(), (q, s) => {
-    const stationId = getStationId ? getStationId(q) : 1;
-    const { type, from, to } = q.query || {};
-    const dFrom = (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) ? from : (bizDate ? bizDate().slice(0, 7) + "-01" : "2026-10-01");
-    const dTo = (to && /^\d{4}-\d{2}-\d{2}$/.test(to)) ? to : (bizDate ? bizDate() : "2026-10-31");
-
-    try {
-      // 1. Daily breakdown report
-      const dailyRows = getDb().prepare(`
-        SELECT d,
-               COUNT(*) as total_count,
-               COALESCE(SUM(amount), 0) as total_amount,
-               COALESCE(SUM(CASE WHEN payment_method='Cash' THEN amount ELSE 0 END), 0) as cash_amount,
-               COALESCE(SUM(CASE WHEN payment_method='UPI' THEN amount ELSE 0 END), 0) as upi_amount,
-               COALESCE(SUM(CASE WHEN payment_method='Bank' THEN amount ELSE 0 END), 0) as bank_amount,
-               COALESCE(SUM(CASE WHEN payment_method='Card' THEN amount ELSE 0 END), 0) as card_amount,
-               COALESCE(SUM(CASE WHEN status='approved' OR status='paid' THEN amount ELSE 0 END), 0) as approved_amount,
-               COALESCE(SUM(CASE WHEN status='pending_approval' THEN amount ELSE 0 END), 0) as pending_amount
-        FROM station_expenses
-        WHERE station_id=? AND d>=? AND d<=?
-        GROUP BY d
-        ORDER BY d DESC
-      `).all(stationId, dFrom, dTo);
-
-      // 2. Category-wise breakdown report with monthly budget comparison
-      const categoryRows = getDb().prepare(`
-        SELECT e.category,
-               COUNT(e.id) as count,
-               COALESCE(SUM(e.amount), 0) as total_amount,
-               COALESCE(c.budget_monthly, 0) as monthly_budget,
-               c.color,
-               c.icon
-        FROM station_expenses e
-        LEFT JOIN expense_categories c ON c.name = e.category
-        WHERE e.station_id=? AND e.d>=? AND e.d<=? AND e.status IN ('approved', 'paid')
-        GROUP BY e.category
-        ORDER BY total_amount DESC
-      `).all(stationId, dFrom, dTo);
-
-      // 3. Shift-wise report
-      const shiftRows = getDb().prepare(`
-        SELECT shift,
-               COUNT(*) as count,
-               COALESCE(SUM(amount), 0) as total_amount,
-               COALESCE(SUM(CASE WHEN payment_method='Cash' THEN amount ELSE 0 END), 0) as cash_amount
-        FROM station_expenses
-        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
-        GROUP BY shift
-        ORDER BY total_amount DESC
-      `).all(stationId, dFrom, dTo);
-
-      // 4. Payment method breakdown
-      const methodRows = getDb().prepare(`
-        SELECT payment_method,
-               COUNT(*) as count,
-               COALESCE(SUM(amount), 0) as total_amount
-        FROM station_expenses
-        WHERE station_id=? AND d>=? AND d<=? AND status IN ('approved', 'paid')
-        GROUP BY payment_method
-        ORDER BY total_amount DESC
-      `).all(stationId, dFrom, dTo);
-
-      // Overall aggregates
-      let grandTotal = 0;
-      let grandCash = 0;
-      dailyRows.forEach(r => {
-        grandTotal += r.total_amount;
-        grandCash += r.cash_amount;
-      });
-
-      s.json({
-        ok: true,
-        from: dFrom,
-        to: dTo,
-        totals: {
-          grand_total: r2(grandTotal),
-          cash_total: r2(grandCash),
-          days_count: dailyRows.length
-        },
-        daily: dailyRows.map(r => ({ ...r, total_amount: r2(r.total_amount), cash_amount: r2(r.cash_amount) })),
-        by_category: categoryRows.map(r => ({ ...r, total_amount: r2(r.total_amount) })),
-        by_shift: shiftRows.map(r => ({ ...r, total_amount: r2(r.total_amount), cash_amount: r2(r.cash_amount) })),
-        by_method: methodRows.map(r => ({ ...r, total_amount: r2(r.total_amount) }))
-      });
-    } catch (err) {
-      console.error("[Expense Reports] Error:", err);
-      s.status(500).json({ error: "Could not generate expense reports: " + err.message });
     }
   });
 

@@ -77,6 +77,15 @@ async function initExpensesDb(db) {
     addCol("station_expenses", "receipt_name", "TEXT DEFAULT ''");
     addCol("station_expenses", "rejection_reason", "TEXT");
     addCol("station_expenses", "payment_ref", "TEXT DEFAULT ''");
+    addCol("station_expenses", "expense_type", "TEXT DEFAULT 'Direct'");
+    addCol("station_expenses", "tax_rate", "REAL DEFAULT 0");
+    addCol("station_expenses", "taxable_amount", "REAL DEFAULT 0");
+    addCol("station_expenses", "tax_amount", "REAL DEFAULT 0");
+    addCol("station_expenses", "gstin", "TEXT DEFAULT ''");
+    addCol("station_expenses", "invoice_no", "TEXT DEFAULT ''");
+    addCol("station_expenses", "invoice_date", "TEXT DEFAULT ''");
+    addCol("station_expenses", "payment_status", "TEXT DEFAULT 'paid'");
+    addCol("expense_categories", "expense_type", "TEXT DEFAULT 'Indirect'");
 
     // 1. Seed Expense Categories if empty
     const catCount = (db.prepare("SELECT COUNT(*) as c FROM expense_categories").get() || {}).c || 0;

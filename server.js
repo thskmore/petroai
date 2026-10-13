@@ -267,9 +267,7 @@ create table if not exists duty_handovers(
         sup: [
           { id: 1, name: "HPCL Loni Terminal Depot", phone: "020-24458899", kind: "Oil company", e: [] }
         ],
-        bk: [
-          { id: 1, name: "SBI Forecourt Current A/C", no: "38920192831", ifsc: "SBIN0001234" }
-        ],
+        bk: [],
         nozzles: [
           { id: 1, name: "N1 (MS-1)", fuel: "Petrol (MS)", tank_id: 1, op: 10540.20, active: true },
           { id: 2, name: "N2 (MS-2)", fuel: "Petrol (MS)", tank_id: 1, op: 9812.50, active: true },
@@ -588,9 +586,7 @@ function createDefaultStationState(stationId, stationInfo = {}) {
     sup: [
       { id: Date.now() + 301, name: `${omc} Regional Depot Supply`, phone: "1800-2333-555" }
     ],
-    bk: [
-      { id: Date.now() + 401, name: "State Bank of India (Pump CC A/C)", no: "34891002341", ifsc: "SBIN0001234" }
-    ],
+    bk: [],
     nozzles: defaultNozzles,
     tanks: defaultTanks,
     deliv: [],
@@ -971,6 +967,16 @@ app.patch("/api/users/:id", need("owner", "manager"), (q, s) => {
   s.json({ ok: true, user: updated });
 });
 
+app.delete("/api/users/:id", need("owner"), (q, s) => {
+  const id = +q.params.id, u = db.prepare("select * from users where id=?").get(id);
+  if (!u) return s.status(404).json({ error: "User not found." });
+  if (q.user.role !== "admin" && u.station_id !== getStationId(q)) return s.status(403).json({ error: "Access denied." });
+  if (u.role === "owner" || u.id === q.user.id) return s.status(400).json({ error: "Cannot delete station owner or your own account." });
+  db.prepare("delete from sessions where user_id=?").run(id);
+  db.prepare("delete from users where id=?").run(id);
+  s.json({ ok: true });
+});
+
 // ---- Shared business data (isolated by station_id)
 const getState = (target) => {
   let sId = 1;
@@ -1223,6 +1229,7 @@ function detail(d) {
   return {
     id: d.id, d: d.d, shift: d.shift, status: d.status, worker_id: d.worker_id, worker: w ? w.name : "", pay,
     cash: +pay.cash || 0, upi: +pay.upi || 0, card: +pay.card || 0, note: d.note || "",
+    cash_denoms: (pay && pay._denoms) || null, slips: (pay && pay._slips) || null,
     lines, items, expenses, credit_sales, credit_recoveries, litres, sales, lube, exp, credit, recovery, expected, collected, diff: r2(collected - expected),
   };
 }
@@ -1267,7 +1274,7 @@ function saveDuty(id, b, strict, full) {
       }
       if (o.opening == null) return `Enter the opening reading for ${nn}.`;
       if (o.closing == null) return `Enter the closing reading for ${nn}.`;
-      if (o.rate == null || o.rate <= 0) return `The rate for ${nn} is missing. Ask the owner to set it in Pump setup.`;
+      if (o.rate == null || o.rate <= 0) return `The rate for ${nn} is missing. Ask the owner to set it in Settings.`;
       if (o.closing < o.opening) return `Closing is less than opening for ${nn}.`;
       if (o.testing > o.closing - o.opening) return `Testing litres are more than the fuel dispensed on ${nn}.`;
     }
@@ -1607,9 +1614,9 @@ app.post("/api/duties/assign", need("owner", "manager"), (q, s) => {
     const b = db.prepare("select u.name w from duty_lines dl join duties du on du.id=dl.duty_id join users u on u.id=du.worker_id where dl.nozzle_id=? and du.status in ('open','submitted') limit 1").get(id);
     if (b) return s.status(409).json({ error: `${n.name} is with ${b.w}. It is free once that duty is closed.` });
     const rate = rateFor(st, n.fuel, d);
-    if (rate == null) return s.status(400).json({ error: `Set the ${n.fuel} rate in Pump setup first.` });
+    if (rate == null) return s.status(400).json({ error: `Set the ${n.fuel} rate in Settings first.` });
     const lc = lastClose(id), opening = lc.c ?? (n.open ?? null);
-    if (opening == null) return s.status(400).json({ error: `Set the opening reading for ${n.name} in Pump setup first.` });
+    if (opening == null) return s.status(400).json({ error: `Set the opening reading for ${n.name} in Settings first.` });
     lines.push({ id, opening, rate });
   }
   const dutyId = db.transaction(() => {
@@ -1737,11 +1744,11 @@ app.post("/api/worker/assign-duty", need(), (q, s) => {
     }
     const rate = rateFor(st, n.fuel, d);
     if (rate == null) {
-      return s.status(400).json({ error: `Set the ${n.fuel} rate in Pump setup first.` });
+      return s.status(400).json({ error: `Set the ${n.fuel} rate in Settings first.` });
     }
     const opening = l.closing != null ? l.closing : (lastClose(nIdStr).c ?? (n.open ?? null));
     if (opening == null) {
-      return s.status(400).json({ error: `Set the opening reading for ${n.name} in Pump setup first.` });
+      return s.status(400).json({ error: `Set the opening reading for ${n.name} in Settings first.` });
     }
 
     if (!byWorker[wId]) {
@@ -4915,8 +4922,9 @@ function payFor(u, month) {
   const ds = allDuties.filter((d) => d.status === "closed");
   const pending = allDuties.filter((d) => d.status === "open" || d.status === "submitted").length;
   const count = { Morning: 0, Evening: 0, Night: 0 };
-  let earn = 0, short = 0, missing = false, lubeSold = 0, premiumLiters = 0;
+  let earn = 0, short = 0, excess = 0, missing = false, lubeSold = 0, premiumLiters = 0;
   const short_list = [];
+  const excess_list = [];
   const dates_worked = new Set();
   const date_counts = {};
 
@@ -4948,6 +4956,16 @@ function payFor(u, month) {
       const diffAmt = r2(-d.diff);
       short += diffAmt;
       short_list.push({
+        duty_id: d.id,
+        d: d.d,
+        shift: d.shift,
+        amount: diffAmt,
+        note: d.note || ""
+      });
+    } else if (d.diff >= 1) {
+      const diffAmt = r2(d.diff);
+      excess += diffAmt;
+      excess_list.push({
         duty_id: d.id,
         d: d.d,
         shift: d.shift,
@@ -5022,6 +5040,7 @@ function payFor(u, month) {
   const total_incentive = r2(auto_lube_incentive + auto_premium_incentive + manual_incentive);
   earn = r2(base_earn);
   short = r2(short);
+  excess = r2(excess);
   const net_short = Math.max(0, short - waived);
 
   // Active loans for worker
@@ -5030,7 +5049,7 @@ function payFor(u, month) {
     loans = db.prepare("select * from pay_loans where worker_id=? and status='active'").all(u.id);
   } catch (_) {}
 
-  const gross = r2(earn + bonus + total_ot + total_incentive + auto_night_allowance + deposit_refund);
+  const gross = r2(earn + bonus + total_ot + total_incentive + auto_night_allowance + deposit_refund + excess);
 
   // Statutory PF & ESIC
   let epf_ee = 0, epf_er = 0, esic_ee = 0, esic_er = 0;
@@ -5093,6 +5112,8 @@ function payFor(u, month) {
     short,
     net_short,
     short_list,
+    excess,
+    excess_list,
     advance,
     bonus,
     ot: total_ot,

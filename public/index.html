@@ -2162,21 +2162,6 @@ var KEY="petrol-credit-ledger-v1",S=emptyS(),view=null,from="",to="",onlyDue=fal
 // ---- Petro Module Catalog & Lifecycle Management ----
 var PETRO_MODULE_CATALOG = [
   {
-    id: "expenses",
-    name: "Expense Management & Cash Vouchers",
-    category: "Accounting & Cash Flow",
-    badge: "Cash Accounting",
-    omc: "Station Expenditure & Audit",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-8"/><path d="M16 12h-8"/><path d="M10 16H8"/></svg>',
-    summary: "Forecourt operating expenses, payment vouchers, receipt uploads, manager approvals, and shift cash reconciliation.",
-    details: "End-to-end station expenditure management. Supports Operator cash voucher entry, receipt attachment uploads, Manager verification/approvals, category budget limits, and audit logs.",
-    features: ["Role-based entry & approval workflow", "Shift cash physical deduction reconciliation", "Receipt & bill attachment uploads", "Category & monthly spend budget tracking"],
-    tabs: ["expenses"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
     id: "duty",
     name: "Shift Duty & Worker Handover",
     category: "Operations & Forecourt",
@@ -2187,81 +2172,6 @@ var PETRO_MODULE_CATALOG = [
     details: "Tracks nozzle opening and closing readings, worker shift allocation, fuel dispensing totals, short/excess cash difference calculation, and shift handover records.",
     features: ["Digital nozzle meter readings", "Shift-wise cash, UPI & card collections", "Shortage/excess automated detection", "Handover audit trail with worker signatures"],
     tabs: ["duty", "wduty", "handover"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "pricerev",
-    name: "06:00 AM Daily Price Revision",
-    category: "Operations & Forecourt",
-    badge: "OMC Mandatory",
-    omc: "Daily OMC RSP Broadcast",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 18 18"></path><path d="M21 12V3h-9"></path><path d="M3 12v9h9"></path><circle cx="12" cy="12" r="3"></circle></svg>',
-    summary: "Automated 06:00 AM fuel rate revisions for MS, HSD, and Branded fuels with stock revaluation.",
-    details: "Allows daily rate updating as notified by IOCL, BPCL, HPCL, or Nayara. Automatically calculates price differential gain/loss on tank dead stock.",
-    features: ["Daily price update log at 06:00 AM", "Nozzle-linked rate propagation", "Stock revaluation impact calculation", "Historical rate archive"],
-    tabs: ["pricerev"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "density",
-    name: "Fuel Quality, Density & Water Dip Register",
-    category: "Compliance, PESO & Legal",
-    badge: "Statutory",
-    omc: "MDG 2012 / PESO Rule",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path><path d="M12 12v5"></path><path d="M9 15h6"></path></svg>',
-    summary: "Daily hydrometer density test, temperature conversion (ASTM 53B), and water paste dip check.",
-    details: "Mandatory daily register for OMC Sales Officers and PESO inspectors. Converts observed density and temperature to 15°C standard density and flags invoice deviations >3.0 kg/m³.",
-    features: ["Daily morning density logging per tank", "ASTM 53B 15°C conversion table", "Water finding paste detection log", "Inspection-ready printable register"],
-    tabs: ["density", "waterdip"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "wmvault",
-    name: "Weights & Measures Vault (5L Calibration)",
-    category: "Compliance, PESO & Legal",
-    badge: "Legal Metrology",
-    omc: "Daily 5L Test & Verification",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h18"></path></svg>',
-    summary: "Daily morning 5-litre conical measure delivery check and W&M quarterly stamping certificate vault.",
-    details: "Ensures nozzle dispensing accuracy within ±25 ml per 5 litres. Keeps legal metrology certificates, pulsar seal records, and inspector re-verification dates.",
-    features: ["Daily 5L morning test log per nozzle", "Delivery error tolerance monitoring (±25ml)", "W&M annual/quarterly verification dates", "Inspector seal break & resealing records"],
-    tabs: ["wmvault", "calibration", "wmreseal"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "tanks",
-    name: "Underground Tanks & Loss/Gain Analysis",
-    category: "Operations & Forecourt",
-    badge: "Storage Control",
-    omc: "Daily Dip & Variation Tracking",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 17 4 4 4-4"></path></svg>',
-    summary: "Underground storage tank dip measurement, dip chart calibration, and daily evaporation loss/gain.",
-    details: "Computes physical dip volume vs book stock. Monitors evaporation, temperature shrinkage, and transit loss for Petrol (MS), Diesel (HSD), and Power fuels.",
-    features: ["Millimeter dip rod reading to litre lookup", "Daily cumulative loss/gain percentage", "Decantation tanker delivery reconciliation", "Low tank stock warning thresholds"],
-    tabs: ["tanks", "lossgain", "wdip"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "bowser",
-    name: "Fuel Bowser & Doorstep Dispenser (DDD)",
-    category: "Fleet & Value-Add",
-    badge: "Doorstep Fuel",
-    omc: "PESO Authorized Mobile Dispensing",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>',
-    summary: "Doorstep diesel delivery (DDD) trips, mobile bowser calibration, trip meter readings, and customer drops.",
-    details: "Designed for mobile bowsers delivering diesel to agricultural farms, generators, construction sites, and fleet depots.",
-    features: ["Bowser trip dispatch and return meter logs", "Client-site delivery receipts", "Dedicated mobile stock accounting", "Driver & vehicle trip reconciliation"],
-    tabs: ["bowser"],
     roles: ["Owner", "Manager", "Worker"],
     defaultInstalled: true,
     isCore: false
@@ -2282,24 +2192,9 @@ var PETRO_MODULE_CATALOG = [
     isCore: false
   },
   {
-    id: "equipment",
-    name: "Equipment & DG Generator Maintenance",
-    category: "Equipment & Amenities",
-    badge: "Uptime & Power",
-    omc: "Forecourt Infrastructure",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>',
-    summary: "Air compressor, submersible turbine pumps (STP), DU dispensers, and diesel generator run hours.",
-    details: "Logs DG fuel consumption per run hour, battery voltage tests, dispenser calibration servicing, and preventive maintenance reminders.",
-    features: ["DG generator running hour and diesel log", "Air machine pressure calibration check", "Dispensing unit filter replacement dates", "Breakdown & technician service tickets"],
-    tabs: ["equipment", "generator"],
-    roles: ["Owner", "Manager"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
     id: "amenities",
     name: "Customer Amenities & Cleanliness Checklist",
-    category: "Equipment & Amenities",
+    category: "Operations & Forecourt",
     badge: "Customer Delight",
     omc: "OMC Audit Rating Criterion",
     icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>',
@@ -2308,81 +2203,6 @@ var PETRO_MODULE_CATALOG = [
     features: ["Restroom hygiene & water availability check", "Digital free air machine status", "Drinking water dispenser filter hygiene", "First aid & fire extinguisher readiness"],
     tabs: ["amenities"],
     roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "indents",
-    name: "Fleet Indents & Fleet Card Loyalty",
-    category: "Fleet & Value-Add",
-    badge: "Fleet Cards",
-    omc: "Fastag / DriveTrack / XTRAPOWER",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>',
-    summary: "Pre-authorized fleet slips, driver indent validation, vehicle registration tracking, and customer loyalty points.",
-    details: "Allows transport companies to issue signed/digital fuel indents. Workers record vehicle number, driver name, and indent slip number before dispensing.",
-    features: ["Indent slip verification and barcode logging", "Vehicle fuel quota enforcement", "Driver signature / slip capture", "Loyalty point accrual and redemption"],
-    tabs: ["indents", "loyalty"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "lubes",
-    name: "Bay Lubes & AdBlue (DEF) Register",
-    category: "Inventory & Bay Products",
-    badge: "High Margin",
-    omc: "Engine Oils & DEF Dispensing",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5v14"></path></svg>',
-    summary: "Engine oil cans, grease, 2T pouch, and AdBlue (DEF) bucket/dispenser stock and cash billing.",
-    details: "Forecourt lube bay sales tracking. Encourages workers to promote lubricants during fuelling, with separate commission/incentive tracking.",
-    features: ["Engine oil grade catalog (15W40, 20W40, 5W30)", "AdBlue DEF 10L/20L and barrel sales", "Forecourt counter sale receipts", "Worker sales incentives and commissions"],
-    tabs: ["lubes"],
-    roles: ["Owner", "Manager", "Worker"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "inv",
-    name: "Invoices, B2B Billing & GST Returns",
-    category: "Sales & Credit Billing",
-    badge: "Tax Invoices",
-    omc: "GST GSTR-1 Ready",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
-    summary: "GST compliant tax invoices for B2B transport clients, HSN/SAC breakdown, and GSTR-1 summaries.",
-    details: "Generates professional PDF invoices with pump GSTIN, vehicle number, fuel HSN 2710, and VAT/GST tax breakup for corporate claiming.",
-    features: ["Formal GST tax invoice generator", "HSN 2710 fuel tax breakup", "Monthly B2B credit customer bill generation", "Direct WhatsApp bill dispatch"],
-    tabs: ["inv", "gstbreakup"],
-    roles: ["Owner", "Manager"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "stock",
-    name: "Stock Inventory & Reorder Alerts",
-    category: "Inventory & Bay Products",
-    badge: "Inventory",
-    omc: "Lubes & Consumables Control",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>',
-    summary: "Packaged lubricants, filters, AdBlue buckets, and pump consumable stock with minimum balance alerts.",
-    details: "Monitors warehouse and sales counter stock levels. Provides reorder warnings when quantities drop below safe minimums.",
-    features: ["Real-time inventory stock count", "Low stock visual badge indicators", "Cost price vs MRP margin tracking", "Stock inward and outward audit trail"],
-    tabs: ["stock"],
-    roles: ["Owner", "Manager"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "sup",
-    name: "Suppliers & Purchase Register",
-    category: "Inventory & Bay Products",
-    badge: "Purchases",
-    omc: "OMC & Local Vendor Accounts",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
-    summary: "Manage oil company (OMC) decantation invoices, lube distributors, and equipment suppliers.",
-    details: "Maintains purchase ledger, outstanding payables, payment terms, and vendor GSTIN details.",
-    features: ["Vendor directory with phone & GSTIN", "Inward purchase invoice log", "Vendor outstanding payment balances", "Payment vouchers & bank transfers"],
-    tabs: ["sup"],
-    roles: ["Owner", "Manager"],
     defaultInstalled: true,
     isCore: false
   },
@@ -2402,54 +2222,9 @@ var PETRO_MODULE_CATALOG = [
     isCore: false
   },
   {
-    id: "pnl",
-    name: "Station Profit & Loss Statement (P&L)",
-    category: "Accounting & Cash Flow",
-    badge: "Dealer Margin",
-    omc: "Financial Health",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path><polyline points="17 11 22 6 17 6"></polyline></svg>',
-    summary: "Gross dealer commissions, electricity/staff expenses, evaporation loss deduction, and net station profit.",
-    details: "Calculates net dealer profitability based on OMC commission per litre (e.g. ₹3.80/L on MS, ₹2.60/L on HSD) minus electricity, staff wages, and operational costs.",
-    features: ["OMC dealer commission breakdown", "Operating expense categorization", "Monthly net profit margin graphs", "Break-even daily volume calculation"],
-    tabs: ["pnl"],
-    roles: ["Owner"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "compliance",
-    name: "PESO Explosive & Statutory Licenses",
-    category: "Compliance, PESO & Legal",
-    badge: "PESO / Legal",
-    omc: "Statutory License Vault",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"></path></svg>',
-    summary: "Explosives (PESO) license Form XIV, Fire NOC, Pollution (PCB) certificate, and retail renewal countdown.",
-    details: "Never miss a statutory renewal deadline. Tracks PESO storage license expiry, explosive inspector inspection reports, and fire extinguisher re-filling.",
-    features: ["Form XIV PESO storage renewal alerts", "State Pollution Board (SPCB) consent tracker", "Fire safety NOC & insurance validity", "Document expiry alerts with push notifications"],
-    tabs: ["compliance"],
-    roles: ["Owner", "Manager"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
-    id: "audit",
-    name: "AI Forecourt Audit & Anomaly Detection",
-    category: "Operations & Forecourt",
-    badge: "AI Powered",
-    omc: "Theft & Loss Prevention",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-    summary: "AI-driven detection of meter rollback anomalies, worker cash variances, and unbilled fuel dispensing.",
-    details: "Audits shift duties and tank reconciliations to pinpoint discrepancies, unauthorized credit sales, and unusual dispensing patterns.",
-    features: ["Automated shift discrepancy analysis", "Worker cash collection reliability score", "Tank loss vs meter variance red flags", "Actionable forensic audit reports"],
-    tabs: ["audit"],
-    roles: ["Owner", "Manager"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
     id: "pay",
     name: "Staff Salary, Advances & Payroll",
-    category: "Accounting & Cash Flow",
+    category: "Operations & Forecourt",
     badge: "Payroll",
     omc: "Station Staff Management",
     icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>',
@@ -2462,21 +2237,6 @@ var PETRO_MODULE_CATALOG = [
     isCore: false
   },
   {
-    id: "analytics",
-    name: "Forecourt Sales Analytics & Trends",
-    category: "Accounting & Cash Flow",
-    badge: "Analytics",
-    omc: "Volume & Growth Insights",
-    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>',
-    summary: "Sales volume heatmaps, peak fuelling hours, credit vs cash distribution, and customer retention metrics.",
-    details: "Interactive visual dashboards displaying fuel consumption patterns, weekly volume trends, and top credit customers.",
-    features: ["Daily/weekly fuel volume graphs", "Payment mode distribution (Cash vs UPI vs Card)", "Peak dispensing rush-hour analysis", "Credit customer volume rankings"],
-    tabs: ["analytics"],
-    roles: ["Owner", "Manager"],
-    defaultInstalled: true,
-    isCore: false
-  },
-  {
     id: "rep",
     name: "Shift & Sales Daily Reports",
     category: "Accounting & Cash Flow",
@@ -2484,9 +2244,39 @@ var PETRO_MODULE_CATALOG = [
     omc: "Daily Financial Audit",
     icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>',
     summary: "Consolidated sales registers, worker-wise billing summaries, and printable daily audit reports.",
-    details: "Provides day-wise summaries of total fuel litres, shop and lube sales, expenses incurred, and net collection reconciliations.",
+    details: "Provides day-wise summaries of total fuel litres, shop sales, expenses incurred, and net collection reconciliations.",
     features: ["Daily aggregated station sales statement", "Worker-wise shift performance records", "Printable daily balance sheet", "Date-range historical reporting"],
     tabs: ["rep"],
+    roles: ["Owner", "Manager"],
+    defaultInstalled: true,
+    isCore: false
+  },
+  {
+    id: "stock",
+    name: "Fuel, Lubes & Shop Stock Register",
+    category: "Inventory & Purchasing",
+    badge: "Inventory",
+    omc: "Live Dips & Lubes",
+    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>',
+    summary: "Underground fuel dips, live tank volumes, lubricant stock, and low-inventory reorder alerts.",
+    details: "Combines dip rod reading entries, live ullage space tracking, lubricants/shop item quantities, and purchase adjustments.",
+    features: ["Underground fuel tank dip records", "Engine oils & shop stock counts", "Automated low-stock threshold alerts", "D3 visual tank fill progress"],
+    tabs: ["stock"],
+    roles: ["Owner", "Manager"],
+    defaultInstalled: true,
+    isCore: false
+  },
+  {
+    id: "sup",
+    name: "Oil Company & Vendor Ledger",
+    category: "Inventory & Purchasing",
+    badge: "Suppliers",
+    omc: "OMC & Vendor Accounts",
+    icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+    summary: "Depot fuel tanker delivery bills, oil company advances, and supplier ledgers.",
+    details: "Track payments to oil marketing companies (OMCs) and lube distributors alongside tanker delivery bills.",
+    features: ["OMC depot advance balance tracking", "Tanker fuel delivery purchase bills", "Lube supplier bill reconciliations", "Automatic stock intake integration"],
+    tabs: ["sup"],
     roles: ["Owner", "Manager"],
     defaultInstalled: true,
     isCore: false
@@ -2506,11 +2296,13 @@ function isModuleInstalled(modId){
 
 function isTabAllowedByModules(tabId){
   if(!tabId) return true;
-  if(tabId === "home" || tabId === "ledger" || tabId === "setup" || tabId === "modules" || tabId === "admin" || tabId === "credit" || tabId === "bak" || tabId === "team") return true;
+  var removed = ["equipment","generator","indents","loyalty","inv","gstbreakup","wmvault","calibration","wmreseal","bowser","lubes","expenses","compliance","audit","analytics","pricerev","density","waterdip","tanks","lossgain","wdip","pnl"];
+  if(removed.indexOf(tabId) >= 0) return false;
+  if(tabId === "home" || tabId === "ledger" || tabId === "setup" || tabId === "modules" || tabId === "admin" || tabId === "credit" || tabId === "bak" || tabId === "team" || tabId === "stock" || tabId === "sup") return true;
   var mod = PETRO_MODULE_CATALOG.find(function(m){
     return m.id === tabId || (m.tabs && m.tabs.indexOf(tabId) >= 0);
   });
-  if(!mod) return true;
+  if(!mod) return false;
   return isModuleInstalled(mod.id);
 }
 function load(){try{var r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}
@@ -2528,42 +2320,20 @@ function today(){return new Date().toISOString().slice(0,10)}
 function find(id){if(!S||!S.c)return null;return S.c.filter(function(c){return c.id==id})[0]}
 function render(){if(!S)S=emptyS();if(!S.c)S.c=[];if(SRV&&!ME)return;
 if(tab=="modules")return renderModulesTab();
-if(!isTabAllowedByModules(tab))return renderUninstalledModuleScreen(tab);
+if(!isTabAllowedByModules(tab)){tab="home";return renderHome();}
 if(tab=="home"||!tab)return renderHome();
-if(tab=="calibration"){window.WM_SUBTAB="daily5l";tab="wmvault";return renderWmVaultTab();}
-if(tab=="wmreseal"){window.WM_SUBTAB="reseal";tab="wmvault";return renderWmVaultTab();}
-if(tab=="waterdip"){window.DENSITY_SUBTAB="waterdip";tab="density";return renderWaterDipTab();}
-if(tab=="lossgain"){window.TANKS_SUBTAB="lossgain";tab="tanks";return renderLossGainTab();}
-if(tab=="gstbreakup"){window.INV_SUBTAB="gstreturn";tab="inv";return renderGstBreakupTab();}
-if(tab=="loyalty"){window.INDENTS_SUBTAB="loyalty";tab="indents";return renderLoyaltyTab();}
-if(tab=="generator"){window.EQUIP_MAINT_SUBTAB="generator";tab="equipment";return renderGeneratorTab();}
-if(tab=="pricerev")return renderPriceRevTab();
-if(tab=="bowser")return renderBowserTab();
-if(tab=="pnl")return renderPnLTab();
-if(tab=="expenses")return renderExpensesTab();
-if(tab=="wmvault")return renderWmVaultTab();
-if(tab=="inv")return renderInv();
-if(tab=="stock")return renderStock();
-if(tab=="sup")return renderSup();
 if(tab=="book")return renderBook();
 if(tab=="rep")return renderRep();
-if(tab=="analytics")return renderAnalytics();
-if(tab=="audit")return renderAudit();
 if(tab=="bak"){tab="setup";SU="bak";return renderSetup();}
 if(tab=="team"){tab="setup";SU="team";return renderSetup();}
 if(tab=="credit")return renderCredit();
 if(tab=="duty")return renderDutyTab();
 if(tab=="handover")return renderHandover();
 if(tab=="vault")return renderVaultTab();
-if(tab=="density")return renderDensityTab();
-if(tab=="indents")return renderIndentsTab();
-if(tab=="lubes")return renderLubesTab();
-if(tab=="equipment")return renderEquipmentTab();
 if(tab=="amenities")return renderAmenitiesTab();
-if(tab=="compliance")return renderComplianceTab();
-if(tab=="tanks")return renderTanks();
-if(tab=="wdip")return loadDip();
 if(tab=="pay")return renderSalary();
+if(tab=="stock")return renderStock();
+if(tab=="sup")return renderSup();
 if(tab=="setup")return renderSetup();
 if(tab=="mypay")return loadMyPay();
 if(tab=="wduty")return loadW();var h="";
@@ -2579,7 +2349,8 @@ h+='<button class="ghost noprint" onclick="view=null;render()">Back to customers
 h+=ageing(c)+'<div class="row noprint"><label>From<input type="date" value="'+from+'" onchange="from=this.value;render()"></label><label>To<input type="date" value="'+to+'" onchange="to=this.value;render()"></label></div>';
 h+='<div class="tbl" style="margin-top:12px"><table><tr><th>Date</th><th>Detail</th><th class="r">Amount</th><th class="r">Balance</th><th class="noprint"></th></tr>';var n=0;
 rows(c).forEach(function(o){var x=o.x;if(o.skip)return;n++;
-h+='<tr><td>'+x.d.slice(5)+'</td><td>'+(x.t=="sale"?"Sale: ":"Paid: ")+esc(x.n)+'</td><td class="r '+x.t+'">'+(x.t=="sale"?"+":"\u2212")+inr(x.a)+'</td><td class="r">'+inr(o.bal)+'</td><td class="noprint" style="white-space:nowrap">'+(x.srv?'':'<button class="ghost" style="padding:5px 8px" onclick="entryForm(\''+x.t+'\','+o.i+')">Edit</button> ')+'<button class="ghost" style="padding:5px 8px" onclick="delEntry('+o.i+')">Delete</button></td></tr>'});
+var dStr=x.d?String(x.d).slice(5):"";
+h+='<tr><td>'+dStr+'</td><td>'+(x.t=="sale"?"Sale: ":"Paid: ")+esc(x.n)+'</td><td class="r '+x.t+'">'+(x.t=="sale"?"+":"\u2212")+inr(x.a)+'</td><td class="r">'+inr(o.bal)+'</td><td class="noprint" style="white-space:nowrap">'+(x.srv?'':'<button class="ghost" style="padding:5px 8px" onclick="entryForm(\''+x.t+'\','+o.i+')">Edit</button> ')+'<button class="ghost" style="padding:5px 8px" onclick="delEntry('+o.i+')">Delete</button></td></tr>'});
 if(!n)h+='<tr><td colspan="5" class="empty">No entries in this range.</td></tr>';
 h+='</table></div>'}
 document.getElementById("app").innerHTML=h}
@@ -2626,18 +2397,28 @@ function toWaNumber(raw){
 
 function waLink(number, text){
   var n = toWaNumber(number);
-  if (!n) throw new Error("Please enter a valid 10-digit WhatsApp number.");
   var isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '') || window.innerWidth < 900;
-  var encoded = encodeURIComponent(text);
+  var encoded = encodeURIComponent(text || '');
+  if (!n) {
+    return isMob ? ('https://api.whatsapp.com/send?text=' + encoded) : ('https://web.whatsapp.com/send?text=' + encoded);
+  }
   return isMob ? ('https://wa.me/' + n + '?text=' + encoded) : ('https://web.whatsapp.com/send?phone=' + n + '&text=' + encoded);
 }
 
 function openWaLink(number, text){
   try {
     var url = waLink(number, text);
-    window.open(url, '_blank');
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      if (a && a.parentNode) a.parentNode.removeChild(a);
+    }, 150);
   } catch(e) {
-    toast(e.message || "Please provide a valid 10-digit WhatsApp phone number.");
+    toast((e && e.message) || "Please provide a valid 10-digit WhatsApp phone number.");
   }
 }
 
@@ -2662,7 +2443,7 @@ function getWaTemplate(c, tmplKey){
     var recent = allRows.slice(-8);
     recent.forEach(function(x){
       var isSale = x.t === "sale";
-      lines.push("• " + x.d.slice(5) + " · " + (isSale ? "Sale " : "Paid ") + (x.n || "") + " · " + (isSale ? "+" : "−") + inr(x.a));
+      lines.push("• " + (x.d ? String(x.d).slice(5) : "") + " · " + (isSale ? "Sale " : "Paid ") + (x.n || "") + " · " + (isSale ? "+" : "−") + inr(x.a));
     });
     return [
       "*" + bName + " — Customer Account Statement*",
@@ -3133,23 +2914,17 @@ function getNavTabsList(){
     pricerev: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 18 18"></path><path d="M21 12V3h-9"></path><path d="M3 12v9h9"></path><circle cx="12" cy="12" r="3"></circle></svg>',
     wmreseal: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>',
     gstbreakup: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>',
-    expenses: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-8"/><path d="M16 12h-8"/><path d="M10 16H8"/></svg>',
-    modules: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>'
+    modules: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>',
+    expenses: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-8"/><path d="M16 12h-8"/><path d="M10 16H8"/></svg>'
   };
 
   var T = [
     { id: "home", label: "Home", icon: icons.home, group: "Overview" },
     { id: "ledger", label: "Ledger", icon: icons.ledger, group: "Sales & Customers" },
-    { id: "indents", label: "Fleet Indents & Loyalty", icon: icons.indents, group: "Sales & Customers" },
-    { id: "inv", label: "Invoices & GST Returns", icon: icons.inv, group: "Sales & Customers" },
-    { id: "stock", label: "Stock", badge: stkBadge, icon: icons.stock, group: "Inventory" },
-    { id: "lubes", label: "Lube & AdBlue (DEF)", icon: icons.lubes, group: "Inventory" },
+    { id: "stock", label: "Stock", icon: icons.stock, group: "Inventory", badge: stkBadge },
     { id: "sup", label: "Suppliers", icon: icons.sup, group: "Inventory" },
-    { id: "expenses", label: "Expenses", icon: icons.expenses, group: "Accounting" },
     { id: "book", label: "Cash Book", icon: icons.book, group: "Accounting" },
-    { id: "rep", label: "Reports", icon: icons.rep, group: "Accounting" },
-    { id: "pnl", label: "Profit & Loss", icon: icons.pnl, group: "Accounting" },
-    { id: "analytics", label: "Analytics", icon: icons.analytics, group: "Accounting" }
+    { id: "rep", label: "Reports", icon: icons.rep, group: "Accounting" }
   ];
 
   if (SRV && ME && ME.role === "admin") {
@@ -3157,52 +2932,47 @@ function getNavTabsList(){
       { id: "home", label: "Forecourt Home", icon: icons.home, group: "Overview" },
       { id: "admin", label: "Super Admin Console", icon: icons.audit, group: "Platform Administration" },
       { id: "modules", label: "Module Hub & Store", icon: icons.modules, group: "Platform Administration" },
-      { id: "expenses", label: "Expenses", icon: icons.expenses, group: "Forecourt View" },
       { id: "ledger", label: "Inspected Forecourt Ledger", icon: icons.ledger, group: "Forecourt View" },
+      { id: "stock", label: "Stock & Fuel Tanks", icon: icons.stock, group: "Inventory", badge: stkBadge },
+      { id: "sup", label: "Suppliers & Depot Ledger", icon: icons.sup, group: "Inventory" },
       { id: "duty", label: "Forecourt Shift Duties", icon: icons.duty, group: "Forecourt View" },
-      { id: "tanks", label: "Tanks & Dips", icon: icons.tanks, group: "Forecourt View" },
-      { id: "setup", label: "Station Profile & Setup", icon: icons.setup, group: "Forecourt View" }
+      { id: "setup", label: "Settings", icon: icons.setup, group: "Forecourt View" }
     ];
     return adminTabs.filter(function(item){ return isTabAllowedByModules(item.id); });
   }
+
   if (SRV && ME && ME.role == "worker") {
     var workerTabs = [
       { id: "wduty", label: "My Duty", icon: icons.wduty, group: "Worker Tasks" },
-      { id: "expenses", label: "Expenses", icon: icons.expenses, group: "Worker Tasks" },
       { id: "mypay", label: "My Pay & Advances", icon: icons.mypay, group: "Worker Tasks" }
     ];
     return workerTabs;
   }
 
   if (SRV) {
-    T.splice(1, 0,
+    var ops = [
       { id: "duty", label: "Shift Duty", icon: icons.duty, group: "Operations" },
-      { id: "pricerev", label: "06:00 AM Price Revision", icon: icons.pricerev, group: "Operations" },
-      { id: "density", label: "Fuel Quality & Testing Register", icon: icons.density, group: "Operations" },
-      { id: "wmvault", label: "Weights & Measures Vault", icon: icons.wmvault, group: "Operations" },
-      { id: "tanks", label: "Fuel Tanks & Loss/Gain", icon: icons.tanks, group: "Operations" },
-      { id: "bowser", label: "Fuel Bowser & Doorstep", icon: icons.bowser, group: "Operations" },
       { id: "handover", label: "Handover History", icon: icons.handover, group: "Operations" },
       { id: "vault", label: "Cash-Safe Vault", icon: icons.vault, group: "Operations" },
-      { id: "equipment", label: "Equipment & DG Maintenance", icon: icons.equipment, group: "Maintenance & Power" },
       { id: "amenities", label: "Customer Amenities", icon: icons.amenities, group: "Operations" }
+    ];
+    if (ME && ME.role == "owner") {
+      ops.push({ id: "pay", label: "Salary & Pay", icon: icons.pay, group: "Operations" });
+    }
+    T.splice.apply(T, [1, 0].concat(ops));
+  } else {
+    T.splice(1, 0,
+      { id: "pay", label: "Salary & Pay", icon: icons.pay, group: "Operations" }
     );
   }
   var installedCount = PETRO_MODULE_CATALOG.filter(function(m){ return isModuleInstalled(m.id); }).length;
   var modBadge = '<span class="nav-badge" style="background:#062A6B;color:#fff">' + installedCount + '</span>';
   if (SRV && ME && (ME.role == "owner" || ME.role == "manager")) {
     T.push({ id: "modules", label: "Module Hub", icon: icons.modules, group: "Management", badge: modBadge });
-    T.push({ id: "compliance", label: "PESO & Statutory Licenses", icon: icons.compliance, group: "Management" });
-    T.push({ id: "audit", label: "AI Audit", icon: icons.audit, group: "Management" });
-    T.push({ id: "setup", label: "Pump Setup", icon: icons.setup, group: "Management" });
+    T.push({ id: "setup", label: "Settings", icon: icons.setup, group: "Management" });
   } else if (!SRV) {
     T.push({ id: "modules", label: "Module Hub", icon: icons.modules, group: "Management", badge: modBadge });
-    T.push({ id: "compliance", label: "PESO & Statutory Licenses", icon: icons.compliance, group: "Management" });
-    T.push({ id: "audit", label: "AI Audit", icon: icons.audit, group: "Management" });
-    T.push({ id: "setup", label: "Pump Setup", icon: icons.setup, group: "Management" });
-  }
-  if (SRV && ME && ME.role == "owner") {
-    T.push({ id: "pay", label: "Salary & Pay", icon: icons.pay, group: "Management" });
+    T.push({ id: "setup", label: "Settings", icon: icons.setup, group: "Management" });
   }
   return T.filter(function(item){ return isTabAllowedByModules(item.id); });
 }
@@ -3672,12 +3442,12 @@ function generatePetroGptAnswer(q){
       '📲 <em>Action:</em> Tap <strong>Send reminders</strong> to dispatch instant WhatsApp payment links.</div>';
   }
 
-  if(qLower.includes("density") || qLower.includes("quality") || qLower.includes("water dip")){
-    return '<div><strong>🔬 Fuel Quality & Testing Register:</strong><br>' +
-      '• <strong>Morning MS Density:</strong> 742.8 kg/m³ @ 15°C (Within standard ±3 kg/m³ limits)<br>' +
-      '• <strong>Morning HSD Density:</strong> 828.5 kg/m³ @ 15°C (Within standard limits)<br>' +
-      '• <strong>Water Dip Paste Check:</strong> 0 mm across Tanks 1, 2, and 3 (Nil water ingress)<br>' +
-      '• <strong>Weights & Measures:</strong> 5L test measure delivered 5,000 mL exact on all nozzles.</div>';
+  if(qLower.includes("cash") || qLower.includes("collection") || qLower.includes("shift")){
+    return '<div><strong>💵 Shift Cash & Forecourt Collections:</strong><br>' +
+      '• <strong>Cash Takings:</strong> ₹1,04,475 (Till cleared & balanced)<br>' +
+      '• <strong>Digital UPI & QR:</strong> ₹94,525 direct settlement<br>' +
+      '• <strong>Card POS:</strong> ₹19,900 swiped<br>' +
+      '• <strong>Safe Drops:</strong> Excess cash securely bundled in cash-safe vault.</div>';
   }
 
   return '<div><strong>🤖 Forecourt Intelligence for ' + esc(bizName) + ':</strong><br>' +
@@ -3769,7 +3539,6 @@ function renderHome(){
       '<div class="home-quick-actions noprint">' +
         '<button type="button" class="btn" style="background:var(--sodium);color:var(--sodium-ink);font-weight:700" onclick="entryForm(\'sale\')">+ Record Fuelling</button>' +
         '<button type="button" class="ghost" onclick="selectNavTab(\'duty\')">Shift Duty</button>' +
-        '<button type="button" class="ghost" onclick="selectNavTab(\'indents\')">Dispense Indents</button>' +
         ((!SRV || (ME && (ME.role === "owner" || ME.role === "manager"))) ? '<button type="button" class="ghost" style="display:inline-flex;align-items:center;gap:6px" onclick="selectNavTab(\'modules\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg> Modules Hub</button>' : '') +
       '</div>' +
     '</div>' +
@@ -3778,9 +3547,9 @@ function renderHome(){
     '<div class="pump-banner">' +
       '<span class="pump-banner-dot"></span>' +
       '<div style="flex:1;min-width:0">' +
-        '<strong>Forecourt Shift Duty Active:</strong> Morning shift counter readings and dispenser lines synced. 5L measure stamped and water dip confirmed nil.' +
+        '<strong>Forecourt Shift Duty Active:</strong> Morning shift counter readings and dispenser lines synced.' +
       '</div>' +
-      '<button type="button" class="ghost btn-sm noprint" style="padding:4px 10px;font-size:12px;flex:none" onclick="selectNavTab(\'density\')">Log Quality Dip</button>' +
+      '<button type="button" class="ghost btn-sm noprint" style="padding:4px 10px;font-size:12px;flex:none" onclick="selectNavTab(\'duty\')">Shift Duty</button>' +
     '</div>' +
 
     '<!-- 12-Column Responsive Forecourt Grid -->' +
@@ -3843,16 +3612,15 @@ function renderHome(){
           '</div>' +
           '<div class="panel-bd">' +
             '<div style="font-size:12.5px;color:var(--text-2);margin-bottom:10px">' +
-              'Ask NETRA about sales, fuel stock, dip reconciliation, or overdue credit. Grounded in ' + esc(pumpTitle) + ' live data.' +
+              'Ask NETRA about sales, collections, shift settlement, or overdue credit. Grounded in ' + esc(pumpTitle) + ' live data.' +
             '</div>' +
             '<div class="petro-gpt-prompts">' +
               '<button type="button" class="petro-gpt-prompt" onclick="handlePetroGptPrompt(\'How did we do today?\')">How did we do today?</button>' +
-              '<button type="button" class="petro-gpt-prompt" onclick="handlePetroGptPrompt(\'What stock needs attention?\')">What stock needs attention?</button>' +
               '<button type="button" class="petro-gpt-prompt" onclick="handlePetroGptPrompt(\'Who owes over 30 days?\')">Who owes over 30 days?</button>' +
-              '<button type="button" class="petro-gpt-prompt" onclick="handlePetroGptPrompt(\'Check nozzle density & water dip\')">Check nozzle density & water dip</button>' +
+              '<button type="button" class="petro-gpt-prompt" onclick="handlePetroGptPrompt(\'Check shift cash & collections\')">Check shift cash & collections</button>' +
             '</div>' +
             '<div class="petro-gpt-input-row">' +
-              '<input type="text" id="petroGptInput" class="petro-gpt-input" placeholder="Ask about tanks, margins, shift dues..." onkeydown="if(event.key===\'Enter\')sendPetroGptQuery()">' +
+              '<input type="text" id="petroGptInput" class="petro-gpt-input" placeholder="Ask about shift dues, credit ledger, collections..." onkeydown="if(event.key===\'Enter\')sendPetroGptQuery()">' +
               '<button type="button" class="btn btn-sm" style="background:var(--sodium);color:var(--sodium-ink);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700" onclick="sendPetroGptQuery()">Ask NETRA</button>' +
             '</div>' +
             '<div id="petroGptAnsBox" class="petro-gpt-ans">' +
@@ -3896,10 +3664,6 @@ function renderHome(){
                   '<div class="tank-cover" style="color:' + coverTone + '">' + coverDays + 'd cover</div>' +
                 '</div>';
               }).join("") +
-            '</div>' +
-            '<div style="margin-top:14px;display:flex;gap:8px" class="noprint">' +
-              '<button type="button" class="ghost btn-sm" style="font-size:12px;flex:1" onclick="selectNavTab(\'tanks\')">Tanks & Dips</button>' +
-              '<button type="button" class="ghost btn-sm" style="font-size:12px;flex:1" onclick="selectNavTab(\'density\')">Quality Register</button>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -4045,77 +3809,41 @@ function renderHome(){
         '</div>' +
       '</div>' +
 
-      '<!-- Span 5: Statutory Licence & Compliance Expiry -->' +
+      '<!-- Span 5: Daily Forecourt Operations & Safety Checks -->' +
       '<div class="home-span-5">' +
         '<div class="panel">' +
           '<div class="panel-hd">' +
-            '<span class="eyebrow">Licence expiry</span>' +
-            '<span class="chip chip-warn">1 inside 30 days</span>' +
+            '<span class="eyebrow">Forecourt Operations &amp; Safety</span>' +
+            '<span class="chip chip-ok">Verified Today</span>' +
           '</div>' +
           '<div>' +
-            '<div class="petro-row" onclick="selectNavTab(\'compliance\')" style="cursor:pointer">' +
-              '<span style="width:8px;height:8px;border-radius:50%;background:var(--due);flex:none"></span>' +
-              '<div style="min-width:0;flex:1">' +
-                '<div class="row-t">PESO Explosives Licence</div>' +
-                '<div class="row-m">Form XIV · Rule 144 Renewal</div>' +
-              '</div>' +
-              '<div style="text-align:right;flex:none">' +
-                '<div class="row-a" style="color:var(--due)">28d</div>' +
-                '<span class="row-d">08 Nov 2026</span>' +
-              '</div>' +
-            '</div>' +
-
-            '<div class="petro-row" onclick="selectNavTab(\'wmvault\')" style="cursor:pointer">' +
-              '<span style="width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none"></span>' +
-              '<div style="min-width:0;flex:1">' +
-                '<div class="row-t">W&M 5L Measure Stamping</div>' +
-                '<div class="row-m">Legal Metrology Inspector Seal</div>' +
-              '</div>' +
-              '<div style="text-align:right;flex:none">' +
-                '<div class="row-a" style="color:var(--warn)">45d</div>' +
-                '<span class="row-d">25 Nov 2026</span>' +
-              '</div>' +
-            '</div>' +
-
-            '<div class="petro-row" onclick="selectNavTab(\'compliance\')" style="cursor:pointer">' +
+            '<div class="petro-row" onclick="selectNavTab(\'vault\')" style="cursor:pointer">' +
               '<span style="width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none"></span>' +
               '<div style="min-width:0;flex:1">' +
-                '<div class="row-t">Fire Safety NOC</div>' +
-                '<div class="row-m">Station Hydrant & Extinguishers</div>' +
+                '<div class="row-t">Cash-Safe Drop Vault</div>' +
+                '<div class="row-m">Forecourt Till Clearance &amp; Safe Balancing</div>' +
               '</div>' +
               '<div style="text-align:right;flex:none">' +
-                '<div class="row-a">82d</div>' +
-                '<span class="row-d">01 Jan 2027</span>' +
+                '<div class="row-a">Secured</div>' +
+                '<span class="row-d">Drop Chute</span>' +
               '</div>' +
             '</div>' +
 
-            '<div class="petro-row" onclick="selectNavTab(\'compliance\')" style="cursor:pointer">' +
+            '<div class="petro-row" onclick="selectNavTab(\'amenities\')" style="cursor:pointer">' +
               '<span style="width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none"></span>' +
               '<div style="min-width:0;flex:1">' +
-                '<div class="row-t">PCB Consent to Operate</div>' +
-                '<div class="row-m">Air & Water Pollution Clearance</div>' +
+                '<div class="row-t">Customer Amenities &amp; Hygiene</div>' +
+                '<div class="row-m">Drinking Water, Air Machine &amp; Restrooms</div>' +
               '</div>' +
               '<div style="text-align:right;flex:none">' +
-                '<div class="row-a">114d</div>' +
-                '<span class="row-d">02 Feb 2027</span>' +
-              '</div>' +
-            '</div>' +
-
-            '<div class="petro-row" onclick="selectNavTab(\'tanks\')" style="cursor:pointer">' +
-              '<span style="width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none"></span>' +
-              '<div style="min-width:0;flex:1">' +
-                '<div class="row-t">Hydrostatic Pressure Test</div>' +
-                '<div class="row-m">Tanks 1, 2, 3 Certificate</div>' +
-              '</div>' +
-              '<div style="text-align:right;flex:none">' +
-                '<div class="row-a">320d</div>' +
-                '<span class="row-d">27 Aug 2027</span>' +
+                '<div class="row-a">Inspected</div>' +
+                '<span class="row-d">Shift Checklist</span>' +
               '</div>' +
             '</div>' +
           '</div>' +
 
           '<div class="panel-bd noprint" style="border-top:1px solid var(--line)">' +
-            '<button type="button" class="ghost btn-sm" style="width:100%" onclick="selectNavTab(\'compliance\')">Manage Licences & Vault &rarr;</button>' +
+            '<button type="button" class="ghost btn-sm" style="width:100%" onclick="selectNavTab(\'vault\')">Open Cash-Safe Vault &rarr;</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -4437,8 +4165,11 @@ function renderTankD3Viz(containerId, t){
   });
 }
 function drawStock(){
-  var low=S.items.filter(function(i){return i.stock<=i.low});
-  var lubeVal=S.items.reduce(function(s,i){return s+i.stock*i.buy},0);
+  if(!S) S=emptyS();
+  if(!S.items) S.items=[];
+  if(!S.sup) S.sup=[];
+  var low=S.items.filter(function(i){return Number(i.stock)<=Number(i.low)});
+  var lubeVal=S.items.reduce(function(s,i){return s+(Number(i.stock)||0)*(Number(i.buy)||0)},0);
   var tks=getTanksStockList();
   var totLitres=0,totCap=0,estFuelVal=0,byFuel={};
   tks.forEach(function(t){
@@ -4483,7 +4214,7 @@ function drawStock(){
     h+='</div></div>';
 
     if(!tks.length){
-      h+='<div class="empty">No storage tanks yet. Tap <a href="javascript:void(0)" onclick="tab=\'setup\';SU=\'tanks\';renderSetup()" style="color:var(--btn);font-weight:700">Pump setup &rarr; Tanks</a> to configure underground fuel tanks.</div>';
+      h+='<div class="empty">No storage tanks yet. Tap <a href="javascript:void(0)" onclick="tab=\'setup\';SU=\'tanks\';renderSetup()" style="color:var(--btn);font-weight:700">Settings &rarr; Tanks</a> to configure underground fuel tanks.</div>';
     } else {
       tks.forEach(function(t){
         var pc=t.capacity&&t.book!=null?Math.max(0,Math.min(100,t.book/t.capacity*100)):0;
@@ -4582,14 +4313,17 @@ function dago(n){return new Date(Date.now()-n*864e5).toISOString().slice(0,10)}
 function sbal(s){return s.e.reduce(function(a,x){return a+(x.t=="pay"?x.a:-x.a)},0)}
 function sfind(id){return S.sup.filter(function(x){return x.id==id})[0]}
 function renderSup(){var h=nav();
+if(!S) S=emptyS();
+if(!S.sup) S.sup=[];
 if(!sv){var adv=0,owe=0;S.sup.forEach(function(s){var b=sbal(s);if(b>=0)adv+=b;else owe-=b});
 h+='<h1>Advance paid to suppliers</h1><div class="total" style="color:var(--ok)">'+inr(adv)+'</div><div class="sub" style="margin-bottom:10px">Payable to suppliers: <b style="color:var(--due)">'+inr(owe)+'</b></div><button onclick="supForm()">Add supplier</button>';
 if(!S.sup.length)h+='<div class="empty">No suppliers yet. Add the oil company or a dealer.</div>';
 S.sup.forEach(function(s){var b=sbal(s);h+='<div class="cust" tabindex="0" onclick="sv='+s.id+';renderSup()"><div class="row"><b>'+esc(s.name)+'</b><span class="amt" style="flex:none;color:'+(b>=0?'var(--ok)':'var(--due)')+'">'+inr(Math.abs(b))+'</span></div><div class="sub">'+esc(s.kind)+' \u00b7 '+(b>=0?'Advance balance':'Amount payable')+'</div></div>'})}
-else{var s=sfind(sv),b=sbal(s),bal=0;
+else{var s=sfind(sv);if(!s){sv=null;return renderSup()}var b=sbal(s),bal=0;
 h+='<button class="ghost noprint" onclick="sv=null;renderSup()">Back to suppliers</button><h1 style="margin-top:14px">'+esc(s.name)+' \u00b7 '+esc(s.kind)+'</h1><div class="total" style="color:'+(b>=0?'var(--ok)':'var(--due)')+'">'+inr(Math.abs(b))+'</div><div class="sub">'+(b>=0?'Advance balance with this supplier':'Amount payable to this supplier')+'</div><div class="btns"><button onclick="supEntry(\'pay\')">Record payment</button><button onclick="supEntry(\'bill\')">Add purchase bill</button><button class="ghost" onclick="supForm('+s.id+')">Edit supplier</button></div><div class="tbl"><table><tr><th>Date</th><th>Detail</th><th class="r">Amount</th><th class="r">Balance</th><th></th></tr>';
 s.e.map(function(x,i){return{x:x,i:i}}).sort(function(p,q){return p.x.d<q.x.d?-1:1}).forEach(function(o){var x=o.x,u=x.it?itm(x.it):null;bal+=x.t=="pay"?x.a:-x.a;
-h+='<tr><td>'+x.d.slice(5)+'</td><td>'+(x.t=="pay"?"Paid: ":"Bill: ")+esc(x.n)+(u?' <span class="sub">('+x.q+' '+esc(u.unit)+' of '+esc(u.name)+' added to stock)</span>':'')+'</td><td class="r '+(x.t=="pay"?"pay":"sale")+'">'+(x.t=="pay"?"+":"\u2212")+inr(x.a)+'</td><td class="r">'+inr(Math.abs(bal))+(bal>=0?' adv':' due')+'</td><td><button class="ghost" style="padding:5px 8px" onclick="delSup('+o.i+')">Delete</button></td></tr>'});
+var dStr=x.d?String(x.d).slice(5):"";
+h+='<tr><td>'+dStr+'</td><td>'+(x.t=="pay"?"Paid: ":"Bill: ")+esc(x.n)+(u?' <span class="sub">('+x.q+' '+esc(u.unit)+' of '+esc(u.name)+' added to stock)</span>':'')+'</td><td class="r '+(x.t=="pay"?"pay":"sale")+'">'+(x.t=="pay"?"+":"\u2212")+inr(x.a)+'</td><td class="r">'+inr(Math.abs(bal))+(bal>=0?' adv':' due')+'</td><td><button class="ghost" style="padding:5px 8px" onclick="delSup('+o.i+')">Delete</button></td></tr>'});
 if(!s.e.length)h+='<tr><td colspan="5" class="empty">No entries yet. Record a payment or add a purchase bill.</td></tr>';
 h+='</table></div>'}
 document.getElementById("app").innerHTML=h}
@@ -4605,20 +4339,40 @@ s.e.push(o);save();close();renderSup()}
 function delSup(i){var s=sfind(sv),x=s.e[i];ask("Delete this "+(x.t=="pay"?"payment":"bill")+" of "+inr(x.a)+"?"+(x.it?" The stock it added will be removed too.":""),function(){if(x.it){var u=itm(x.it);if(u)u.stock=Math.max(0,Math.round((u.stock-x.q)*1000)/1000)}s.e.splice(i,1);save();renderSup()})}
 var ACC=["Cash","Bank","UPI"],ACN={Cash:"Cash",Bank:"Bank",UPI:"UPI / wallet"};
 function accOf(m){return m=="Cash"?"Cash":m=="UPI"?"UPI":"Bank"}
-function bkRows(){var r=[];
-S.c.forEach(function(c){c.e.forEach(function(x){if(x.t=="pay")r.push({d:x.d,a:accOf(x.n),m:x.a,n:"Received from "+c.name})})});
-S.inv.forEach(function(i){if(i.mode!="credit")r.push({d:i.d,a:accOf(i.mode),m:i.total,n:"Invoice "+i.no+" ("+i.name+")"})});
-S.sup.forEach(function(s){s.e.forEach(function(x){if(x.t=="pay")r.push({d:x.d,a:accOf(x.n),m:-x.a,n:"Paid to "+s.name})})});
-S.bk.forEach(function(b){if(b.t=="xfer"){r.push({d:b.d,a:b.acct,m:-b.a,n:"Transfer to "+ACN[b.to],id:b.id});r.push({d:b.d,a:b.to,m:b.a,n:"Transfer from "+ACN[b.acct],id:b.id})}else r.push({d:b.d,a:b.acct,m:b.t=="in"?b.a:-b.a,n:(b.cat?b.cat+": ":"")+b.n,id:b.id})});
-return r.sort(function(p,q){return p.d<q.d?1:-1})}
-function renderBook(){var R=bkRows(),h=nav(),tot=0,B={};
-ACC.forEach(function(a){B[a]=(S.ob[a]||0)+R.filter(function(x){return x.a==a}).reduce(function(s,x){return s+x.m},0);tot+=B[a]});
-h+='<h1>Money in hand, all accounts</h1><div class="total" style="color:var(--ink)">'+inr(tot)+'</div><div class="row" style="gap:6px">'+ACC.map(function(a){return '<div class="cust" style="margin:0;padding:8px;cursor:default;text-align:center"><div class="sub">'+ACN[a]+'</div><b style="color:'+(B[a]<0?'var(--due)':'var(--ink)')+'">'+inr(B[a])+'</b></div>'}).join("")+'</div><div class="btns"><button onclick="bkForm(\'out\')">Add expense</button><button onclick="bkForm(\'in\')">Add income</button><button class="ghost" onclick="bkForm(\'xfer\')">Transfer</button><button class="ghost" onclick="obForm()">Opening balances</button></div><div class="row" style="gap:6px;margin-bottom:10px">'+["all"].concat(ACC).map(function(a){return '<button style="padding:8px 4px;font-size:14px" class="'+(bf==a?'':'ghost')+'" onclick="bf=\''+a+'\';renderBook()">'+(a=="all"?"All":ACN[a])+'</button>'}).join("")+'</div><div class="tbl"><table><tr><th>Date</th><th>Detail</th><th>Account</th><th class="r">Amount</th><th></th></tr>';
-var L=R.filter(function(x){return bf=="all"||x.a==bf});
-L.forEach(function(x){h+='<tr><td>'+x.d.slice(5)+'</td><td>'+esc(x.n)+'</td><td>'+ACN[x.a]+'</td><td class="r '+(x.m>=0?'pay':'sale')+'">'+(x.m>=0?'+':'\u2212')+inr(Math.abs(x.m))+'</td><td>'+(x.id?'<button class="ghost" style="padding:5px 8px" onclick="delBk('+x.id+')">Delete</button>':'')+'</td></tr>'});
-if(!L.length)h+='<tr><td colspan="5" class="empty">No money movements yet.</td></tr>';
-h+='</table></div><div class="sub" style="margin-top:8px">Customer payments, cash and UPI invoices, and supplier payments appear here automatically. Add expenses, income and transfers yourself.</div>';
-document.getElementById("app").innerHTML=h}
+function bkRows(){
+  var r=[];
+  if(!S) S=emptyS();
+  (S.c||[]).forEach(function(c){(c.e||[]).forEach(function(x){if(x&&x.t=="pay")r.push({d:String(x.d||today()),a:accOf(x.n),m:Number(x.a)||0,n:"Received from "+(c.name||"Customer")})})});
+  (S.inv||[]).forEach(function(i){if(i&&i.mode!="credit")r.push({d:String(i.d||today()),a:accOf(i.mode),m:Number(i.total)||0,n:"Invoice "+(i.no||"")+" ("+(i.name||"")+")"})});
+  (S.sup||[]).forEach(function(s){(s.e||[]).forEach(function(x){if(x&&x.t=="pay")r.push({d:String(x.d||today()),a:accOf(x.n),m:-(Number(x.a)||0),n:"Paid to "+(s.name||"Supplier")})})});
+  (S.bk||[]).forEach(function(b){
+    if(!b||(!b.d&&!b.t&&!b.a&&!b.acct))return;
+    var dt=String(b.d||today());
+    var amt=Number(b.a)||0;
+    if(b.t=="xfer"){
+      r.push({d:dt,a:b.acct||"Cash",m:-amt,n:"Transfer to "+(ACN[b.to]||b.to||"Bank"),id:b.id});
+      r.push({d:dt,a:b.to||"Bank",m:amt,n:"Transfer from "+(ACN[b.acct]||b.acct||"Cash"),id:b.id});
+    } else {
+      r.push({d:dt,a:b.acct||"Cash",m:b.t=="in"?amt:-amt,n:(b.cat?b.cat+": ":"")+(b.n||"Entry"),id:b.id});
+    }
+  });
+  return r.sort(function(p,q){return (p.d||"")<(q.d||"")?1:-1});
+}
+function renderBook(){
+  var R=bkRows(),h=nav(),tot=0,B={};
+  if(!S.ob)S.ob={Cash:0,Bank:0,UPI:0};
+  ACC.forEach(function(a){B[a]=(S.ob[a]||0)+R.filter(function(x){return x.a==a}).reduce(function(s,x){return s+(x.m||0)},0);tot+=B[a]});
+  h+='<h1>Money in hand, all accounts</h1><div class="total" style="color:var(--ink)">'+inr(tot)+'</div><div class="row" style="gap:6px">'+ACC.map(function(a){return '<div class="cust" style="margin:0;padding:8px;cursor:default;text-align:center"><div class="sub">'+ACN[a]+'</div><b style="color:'+(B[a]<0?'var(--due)':'var(--ink)')+'">'+inr(B[a])+'</b></div>'}).join("")+'</div><div class="btns"><button onclick="bkForm(\'out\')">Add expense</button><button onclick="bkForm(\'in\')">Add income</button><button class="ghost" onclick="bkForm(\'xfer\')">Transfer</button><button class="ghost" onclick="obForm()">Opening balances</button></div><div class="row" style="gap:6px;margin-bottom:10px">'+["all"].concat(ACC).map(function(a){return '<button style="padding:8px 4px;font-size:14px" class="'+(bf==a?'':'ghost')+'" onclick="bf=\''+a+'\';renderBook()">'+(a=="all"?"All":ACN[a])+'</button>'}).join("")+'</div><div class="tbl"><table><tr><th>Date</th><th>Detail</th><th>Account</th><th class="r">Amount</th><th></th></tr>';
+  var L=R.filter(function(x){return bf=="all"||x.a==bf});
+  L.forEach(function(x){
+    var ds=String(x.d||"");
+    var dDisp=ds.length>=5?(ds.indexOf("-")!==-1?ds.slice(5):ds):ds;
+    h+='<tr><td>'+dDisp+'</td><td>'+esc(x.n||"")+'</td><td>'+(ACN[x.a]||x.a||"Cash")+'</td><td class="r '+(x.m>=0?'pay':'sale')+'">'+(x.m>=0?'+':'\u2212')+inr(Math.abs(x.m))+'</td><td>'+(x.id?'<button class="ghost" style="padding:5px 8px" onclick="delBk('+x.id+')">Delete</button>':'')+'</td></tr>';
+  });
+  if(!L.length)h+='<tr><td colspan="5" class="empty">No money movements yet.</td></tr>';
+  h+='</table></div><div class="sub" style="margin-top:8px">Customer payments, cash and UPI invoices, and supplier payments appear here automatically. Add expenses, income and transfers yourself.</div>';
+  document.getElementById("app").innerHTML=h;
+}
 function accSel(id,sel){return '<select id="'+id+'">'+ACC.map(function(a){return '<option value="'+a+'"'+(a==sel?' selected':'')+'>'+ACN[a]+'</option>'}).join("")+'</select>'}
 function bkForm(t){var x=t=="xfer";openM('<h2>'+(t=="out"?'Add expense':t=="in"?'Add income':'Transfer between accounts')+'</h2><label>Date<input id="f1" type="date" value="'+today()+'"></label><label>'+(x?'From':'Account')+accSel("f2","Cash")+'</label>'+(x?'<label>To'+accSel("f3","Bank")+'</label>':(t=="out"?CATSEL:'')+'<label>Details<input id="f4" placeholder="'+(t=="out"?"e.g. Electricity bill":"e.g. Other income")+'"></label>')+'<label>Amount (\u20b9)<input id="f5" inputmode="decimal"></label><div class="err" id="er"></div><div class="row"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveBk(\''+t+'\')">Save</button></div>')}
 function saveBk(t){var a=parseFloat(v("f5")),o={id:Date.now(),d:v("f1"),t:t,acct:v("f2"),a:a};
@@ -5532,10 +5286,7 @@ ask("Replace all current data with this backup?",function(){S=o;S.items=S.items|
 function getModuleResetInfo(id){
   var summaries={
     duty:"Shift duties, meter readings, worker handovers & cash variances",
-    pricerev:"Daily 06:00 AM rate revision archive & price broadcast logs",
-    density:"Hydrometer density tests, ASTM 53B records & water dips",
     wmvault:"5L delivery checks, calibration certs & W&M reseal logs",
-    tanks:"Underground tank dips, loss/gain analysis & decantation logs",
     bowser:"Mobile bowser trips, DDD doorstep deliveries & refill logs",
     vault:"Cash drop tokens, safe envelopes & manager clearance logs",
     equipment:"Generator running hours, diesel logs & equipment tickets",
@@ -5546,7 +5297,6 @@ function getModuleResetInfo(id){
     stock:"Inventory items & stock reorder balances",
     sup:"Vendor inward purchase bills & payment vouchers",
     book:"Forecourt day cash book, petty expenses & bank remittances",
-    pnl:"Daily overhead expense vouchers & dealer commission logs",
     compliance:"PESO explosive storage licenses & statutory renewal logs",
     pay:"Worker wage sheets, attendance & salary advance slips",
     audit:"AI forensic audit reports & anomaly history",
@@ -6275,7 +6025,7 @@ function recoveryModal(preId){
   function showRM(){
     var list=(CL&&CL.length)?CL:(S&&S.c?S.c:[]);
     if(!list.length){
-      openM('<h2>Credit Recovery Collections</h2><div class="sub">No credit customers are registered yet.</div><div class="empty">Ask your manager or owner to add credit customers in Pump setup or Ledger.</div><div class="row" style="margin-top:14px"><button class="ghost" onclick="close()">Close</button></div>');
+      openM('<h2>Credit Recovery Collections</h2><div class="sub">No credit customers are registered yet.</div><div class="empty">Ask your manager or owner to add credit customers in Settings or Ledger.</div><div class="row" style="margin-top:14px"><button class="ghost" onclick="close()">Close</button></div>');
       return;
     }
     var curRec=preId!=null?(DF.recoveries||[]).filter(function(x){return String(x.id)===String(preId)})[0]:null;
@@ -6695,7 +6445,7 @@ updateShiftDiffDisplay(df,totalObligation,sectionTotal);
 var e=document.getElementById("dsum");if(e)e.innerHTML="";}
 function onNozInput(el,idx,field){var v=el.value;if(v.indexOf('.')!==-1){var parts=v.split('.');if(parts[1].length>2){v=parts[0]+'.'+parts[1].slice(0,2);el.value=v}}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty()}
 function onNozChange(el,idx,field){var v=el.value.trim();if(v!==""&&!isNaN(parseFloat(v))){var rounded=(Math.round(parseFloat(v)*100)/100).toFixed(2);el.value=rounded;v=rounded}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty(true)}
-function finNoz(label,idx,field,val,ed){var dispVal=(val===""||val==null)?"":(typeof val==="number"?val.toFixed(2):esc(val));return '<label>'+label+'<input '+(ed?'':'disabled ')+'type="number" step="0.01" inputmode="decimal" placeholder="0.00" value="'+esc(dispVal)+'" oninput="onNozInput(this,'+idx+',\''+field+'\')" onchange="onNozChange(this,'+idx+',\''+field+'\')"></label>'}
+function finNoz(label,idx,field,val,ed){var dispVal=(val===""||val==null)?"":(typeof val==="number"?val.toFixed(2):esc(val));return '<label>'+label+'<input '+(ed?'':'disabled ')+'id="noz_'+field+'_'+idx+'" type="number" step="0.01" inputmode="decimal" placeholder="0.00" value="'+esc(dispVal)+'" oninput="onNozInput(this,'+idx+',\''+field+'\')" onchange="onNozChange(this,'+idx+',\''+field+'\')"></label>'}
 function fin(label,path,val,ed){return '<label>'+label+'<input '+(ed?'':'disabled ')+'inputmode="decimal" value="'+esc(val)+'" oninput="'+path+'=this.value;dsum();autoSaveDuty()" onchange="'+path+'=this.value;dsum();autoSaveDuty(true)"></label>'}
 function formHtml(){var wk=DF.mode=="worker",mgrReview=(ME&&ME.role=="manager"&&DF.mode=="review"),h='';
 DF.lines.forEach(function(l,i){var P='DF.lines['+i+'].';var canOp=(!wk&&!mgrReview),canCl=(wk||(!mgrReview&&ME&&ME.role=="owner")),canTs=(wk||(!mgrReview&&ME&&ME.role=="owner")),canRt=(!wk&&!mgrReview);h+='<div class="cust" style="cursor:default"><b>'+esc(l.name)+'</b> <span class="sub">'+esc(l.fuel)+'</span><div class="row">'+finNoz("Opening",i,'opening',l.opening,canOp)+finNoz("Closing",i,'closing',l.closing,canCl)+'</div><div class="row">'+finNoz("Testing (L)",i,'testing',l.testing,canTs)+fin("Rate (\u20b9/L)",P+'rate',l.rate,canRt)+'</div><div class="sub" id="dl'+i+'" style="margin-top:6px"></div></div>'});
@@ -6825,7 +6575,7 @@ function msg(m,good){var e=document.getElementById("er");if(e){e.style.color=goo
 function renderDF(){var m=DF.meta,h;
 var autoBadge='<span id="autoSaveStatus" style="font-size:12px;font-weight:600;display:'+(autoSaveLastText?'inline-flex':'none')+';align-items:center;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:'+(autoSaveLastColor||'var(--ok)')+'">'+(autoSaveLastText||'')+'</span>';
 if(DF.mode=="worker"){
-  h=ubar()+wnav()+'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><h1>'+esc(m.shift)+' duty \u00b7 '+m.d+'</h1>'+autoBadge+'</div><div class="sub">Opening readings and rates are set by your manager. Entries are autosaved automatically.</div>';
+  h=ubar()+wnav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><span class="sub" style="font-weight:700">Active Shift Duty</span><div style="display:inline-flex;gap:6px;flex-wrap:wrap"><button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px" onclick="printSingleDuty(dutyFromDF())">🖨️ Print Voucher</button><button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(dutyFromDF())">📲 WhatsApp Share</button><button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px" onclick="downloadDutyPDF(dutyFromDF())">📄 PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><h1>'+esc(m.shift)+' duty \u00b7 '+m.d+'</h1>'+autoBadge+'</div><div class="sub">Opening readings and rates are set by your manager. Entries are autosaved automatically.</div>';
   var sbMatch=(DF.note||"").match(/\[Sent back by ([^:]+): (.*?)\]/);
   if(sbMatch){
     h+='<div class="cust" style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:12px 14px;margin-top:10px;margin-bottom:12px;border-radius:10px">'
@@ -6834,10 +6584,10 @@ if(DF.mode=="worker"){
       +'<div class="sub" style="margin-top:6px;color:#856404">Please make the corrections above and tap <b>Submit duty</b> again.</div>'
       +'</div>';
   }
-  h+=formHtml()+'<div class="row" style="margin-top:12px"><button class="ghost" onclick="wSave(0)">Save draft</button><button onclick="confirmDutyModal()">Submit duty</button></div>';
+  h+=formHtml()+'<div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="wSave(0)">Save draft</button><button class="ghost" type="button" style="display:inline-flex;align-items:center;gap:5px" onclick="printSingleDuty(dutyFromDF())">🖨️ Print</button><button class="ghost" type="button" style="display:inline-flex;align-items:center;gap:5px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(dutyFromDF())">📲 WhatsApp</button><button style="flex:1" onclick="confirmDutyModal()">Submit duty</button></div>';
 }else{
   var isManager=(ME&&ME.role=="manager");
-  h=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><div style="display:inline-flex;gap:6px"><button class="ghost" onclick="printSingleDuty(DF.id)" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Duty Voucher</button><button class="ghost" onclick="downloadDutyPDF(DF.id)" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px"><h1>'+esc(m.worker)+' \u00b7 '+esc(m.shift)+' \u00b7 '+m.d+'</h1>'+(isManager?'':autoBadge)+'</div>';
+  h=nav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="renderDutyTab()">← Back to duty list</button><div style="display:inline-flex;gap:6px;flex-wrap:wrap"><button class="ghost" onclick="printSingleDuty(DF.id)" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Duty Voucher</button><button class="ghost" onclick="shareDutyWhatsApp(DF.id)" style="display:inline-flex;align-items:center;gap:6px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700">📲 WhatsApp</button><button class="ghost" onclick="downloadDutyPDF(DF.id)" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF</button></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px"><h1>'+esc(m.worker)+' \u00b7 '+esc(m.shift)+' \u00b7 '+m.d+'</h1>'+(isManager?'':autoBadge)+'</div>';
   if(isManager){
     h+='<div class="cust" style="background:var(--card);border:1px solid var(--line);padding:10px 14px;margin:8px 0 14px;border-radius:8px"><b style="font-size:15px">📋 Manager Review (Read-only)</b><div class="sub" style="margin-top:4px">Review the figures submitted by <b>'+esc(m.worker)+'</b>. You cannot make direct changes. If any correction is needed, send the duty back to the worker with notes. If all figures are verified, close the duty.</div></div>';
   }else{
@@ -6935,10 +6685,10 @@ function confirmDutyModal(){
   var diff=Math.round((totCollected-expected)*100)/100;
 
   var h='<h2>Please confirm</h2>'
-    +'<div class="sub" style="margin-bottom:12px">All shift details are shown below. Please review carefully before submitting to your manager.</div>';
+    +'<div class="sub" style="margin-bottom:12px">Review the shift difference below before submitting to your manager.</div>';
 
   if(missingClosing.length){
-    h+='<div class="cust" style="background:#fff3cd;border-color:#ffeeba;color:#856404;margin-bottom:12px;padding:10px 12px;cursor:default">'
+    h+='<div class="cust" style="background:#fff3cd;border-color:#ffeeba;color:#856404;margin-bottom:12px;padding:12px 14px;cursor:default">'
       +'⚠️ <b>Missing closing reading:</b> '+esc(missingClosing.join(", "))+'. Enter closing readings before submitting.'
       +'</div>';
   }
@@ -6948,104 +6698,56 @@ function confirmDutyModal(){
       +'</div>';
   }
 
-  h+='<div class="cust" style="cursor:default;margin-bottom:12px;padding:12px">'
+  h+='<div class="cust" style="cursor:default;margin-bottom:12px;padding:10px 12px;background:var(--bg)">'
     +'<div class="row"><b>'+esc(m.shift||"Shift")+' duty</b><span class="sub" style="flex:none"><b>'+esc(m.d||today())+'</b></span></div>'
-    +'<div class="sub" style="margin-top:2px">Worker: '+esc(ME?ME.name:"Worker")+'</div>'
+    +'<div class="sub" style="margin-top:2px">Worker: <b>'+esc(ME?ME.name:"Worker")+'</b></div>'
     +'</div>';
 
-  h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:10px 0 4px">Nozzle readings</div>';
-  h+='<div class="tbl" style="margin-bottom:12px"><table>'
-    +'<tr><th>Nozzle</th><th class="r">Open</th><th class="r">Close</th><th class="r">Test</th><th class="r">Litres</th><th class="r">Rate</th><th class="r">Amount</th></tr>';
-  lineRows.forEach(function(l){
-    h+='<tr><td>'+esc(l.name)+'<div class="sub">'+esc(l.fuel)+'</div></td>'
-      +'<td class="r">'+l.opening+'</td>'
-      +'<td class="r">'+l.closing+'</td>'
-      +'<td class="r">'+l.testing+'</td>'
-      +'<td class="r"><b>'+l.litres+'</b></td>'
-      +'<td class="r">'+l.rate+'</td>'
-      +'<td class="r"><b>'+l.amount+'</b></td></tr>';
-  });
-  h+='<tr><td colspan="4"><b>Total fuel sales</b></td><td class="r"><b>'+totLitres+' L</b></td><td></td><td class="r"><b>'+inr(totFuelSales)+'</b></td></tr>';
-  h+='</table></div>';
-
-  if(lubeRows.length){
-    h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:10px 0 4px">Lubes & shop items sold</div>';
-    h+='<div class="tbl" style="margin-bottom:12px"><table><tr><th>Item</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>';
-    lubeRows.forEach(function(r){
-      h+='<tr><td>'+esc(r.name)+'</td><td class="r">'+esc(r.qty)+'</td><td class="r">'+r.price+'</td><td class="r"><b>'+r.amount+'</b></td></tr>';
-    });
-    h+='<tr><td colspan="3"><b>Total lubes/shop</b></td><td class="r"><b>'+inr(totLube)+'</b></td></tr>';
-    h+='</table></div>';
-  }
-
-  if(DF.recoveries&&DF.recoveries.length){
-    h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:10px 0 4px">Credit recovery collections</div>';
-    h+='<div class="tbl" style="margin-bottom:12px"><table><tr><th>Customer</th><th>Mode</th><th class="r">Amount</th></tr>';
-    DF.recoveries.forEach(function(r){
-      h+='<tr><td>'+esc(r.cname||"Customer")+(r.note?'<div class="sub">'+esc(r.note)+'</div>':'')+'</td><td>'+esc(r.mode||"Cash")+'</td><td class="r pay"><b>+'+inr(fnum(r.a))+'</b></td></tr>';
-    });
-    h+='<tr><td colspan="2"><b>Total recovery</b></td><td class="r pay"><b>+'+inr(totRec)+'</b></td></tr>';
-    h+='</table></div>';
-  }
-
-  if(DF.credits&&DF.credits.length){
-    h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:10px 0 4px">Credit sales given</div>';
-    h+='<div class="tbl" style="margin-bottom:12px"><table><tr><th>Customer</th><th>Detail</th><th class="r">Amount</th></tr>';
-    DF.credits.forEach(function(c){
-      h+='<tr><td>'+esc(c.cname||"Customer")+'</td><td>'+esc(c.n||"")+(c.veh?' · '+esc(c.veh):'')+'</td><td class="r"><b>'+inr(fnum(c.a))+'</b></td></tr>';
-    });
-    h+='<tr><td colspan="2"><b>Total credit sales</b></td><td class="r"><b>'+inr(totCredit)+'</b></td></tr>';
-    h+='</table></div>';
-  }
-
-  if(DF.exps&&DF.exps.length){
-    h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:10px 0 4px">Expenses paid from till</div>';
-    h+='<div class="tbl" style="margin-bottom:12px"><table><tr><th>Category</th><th>Detail</th><th class="r">Amount</th></tr>';
-    DF.exps.forEach(function(e){
-      h+='<tr><td>'+esc(e.cat)+'</td><td>'+esc(e.note||"No detail")+'</td><td class="r"><b>'+inr(fnum(e.amount))+'</b></td></tr>';
-    });
-    h+='<tr><td colspan="2"><b>Total expenses</b></td><td class="r"><b>'+inr(totExp)+'</b></td></tr>';
-    h+='</table></div>';
-  }
-
-  var T=function(a,b,col){return '<tr><td>'+a+'</td><td class="r"'+(col?' style="color:'+col+'"':'')+'>'+b+'</td></tr>';};
-  h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:10px 0 4px">Collection and difference</div>';
-  h+='<div class="tbl" style="margin-bottom:12px"><table>';
-  h+=T("Fuel sales",inr(totFuelSales));
-  if(totLube>0)h+=T("Lube and shop sales",inr(totLube));
-  if(totRec>0)h+=T("Credit recovery collections","+"+inr(totRec),"var(--ok)");
-  if(totCredit>0)h+=T("Less credit sales","−"+inr(totCredit));
-  if(totExp>0)h+=T("Less expenses","−"+inr(totExp));
-  h+=T("<b>Expected collection</b>","<b>"+inr(expected)+"</b>");
-  payRows.forEach(function(p){
-    h+=T(esc(p.name),p.amount);
-  });
-  h+=T("<b>Total collected</b>","<b>"+inr(totCollected)+"</b>");
-  var diffColor = (diff < -0.01) ? 'var(--due)' : 'var(--ok)';
-  var diffLabel = (diff < -0.01) ? 'Shift Shortage' : (diff > 0.01 ? 'Shift Excess' : 'Shift Balanced (Tally)');
-  h+=T("<b>" + diffLabel + "</b>","<b>"+sgn(diff)+"</b>",diffColor);
-  h+='</table></div>';
   if(diff < -0.01){
-    h+='<div style="background:rgba(225,29,72,0.09);border:1.5px solid var(--due);color:var(--due);padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="display:flex;align-items:center;gap:6px"><span>⚠️</span> <span>Shift Shortage:</span></span><span style="font-size:18px;font-weight:900">− '+inr(Math.abs(diff))+'</span></div>';
+    var shortAmt = Math.abs(diff);
+    h+='<div style="background:rgba(225,29,72,0.08);border:2px solid var(--due);color:var(--due);padding:14px 16px;border-radius:12px;margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+      +'<span style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px"><span>⚠️</span> <span>Shift Shortage Warning:</span></span>'
+      +'<span style="font-size:22px;font-weight:900">− '+inr(shortAmt)+'</span>'
+      +'</div>'
+      +'<div style="margin-top:10px;font-size:13.5px;font-weight:700;color:var(--ink);background:var(--card);padding:10px 12px;border-radius:8px;border:1px solid rgba(225,29,72,0.25);line-height:1.45">' +
+      '⚠️ <b>Short or excess goes to worker&#39;s advance:</b><br>' +
+      'This shortage of <b>− ' + inr(shortAmt) + '</b> will go to your worker advance ledger and be deducted from your salary payout.' +
+      '</div>' +
+      '</div>';
   } else if(diff > 0.01){
-    h+='<div style="background:rgba(5,150,105,0.09);border:1.5px solid var(--ok);color:var(--ok);padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="display:flex;align-items:center;gap:6px"><span>📈</span> <span>Shift Excess:</span></span><span style="font-size:18px;font-weight:900">+ '+inr(Math.abs(diff))+'</span></div>';
-  } else {
-    h+='<div style="background:rgba(5,150,105,0.05);border:1.5px solid var(--ok);color:var(--ok);padding:10px 14px;border-radius:10px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="display:flex;align-items:center;gap:6px"><span>✅</span> <span>Shift Balanced (Tally):</span></span><span style="font-size:18px;font-weight:900">₹0</span></div>';
+    var excessAmt = Math.abs(diff);
+    h+='<div style="background:rgba(5,150,105,0.08);border:2px solid var(--ok);color:var(--ok);padding:14px 16px;border-radius:12px;margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+      +'<span style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:6px"><span>📈</span> <span>Shift Excess Warning:</span></span>'
+      +'<span style="font-size:22px;font-weight:900">+ '+inr(excessAmt)+'</span>'
+      +'</div>'
+      +'<div style="margin-top:10px;font-size:13.5px;font-weight:700;color:var(--ink);background:var(--card);padding:10px 12px;border-radius:8px;border:1px solid rgba(5,150,105,0.25);line-height:1.45">' +
+      '📈 <b>Short or excess goes to worker&#39;s advance:</b><br>' +
+      'This excess collection of <b>+ ' + inr(excessAmt) + '</b> will go to your worker advance ledger and be credited to your account.' +
+      '</div>' +
+      '</div>';
   }
 
-  if(DF.note){
-    h+='<div class="sub" style="margin-bottom:10px"><b>Note:</b> '+esc(DF.note)+'</div>';
-  }
+  var diffColor = (diff < -0.01) ? "var(--due)" : "var(--ok)";
+  var diffLabel = (diff < -0.01) ? "Shift Shortage" : (diff > 0.01 ? "Shift Excess" : "Shift Balanced");
+  h+='<div class="tbl" style="margin-bottom:14px"><table>'
+    +'<tr><td>Expected collection</td><td class="r"><b>'+inr(expected)+'</b></td></tr>'
+    +'<tr><td>Total collected handed over</td><td class="r"><b>'+inr(totCollected)+'</b></td></tr>'
+    +'<tr><td><b>'+diffLabel+'</b></td><td class="r" style="font-weight:800;color:'+diffColor+'"><b>'+sgn(diff)+'</b></td></tr>'
+    +'</table></div>';
 
   h+='<div class="err" id="confirmDutyErr" style="font-weight:600;font-size:14px;margin-bottom:8px"></div>';
 
-  h+='<div class="row" style="margin-top:14px;gap:8px">'
-    +'<button class="ghost" onclick="closeM()" style="flex:1">Go back & edit</button>'
-    +'<button id="btnConfirmSubmit" onclick="doWorkerDutySubmit()" style="flex:1.4">Confirm & Submit duty</button>'
-    +'</div>';
+  h+='<div class="row noprint" style="justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid var(--line);gap:8px;flex-wrap:wrap">'
+    +'<div style="display:inline-flex;gap:6px">'
+    +'<button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:4px" onclick="printSingleDuty(dutyFromDF())">🖨️ Print</button>'
+    +'<button class="ghost" type="button" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:4px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(dutyFromDF())">📲 WhatsApp</button>'
+    +'</div>'
+    +'<div style="display:inline-flex;gap:8px;flex:1;justify-content:flex-end">'
+    +'<button class="ghost" onclick="closeM()">Go back & edit</button>'
+    +'<button id="btnConfirmSubmit" onclick="doWorkerDutySubmit()">Confirm & Submit duty</button>'
+    +'</div></div>';
 
   openM(h);
 }
@@ -7107,6 +6809,7 @@ function doWorkerDutySubmit(){
   });
 }
 function dutyBlock(d, mn) {
+  CURRENT_VIEWED_DUTY = d;
   var T = function(a, b, c) {
     return '<tr><td data-label="Item">' + a + '</td><td data-label="Amount" class="r"' + (c ? ' style="color:' + c + '"' : '') + '>' + b + '</td></tr>';
   };
@@ -7114,8 +6817,9 @@ function dutyBlock(d, mn) {
   h += '<div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">';
   h += '<div><b style="font-size:15px">' + esc(d.worker) + ' · ' + esc(d.shift) + '</b><div class="sub" style="margin-top:2px">' + d.d + ' · Duty #' + d.id + ' (' + (d.status == "closed" ? "Closed & Verified" : (d.status == "submitted" ? "Submitted" : "Open")) + ')</div></div>';
   h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="printSingleDuty(' + d.id + ')">🖨️ Print Voucher</button>';
-  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF</button>';
+  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="printSingleDuty(CURRENT_VIEWED_DUTY||' + d.id + ')">🖨️ Print Voucher</button>';
+  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp(CURRENT_VIEWED_DUTY||' + d.id + ')">📲 WhatsApp Share</button>';
+  h += '<button type="button" class="ghost noprint" style="padding:6px 12px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px" onclick="downloadDutyPDF(CURRENT_VIEWED_DUTY||' + d.id + ')">📄 Download PDF</button>';
   h += '</div></div>';
 
   // Nozzles table
@@ -7191,20 +6895,462 @@ function dutyBlock(d, mn) {
   return h;
 }
 
+var CURRENT_VIEWED_DUTY = null;
+
+function dutyFromDF(df) {
+  df = df || DF;
+  if (!df) return null;
+  var noteEl = document.getElementById("df_note_input");
+  if (noteEl) df.note = noteEl.value;
+  var m = df.meta || {};
+  var totLitres = 0, totFuelSales = 0;
+  var lines = (df.lines || []).map(function(l, idx){
+    var domCl = document.getElementById("noz_closing_" + idx);
+    var domTs = document.getElementById("noz_testing_" + idx);
+    var rawCl = (domCl && domCl.value !== "") ? domCl.value : l.closing;
+    var rawTs = (domTs && domTs.value !== "") ? domTs.value : l.testing;
+    var op = fnum(l.opening), cl = fnum(rawCl), ts = fnum(rawTs), r = fnum(l.rate);
+    var hasCl = rawCl !== "" && rawCl != null && !isNaN(cl);
+    var lt = hasCl ? Math.round(Math.max(0, cl - op - ts) * 100) / 100 : 0;
+    var amt = hasCl ? Math.round(lt * r * 100) / 100 : 0;
+    if (hasCl) { totLitres += lt; totFuelSales += amt; }
+    return {
+      nozzle_id: l.nozzle_id,
+      nozzle: l.name || ("Nozzle " + l.nozzle_id),
+      fuel: l.fuel || "",
+      opening: l.opening === "" ? null : op,
+      closing: hasCl ? cl : null,
+      testing: ts,
+      litres: hasCl ? lt : 0,
+      rate: r,
+      amount: amt
+    };
+  });
+
+  var totLube = 0;
+  var items = (df.items || []).map(function(it){
+    var s = (df.stock || (S && S.items) || []).find(function(x){ return String(x.id) === String(it.item_id); });
+    var qty = fnum(it.qty);
+    var price = s ? s.sell : 0;
+    var amt = Math.round(qty * price * 100) / 100;
+    if (qty > 0) totLube += amt;
+    return {
+      item_id: it.item_id,
+      name: s ? s.name : "Item",
+      unit: s ? s.unit : "pc",
+      qty: qty,
+      sell: price,
+      price: price,
+      amount: amt
+    };
+  }).filter(function(i){ return i.qty > 0; });
+
+  var totExp = (df.exps || []).reduce(function(acc, e){ return acc + fnum(e.amount); }, 0);
+  var totCredit = (df.credits || []).reduce(function(acc, c){ return acc + (c.status !== 'rejected' ? fnum(c.a) : 0); }, 0);
+  var totRec = (df.recoveries || []).reduce(function(acc, r){ return acc + fnum(r.a); }, 0);
+
+  var payObj = Object.assign({}, df.pay || {});
+  var totCollected = 0;
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    totCollected += fnum(payObj[k]);
+  });
+
+  var netSales = totFuelSales + totLube;
+  var expected = netSales + totRec - totCredit - totExp;
+  var diff = Math.round((totCollected - expected) * 100) / 100;
+
+  return {
+    id: df.id,
+    worker_id: m.worker_id || (ME && ME.id),
+    worker: m.worker || (ME && ME.name) || "Worker",
+    shift: m.shift || "Morning",
+    d: m.d || today(),
+    status: m.status || "open",
+    lines: lines,
+    items: items,
+    expenses: df.exps || [],
+    credit_sales: df.credits || [],
+    credit_recoveries: df.recoveries || [],
+    credit: totCredit,
+    recovery: totRec,
+    exp: totExp,
+    sales: totFuelSales,
+    lube: totLube,
+    total: netSales,
+    expected: expected,
+    collected: totCollected,
+    diff: diff,
+    litres: Math.round(totLitres * 100) / 100,
+    pay: payObj,
+    cash_denoms: df.cash_denoms || (df.pay && df.pay._denoms) || null,
+    slips: df.slips || (df.pay && df.pay._slips) || null,
+    note: df.note || m.note || ""
+  };
+}
+
+function buildDutyWhatsAppText(d) {
+  var biz = (S && S.biz) || {};
+  var bName = biz.name || "PETROL PUMP MANAGEMENT";
+  var bAddr = biz.addr ? ("📍 " + biz.addr) : "";
+  var bGst = biz.gst ? ("GSTIN: " + biz.gst) : "";
+  var workerName = d.worker || (ME && ME.name) || "Attendant";
+  var shift = d.shift || "Shift";
+  var dutyDate = d.d || "";
+  var isClosed = (d.status === "closed");
+  var statusStr = isClosed ? "Closed & Verified ✓" : (d.status === "submitted" ? "Submitted to Manager ⏳" : "In Progress 📝");
+
+  var lines = d.lines || [];
+  var nozzleTexts = [];
+  var totalLitres = 0;
+  var totalFuelSales = 0;
+
+  lines.forEach(function(l) {
+    var nn = l.nozzle || l.name || ("Nozzle " + (l.nozzle_id || ""));
+    var fuel = l.fuel ? (" (" + l.fuel + ")") : "";
+    var op = l.opening != null ? Number(l.opening).toFixed(2) : "-";
+    var cl = l.closing != null ? Number(l.closing).toFixed(2) : "-";
+    var ts = (l.testing != null && Number(l.testing) > 0) ? (" | Test: " + Number(l.testing).toFixed(2) + "L") : "";
+    var lt = l.litres != null ? Number(l.litres).toFixed(2) : (
+      (l.closing != null && l.opening != null) ? Math.max(0, Number(l.closing) - Number(l.opening) - (Number(l.testing) || 0)).toFixed(2) : "0.00"
+    );
+    var rate = l.rate != null ? (" @ ₹" + Number(l.rate).toFixed(2) + "/L") : "";
+    var amt = l.amount != null ? Number(l.amount) : (
+      (parseFloat(lt) > 0 && l.rate != null) ? Math.round(parseFloat(lt) * Number(l.rate) * 100) / 100 : 0
+    );
+    totalLitres += parseFloat(lt) || 0;
+    totalFuelSales += amt;
+    nozzleTexts.push("⛽ *" + nn + fuel + "*\n   Opening: " + op + " ➔ Closing: " + cl + ts + "\n   Sold: *" + lt + " L*" + rate + " = *₹" + Number(amt).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  });
+
+  // Lubes / items
+  var lubeTexts = [];
+  var totalLube = Number(d.lube || 0);
+  if (d.items && d.items.length) {
+    d.items.forEach(function(it) {
+      var itName = it.name || it.item_name || "Lube Item";
+      var qty = it.qty || 0;
+      var price = it.price || it.sell || 0;
+      var amt = it.amount != null ? it.amount : (qty * price);
+      if (qty > 0) {
+        lubeTexts.push("• " + itName + " (" + qty + (it.unit ? (" " + it.unit) : "") + " × ₹" + Number(price).toFixed(2) + ") = ₹" + Number(amt).toLocaleString("en-IN", {minimumFractionDigits: 2}));
+      }
+    });
+  }
+
+  // Credit recoveries
+  var recoveryTexts = [];
+  var recoveries = d.credit_recoveries || d.recoveries || [];
+  var totalRec = Number(d.recovery || 0);
+  if (recoveries.length) {
+    recoveries.forEach(function(r) {
+      var cn = r.cname || r.customer || "Customer";
+      var modeNote = [r.mode, r.note].filter(Boolean).join(" · ");
+      recoveryTexts.push("• " + cn + (modeNote ? (" (" + modeNote + ")") : "") + ": *+₹" + Number(r.a || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+    });
+  }
+
+  // Obligation / Expected Collection
+  var totalObligation = Math.round(((d.sales || totalFuelSales) + totalLube + totalRec) * 100) / 100;
+
+  // Expenses
+  var expTexts = [];
+  var exps = d.expenses || d.exps || [];
+  var totalExp = Number(d.exp || 0);
+  if (exps.length) {
+    exps.forEach(function(e) {
+      var desc = [e.cat || "Expense", e.note].filter(Boolean).join(" - ");
+      expTexts.push("• " + desc + ": *−₹" + Number(e.amount || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+    });
+  }
+
+  // Credit sales
+  var creditTexts = [];
+  var credits = d.credit_sales || d.credits || [];
+  var totalCredit = Number(d.credit || 0);
+  if (credits.length) {
+    credits.forEach(function(c) {
+      var cn = c.cname || c.customer || "Credit";
+      var ref = [c.veh, c.n].filter(Boolean).join(" · ");
+      creditTexts.push("• " + cn + (ref ? (" [" + ref + "]") : "") + ": *−₹" + Number(c.a || 0).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+    });
+  }
+
+  // Payments & Denominations
+  var mn = (typeof mname === "function") ? mname() : { cash: "Cash", upi: "UPI / QR", card: "Card (POS)" };
+  var payObj = d.pay || {};
+  var payLines = [];
+  var totalCollectedPayments = 0;
+  var denoms = d.cash_denoms || (d.pay && d.pay._denoms) || {};
+  var slips = d.slips || (d.pay && d.pay._slips) || {};
+
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    var amt = Number(payObj[k] || 0);
+    if (amt > 0) {
+      totalCollectedPayments += amt;
+      var mTitle = mn[k] || (k.charAt(0).toUpperCase() + k.slice(1));
+      var lineStr = "• " + mTitle + ": *₹" + amt.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*";
+      if (k === "cash" && denoms && typeof denoms === "object") {
+        var dParts = [];
+        [500, 200, 100, 50, 20, 10].forEach(function(dn){
+          var cnt = fnum(denoms[dn]);
+          if (cnt > 0) dParts.push("₹" + dn + "×" + cnt);
+        });
+        if (fnum(denoms.coins) > 0) dParts.push("Coins ₹" + fnum(denoms.coins));
+        if (dParts.length) lineStr += "\n  [" + dParts.join(", ") + "]";
+      }
+      if (slips && slips[k] && Array.isArray(slips[k]) && slips[k].length) {
+        var sParts = slips[k].map(function(s, idx){ return "#" + (s.no || (idx + 1)) + " ₹" + fnum(s.amount); });
+        lineStr += "\n  [Slips: " + sParts.join(", ") + "]";
+      }
+      payLines.push(lineStr);
+    }
+  });
+
+  var totalAccounted = Math.round((totalCollectedPayments + totalExp + totalCredit) * 100) / 100;
+  var diff = Math.round((totalAccounted - totalObligation) * 100) / 100;
+  var isShort = (diff < -0.01);
+  var isExcess = (diff > 0.01);
+  var diffLabel = isShort
+    ? ("⚠️ Shift Shortage: −₹" + Math.abs(diff).toLocaleString("en-IN", {minimumFractionDigits: 2}) + " (Accounted < Obligation)")
+    : (isExcess
+        ? ("📈 Shift Excess: +₹" + Math.abs(diff).toLocaleString("en-IN", {minimumFractionDigits: 2}) + " (Accounted > Obligation)")
+        : "✅ Shift Balanced (Tally ₹0.00 — Exact Match ✓)");
+
+  var parts = [
+    "⛽ *" + bName.toUpperCase() + "*",
+    bAddr ? bAddr : null,
+    bGst ? ("🏛️ " + bGst) : null,
+    "📋 *SHIFT DUTY HANDOVER VOUCHER*",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "👤 *Attendant:* " + workerName,
+    "⏰ *Shift:* " + shift + " | 📅 *Date:* " + dutyDate,
+    "🆔 *Duty ID:* #" + (d.id || "Draft") + " (" + statusStr + ")",
+    "",
+    "📊 *1. DISPENSER NOZZLE READINGS:*",
+    nozzleTexts.join("\n\n") || "No nozzle readings.",
+    "",
+    "⛽ *Total Fuel Sold:* *" + totalLitres.toFixed(2) + " L* = *₹" + Number(d.sales || totalFuelSales).toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*"
+  ];
+
+  if (lubeTexts.length) {
+    parts.push("", "🛍️ *2. LUBES & SHOP ITEMS:*", lubeTexts.join("\n"), "👉 *Total Lubes/Shop:* *₹" + totalLube.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  if (recoveryTexts.length) {
+    parts.push("", "💵 *3. CREDIT RECOVERIES (PAST DUES COLLECTED):*", recoveryTexts.join("\n"), "👉 *Total Recoveries:* *+₹" + totalRec.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  parts.push(
+    "",
+    "⚡ *EXPECTED COLLECTION (SALES OBLIGATION):*",
+    "• Fuel Dispensed: ₹" + Number(d.sales || totalFuelSales).toLocaleString("en-IN", {minimumFractionDigits: 2})
+  );
+  if (totalLube > 0) parts.push("• Lubes & Forecourt Items: ₹" + totalLube.toLocaleString("en-IN", {minimumFractionDigits: 2}));
+  if (totalRec > 0) parts.push("• Credit Recoveries: +₹" + totalRec.toLocaleString("en-IN", {minimumFractionDigits: 2}));
+  parts.push("👉 *Gross Shift Remittance Due:* *₹" + totalObligation.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+
+  parts.push("", "💰 *4. MONEY COLLECTED & ACCOUNTED:*", "💵 *Collections by Payment Mode:*");
+  if (payLines.length) {
+    parts.push(payLines.join("\n"));
+  } else {
+    parts.push("• Cash: ₹0.00");
+  }
+  parts.push("👉 *Total Payments Received:* *₹" + totalCollectedPayments.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+
+  if (expTexts.length) {
+    parts.push("", "🧾 *Expenses Paid from Till:*", expTexts.join("\n"), "👉 *Total Expenses:* *−₹" + totalExp.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  if (creditTexts.length) {
+    parts.push("", "💳 *Credit Fuel Sales / Indents Given:*", creditTexts.join("\n"), "👉 *Total Credit Sales:* *−₹" + totalCredit.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*");
+  }
+
+  parts.push(
+    "━━━━━━━━━━━━━━━━━━━━",
+    "📊 *TOTAL ACCOUNTED:* *₹" + totalAccounted.toLocaleString("en-IN", {minimumFractionDigits: 2}) + "*",
+    "(Payments ₹" + totalCollectedPayments.toLocaleString("en-IN", {minimumFractionDigits: 2}) + (totalExp > 0 ? (" + Expenses ₹" + totalExp.toLocaleString("en-IN", {minimumFractionDigits: 2})) : "") + (totalCredit > 0 ? (" + Credit ₹" + totalCredit.toLocaleString("en-IN", {minimumFractionDigits: 2})) : "") + ")",
+    "",
+    "🎯 *SETTLEMENT TALLY:*",
+    "• Sales Obligation: ₹" + totalObligation.toLocaleString("en-IN", {minimumFractionDigits: 2}),
+    "• Total Accounted:  ₹" + totalAccounted.toLocaleString("en-IN", {minimumFractionDigits: 2}),
+    "• *Result:* *" + diffLabel + "*"
+  );
+
+  if (d.note) {
+    parts.push("", "📝 *Handover Remarks / Notes:* " + d.note);
+  }
+
+  parts.push("", "_Sent via Petro Netra Retail Outlet Management System ⛽_");
+
+  return parts.filter(function(p){ return p !== null && p !== ""; }).join("\n");
+}
+
+function openDutyWhatsAppModal(duty) {
+  var text = buildDutyWhatsAppText(duty);
+  var biz = (S && S.biz) || {};
+  var defPhone = (biz.phone || biz.mobile || "").replace(/\D/g, "");
+  if (defPhone.length > 10) defPhone = defPhone.slice(-10);
+
+  var h = '<div style="padding:4px">' +
+    '<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px">' +
+      '<div style="font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px;color:#059669">' +
+        '<span>📲</span> <span>Share Shift Duty on WhatsApp</span>' +
+      '</div>' +
+      '<span class="sub" style="font-weight:700">Duty #' + (duty.id || "Current") + ' (' + esc(duty.shift || "Shift") + ' · ' + esc(duty.d || "") + ')</span>' +
+    '</div>' +
+    '<div class="sub" style="margin-bottom:12px">Send complete shift meter readings, sales, expenses, and collection tally directly to the manager, owner, or staff group.</div>' +
+    '<label style="margin-bottom:10px">Send to WhatsApp number (leave blank to choose inside WhatsApp)' +
+      '<div style="display:flex;gap:6px;margin-top:4px">' +
+        '<span style="padding:9px 12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-weight:700;color:var(--mute)">+91</span>' +
+        '<input id="waDutyPhone" inputmode="tel" placeholder="10-digit WhatsApp number (optional)" value="' + esc(defPhone) + '" style="flex:1">' +
+      '</div>' +
+    '</label>' +
+    '<div class="sub" style="margin-bottom:6px;font-weight:700">Message preview:</div>' +
+    '<textarea id="waDutyText" style="width:100%;height:220px;font:12px/1.45 monospace;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:10px;resize:vertical">' + esc(text) + '</textarea>' +
+    '<div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">' +
+      '<button type="button" class="ghost" onclick="closeM()">Cancel</button>' +
+      '<button type="button" class="ghost" style="display:inline-flex;align-items:center;gap:6px" onclick="copyDutyWhatsAppText()">📋 Copy Text</button>' +
+      '<button type="button" class="print-keep" style="flex:1;background:#25D366;border-color:#25D366;color:#fff;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;border-radius:8px;cursor:pointer" onclick="sendDutyWhatsAppNow()">' +
+        '<span>📲</span> <span>Open WhatsApp</span>' +
+      '</button>' +
+    '</div>' +
+  '</div>';
+
+  openM(h, "650px");
+}
+
+function copyDutyWhatsAppText() {
+  var el = document.getElementById("waDutyText");
+  if (!el) return;
+  el.select();
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(el.value).then(function(){
+        toast("Duty report copied to clipboard! ✓");
+      }).catch(function(){
+        document.execCommand("copy");
+        toast("Duty report copied! ✓");
+      });
+    } else {
+      document.execCommand("copy");
+      toast("Duty report copied to clipboard! ✓");
+    }
+  } catch(e) {
+    try {
+      document.execCommand("copy");
+      toast("Duty report copied! ✓");
+    } catch(_) {
+      toast("Please select the text and copy manually.");
+    }
+  }
+}
+
+function sendDutyWhatsAppNow() {
+  var phoneEl = document.getElementById("waDutyPhone");
+  var textEl = document.getElementById("waDutyText");
+  var phone = phoneEl ? phoneEl.value.trim() : "";
+  var text = textEl ? textEl.value : "";
+  openWaLink(phone, text);
+  closeM();
+  toast("WhatsApp opened 🚀");
+}
+
+function shareDutyWhatsApp(dutyOrId) {
+  var id = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) ? dutyOrId.id : dutyOrId;
+  if (!id && (!DF || !DF.id)) {
+    toast("No duty selected to share.");
+    return;
+  }
+  toast("Preparing shift duty details for WhatsApp...");
+  var req;
+  if (typeof dutyOrId === "object" && dutyOrId && ((dutyOrId.lines && dutyOrId.lines.length) || dutyOrId.worker)) {
+    req = Promise.resolve(dutyOrId);
+  } else if (CURRENT_VIEWED_DUTY && String(CURRENT_VIEWED_DUTY.id) === String(id)) {
+    req = Promise.resolve(CURRENT_VIEWED_DUTY);
+  } else if (DF && (String(DF.id) === String(id) || (!id && DF.id))) {
+    req = Promise.resolve(dutyFromDF(DF));
+  } else if (ME && ME.role === "worker") {
+    req = api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+  } else {
+    req = api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
+      return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+    });
+  }
+
+  req.then(function(duty){
+    if (!duty) {
+      toast("Duty record not found.");
+      return;
+    }
+    openDutyWhatsAppModal(duty);
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load duty details for WhatsApp share.");
+  });
+}
+
+function shareDayReportWhatsApp(dateStr) {
+  dateStr = dateStr || DD || today();
+  api("GET", "/api/day-report?d=" + dateStr).then(function(r){
+    var s = r.summary || {};
+    var duties = r.duties || [];
+    var biz = (S && S.biz) || {};
+    var bName = biz.name || "PETROL PUMP MANAGEMENT";
+    var bAddr = biz.addr ? ("📍 " + biz.addr) : "";
+    var totalLitres = Number(s.litres || 0).toFixed(2);
+    var totalSales = inr(s.total || 0);
+    var totalColl = inr(s.collected || 0);
+    var netDiff = (s.diff >= 0 ? "+" : "") + Number(s.diff || 0).toFixed(2);
+    var diffMsg = Math.abs(s.diff || 0) < 1 ? "✅ Balanced (Tally ₹0.00)" : (s.diff < 0 ? ("⚠️ Shortage: " + netDiff) : ("📈 Excess: " + netDiff));
+
+    var msg = [
+      "⛽ *" + bName.toUpperCase() + "*",
+      bAddr,
+      "📅 *DAILY SALES & AUDIT REPORT — " + dateStr + "*",
+      "━━━━━━━━━━━━━━━━━━━━",
+      "• Total Fuel Sold: *" + totalLitres + " L*",
+      "• Gross Sales: *" + totalSales + "*",
+      "• Total Collected: *" + totalColl + "*",
+      "• Net Shift Variance: *" + diffMsg + "*",
+      "",
+      "📋 *Shift Duties Log:*"
+    ];
+
+    if (duties.length) {
+      duties.forEach(function(d){
+        msg.push("• #" + d.id + " " + (d.worker || "Attendant") + " (" + (d.shift || "Shift") + "): " + Number(d.litres || 0).toFixed(2) + " L | Sales " + inr((d.sales || 0) + (d.lube || 0)) + " | Collected " + inr(d.collected || 0));
+      });
+    } else {
+      msg.push("No closed duties on this date.");
+    }
+
+    msg.push("", "_Sent via Petro Netra Retail Outlet Management_");
+    openWaLink("", msg.join("\n"));
+  }).catch(function(e){
+    toast((e && e.error) || "Could not load day report for WhatsApp share.");
+  });
+}
+
 function printSingleDuty(dutyOrId) {
   var id = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) ? dutyOrId.id : dutyOrId;
-  if (!id) {
+  if (!id && (!DF || !DF.id)) {
     toast("No duty selected to print.");
     return;
   }
   toast("Preparing shift handover voucher for print...");
-  var req = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.lines && dutyOrId.lines.length)
-    ? Promise.resolve(dutyOrId)
-    : ((ME && ME.role === "worker")
-        ? api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; })
-        : api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
-            return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
-          }));
+  var req;
+  if (typeof dutyOrId === "object" && dutyOrId && ((dutyOrId.lines && dutyOrId.lines.length) || dutyOrId.worker)) {
+    req = Promise.resolve(dutyOrId);
+  } else if (CURRENT_VIEWED_DUTY && String(CURRENT_VIEWED_DUTY.id) === String(id)) {
+    req = Promise.resolve(CURRENT_VIEWED_DUTY);
+  } else if (DF && (String(DF.id) === String(id) || (!id && DF.id))) {
+    req = Promise.resolve(dutyFromDF(DF));
+  } else if (ME && ME.role === "worker") {
+    req = api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+  } else {
+    req = api("GET", "/api/duties/" + id).then(function(r){ return r.duty || r; }).catch(function(){
+      return api("GET", "/api/my-duties/" + id).then(function(r){ return r.duty || r; });
+    });
+  }
 
   req.then(function(duty){
     if (!duty) {
@@ -7300,6 +7446,7 @@ function openDutyPrintModal(d) {
       '</div>' +
       '<div style="display:inline-flex;align-items:center;gap:6px">' +
         '<button type="button" class="print-keep" style="background:#0A63F8;color:#fff;font-weight:700;padding:7px 14px;font-size:13px;border-radius:8px" onclick="triggerDutyDirectPrint(' + d.id + ')">🖨️ Print Voucher</button>' +
+        '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px;color:#059669;border-color:rgba(5,150,105,0.4);font-weight:700;display:inline-flex;align-items:center;gap:5px" onclick="shareDutyWhatsApp(' + d.id + ')">📲 WhatsApp</button>' +
         '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="downloadDutyPDF(' + d.id + ')">📄 Download PDF</button>' +
         '<button type="button" class="ghost" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="closeM()">✕ Close</button>' +
       '</div>' +
@@ -7321,6 +7468,33 @@ function buildDutyVoucherContent(d) {
   var statusBadge = isClosed ? "CLOSED & VERIFIED" : (d.status === "submitted" ? "SUBMITTED" : "IN PROGRESS");
   var statusColor = isClosed ? "#059669" : (d.status === "submitted" ? "#0284c7" : "#d97706");
   var printTime = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+
+  var lines = d.lines || [];
+  var totLitres = Number(d.litres || 0);
+  var totFuelSales = Number(d.sales || 0);
+  var totLube = Number(d.lube || 0);
+  var totRec = Number(d.recovery || 0);
+  var totalObligation = Math.round((totFuelSales + totLube + totRec) * 100) / 100;
+
+  var payObj = d.pay || {};
+  var mn = (typeof mname === "function") ? mname() : { cash: "Cash", upi: "UPI / QR", card: "Card (POS)" };
+  var totalCollectedPayments = 0;
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    totalCollectedPayments += Number(payObj[k] || 0);
+  });
+  totalCollectedPayments = Math.round(totalCollectedPayments * 100) / 100;
+
+  var totExp = Number(d.exp || 0);
+  var totCredit = Number(d.credit || 0);
+  var totalAccounted = Math.round((totalCollectedPayments + totExp + totCredit) * 100) / 100;
+  var diff = Math.round((totalAccounted - totalObligation) * 100) / 100;
+  var isShort = (diff < -0.01);
+  var isExcess = (diff > 0.01);
+  var diffColor = isShort ? "#e11d48" : "#059669";
+  var diffBadge = isShort ? ("SHORTAGE " + sgn(diff)) : (isExcess ? ("EXCESS " + sgn(diff)) : "BALANCED (₹0)");
+
+  var denoms = d.cash_denoms || (d.pay && d.pay._denoms) || {};
+  var slips = d.slips || (d.pay && d.pay._slips) || {};
 
   var h = '<div style="background:#fff;color:#0b192c;padding:12px;font-family:inherit">' +
     '<!-- Header -->' +
@@ -7349,19 +7523,19 @@ function buildDutyVoucherContent(d) {
     '<div class="kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">' +
       '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
         '<div class="sub" style="font-size:10px;font-weight:700">FUEL SOLD</div>' +
-        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#0A63F8">' + Number(d.litres || 0).toFixed(2) + ' L</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#0A63F8">' + totLitres.toFixed(2) + ' L</div>' +
       '</div>' +
       '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
-        '<div class="sub" style="font-size:10px;font-weight:700">GROSS SALES</div>' +
-        '<div class="kpi-val" style="font-size:14px;font-weight:800">' + inr((d.sales || 0) + (d.lube || 0)) + '</div>' +
+        '<div class="sub" style="font-size:10px;font-weight:700">SALES OBLIGATION</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800">' + inr(totalObligation) + '</div>' +
       '</div>' +
       '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
-        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL COLLECTED</div>' +
-        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#059669">' + inr(d.collected || 0) + '</div>' +
+        '<div class="sub" style="font-size:10px;font-weight:700">TOTAL ACCOUNTED</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:#059669">' + inr(totalAccounted) + '</div>' +
       '</div>' +
       '<div class="kpi-cell" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px;text-align:center;background:#f8fafc">' +
-        '<div class="sub" style="font-size:10px;font-weight:700">CASH VARIANCE</div>' +
-        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:' + (Math.abs(d.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(d.diff || 0) + '</div>' +
+        '<div class="sub" style="font-size:10px;font-weight:700">SETTLEMENT TALLY</div>' +
+        '<div class="kpi-val" style="font-size:14px;font-weight:800;color:' + diffColor + '">' + diffBadge + '</div>' +
       '</div>' +
     '</div>';
 
@@ -7378,7 +7552,6 @@ function buildDutyVoucherContent(d) {
         '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Total (₹)</th>' +
       '</tr></thead><tbody>';
 
-  var lines = d.lines || [];
   if (!lines.length) {
     h += '<tr><td colspan="7" class="empty" style="text-align:center;padding:8px">No nozzle records attached.</td></tr>';
   } else {
@@ -7399,9 +7572,9 @@ function buildDutyVoucherContent(d) {
     });
     h += '<tr style="background:#f8fafc;font-weight:800">' +
       '<td colspan="4" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL FUEL DISPENSED</td>' +
-      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#0A63F8">' + Number(d.litres || 0).toFixed(2) + ' L</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#0A63F8">' + totLitres.toFixed(2) + ' L</td>' +
       '<td style="border:1px solid #cbd5e1;padding:5px 7px"></td>' +
-      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(d.sales || 0) + '</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(totFuelSales) + '</td>' +
     '</tr>';
   }
   h += '</tbody></table>';
@@ -7419,59 +7592,18 @@ function buildDutyVoucherContent(d) {
         d.items.map(function(it){
           return '<tr>' +
             '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(it.name) + '</b></td>' +
-            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + it.qty + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + it.qty + (it.unit ? (' ' + esc(it.unit)) : '') + '</td>' +
             '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + m2(it.price) + '</td>' +
             '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + inr(it.amount || 0) + '</td>' +
           '</tr>';
         }).join("") +
-        '<tr style="background:#f8fafc;font-weight:800"><td colspan="3" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL LUBE &amp; SHOP SALES</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(d.lube || 0) + '</td></tr>' +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="3" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL LUBE &amp; SHOP SALES</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(totLube) + '</td></tr>' +
       '</tbody></table>';
   }
 
-  // Table 3: Expenses (if any)
-  if (d.expenses && d.expenses.length) {
-    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">3. FORECOURT OPERATING EXPENSES (PAID FROM SHIFT CASH):</div>' +
-      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
-        '<thead><tr style="background:#f1f5f9">' +
-          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Expense Category</th>' +
-          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Voucher Note</th>' +
-          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Deducted Amount (₹)</th>' +
-        '</tr></thead><tbody>' +
-        d.expenses.map(function(e){
-          return '<tr>' +
-            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(e.cat) + '</b></td>' +
-            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(e.note || '—') + '</td>' +
-            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#e11d48">−' + inr(e.amount || 0) + '</td>' +
-          '</tr>';
-        }).join("") +
-        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL SHIFT EXPENSES DEDUCTED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">−' + inr(d.exp || 0) + '</td></tr>' +
-      '</tbody></table>';
-  }
-
-  // Table 4: Credit Sales / Indents (if any)
-  if (d.credit_sales && d.credit_sales.length) {
-    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">4. CREDIT FUEL SALES &amp; FLEET INDENTS:</div>' +
-      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
-        '<thead><tr style="background:#f1f5f9">' +
-          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Customer / Fleet Account</th>' +
-          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Vehicle / Indent Ref</th>' +
-          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Credit Amount (₹)</th>' +
-        '</tr></thead><tbody>' +
-        d.credit_sales.map(function(c){
-          var ref = [c.veh, c.n].filter(Boolean).join(" · ") || "Indent Slip";
-          return '<tr>' +
-            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(c.cname || "Fleet Customer") + '</b></td>' +
-            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(ref) + '</td>' +
-            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + inr(c.a || 0) + '</td>' +
-          '</tr>';
-        }).join("") +
-        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL CREDIT SALES</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(d.credit || 0) + '</td></tr>' +
-      '</tbody></table>';
-  }
-
-  // Table 5: Credit Recoveries (if any)
+  // Table 3: Credit Recoveries (if any)
   if (d.credit_recoveries && d.credit_recoveries.length) {
-    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">5. CREDIT RECOVERIES (PAST DUES COLLECTED IN SHIFT):</div>' +
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">3. CREDIT RECOVERIES (PAST DUES COLLECTED IN SHIFT):</div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
         '<thead><tr style="background:#f1f5f9">' +
           '<th style="border:1px solid #cbd5e1;padding:5px 7px">Customer Name</th>' +
@@ -7485,39 +7617,111 @@ function buildDutyVoucherContent(d) {
             '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#059669">+' + inr(cr.a || 0) + '</td>' +
           '</tr>';
         }).join("") +
-        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL RECOVERIES COLLECTED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(d.recovery || 0) + '</td></tr>' +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL RECOVERIES COLLECTED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(totRec) + '</td></tr>' +
       '</tbody></table>';
   }
 
-  // Table 6: Shift Settlement & Cash Reconciliation
-  var mn = (typeof mname === "function") ? mname() : { cash: "Cash", upi: "UPI / QR", card: "Card (POS)" };
-  var payObj = d.pay || {};
-  h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">6. SHIFT SETTLEMENT &amp; CASH RECONCILIATION:</div>' +
+  // Obligation Banner
+  h += '<div style="background:linear-gradient(135deg,rgba(10,99,248,0.08) 0%,rgba(6,42,107,0.06) 100%);border:1.5px solid #0A63F8;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">' +
+    '<div><span style="font-size:11px;font-weight:800;color:#0A63F8;text-transform:uppercase">⚡ EXPECTED COLLECTION (SALES OBLIGATION)</span><div class="sub" style="margin-top:2px">Fuel Dispensed ' + inr(totFuelSales) + (totLube > 0 ? (' + Lubes ' + inr(totLube)) : '') + (totRec > 0 ? (' + Recoveries ' + inr(totRec)) : '') + '</div></div>' +
+    '<div style="text-align:right"><div style="font-size:16px;font-weight:900;color:#0b192c">' + inr(totalObligation) + '</div><div class="sub" style="color:#0A63F8;font-weight:700">Gross Remittance Due</div></div>' +
+  '</div>';
+
+  // Table 4: Money Collected by Mode
+  h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">4. MONEY COLLECTED &amp; ACCOUNTED (PAYMENT MODES):</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+      '<thead><tr style="background:#f1f5f9">' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Payment Mode</th>' +
+        '<th style="border:1px solid #cbd5e1;padding:5px 7px">Breakdown / Slips</th>' +
+        '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Collected Amount (₹)</th>' +
+      '</tr></thead><tbody>';
+
+  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
+    var mAmt = Number(payObj[k] || 0);
+    var mTitle = (mn && mn[k]) || (k.charAt(0).toUpperCase() + k.slice(1));
+    var brkHtml = '—';
+    if (k === 'cash' && denoms && typeof denoms === 'object') {
+      var dList = [];
+      [500, 200, 100, 50, 20, 10].forEach(function(dn){
+        var cnt = fnum(denoms[dn]);
+        if (cnt > 0) dList.push('₹' + dn + '×' + cnt + ' (' + inr(dn * cnt) + ')');
+      });
+      if (fnum(denoms.coins) > 0) dList.push('Coins: ' + inr(fnum(denoms.coins)));
+      if (dList.length) brkHtml = '<span class="sub">' + dList.join(' · ') + '</span>';
+    } else if (slips && slips[k] && Array.isArray(slips[k]) && slips[k].length) {
+      brkHtml = '<span class="sub">' + slips[k].map(function(s, idx){ return 'Slip #' + (s.no || (idx + 1)) + ': ' + inr(fnum(s.amount)); }).join(' · ') + '</span>';
+    }
+    h += '<tr>' +
+      '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(mTitle) + '</b></td>' +
+      '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + brkHtml + '</td>' +
+      '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700">' + inr(mAmt) + '</td>' +
+    '</tr>';
+  });
+
+  h += '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL PAYMENTS RECEIVED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">' + inr(totalCollectedPayments) + '</td></tr>' +
+  '</tbody></table>';
+
+  // Table 5: Expenses (if any)
+  if (d.expenses && d.expenses.length) {
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">5. FORECOURT OPERATING EXPENSES (PAID FROM SHIFT CASH):</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Expense Category</th>' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Voucher Note</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Deducted Amount (₹)</th>' +
+        '</tr></thead><tbody>' +
+        d.expenses.map(function(e){
+          return '<tr>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(e.cat) + '</b></td>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(e.note || '—') + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#e11d48">−' + inr(e.amount || 0) + '</td>' +
+          '</tr>';
+        }).join("") +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL SHIFT EXPENSES DEDUCTED</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">−' + inr(totExp) + '</td></tr>' +
+      '</tbody></table>';
+  }
+
+  // Table 6: Credit Sales (if any)
+  if (d.credit_sales && d.credit_sales.length) {
+    h += '<div style="font-weight:800;font-size:12px;margin:12px 0 4px;color:#0f172a">6. CREDIT FUEL SALES &amp; FLEET INDENTS GIVEN:</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">' +
+        '<thead><tr style="background:#f1f5f9">' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Customer / Fleet Account</th>' +
+          '<th style="border:1px solid #cbd5e1;padding:5px 7px">Vehicle / Indent Ref</th>' +
+          '<th class="r" style="border:1px solid #cbd5e1;padding:5px 7px">Credit Amount (₹)</th>' +
+        '</tr></thead><tbody>' +
+        d.credit_sales.map(function(c){
+          var ref = [c.veh, c.n].filter(Boolean).join(" · ") || "Indent Slip";
+          return '<tr>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px"><b>' + esc(c.cname || "Fleet Customer") + '</b></td>' +
+            '<td style="border:1px solid #cbd5e1;padding:5px 7px">' + esc(ref) + '</td>' +
+            '<td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:700;color:#475569">−' + inr(c.a || 0) + '</td>' +
+          '</tr>';
+        }).join("") +
+        '<tr style="background:#f8fafc;font-weight:800"><td colspan="2" style="border:1px solid #cbd5e1;padding:5px 7px">TOTAL CREDIT SALES</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#475569">−' + inr(totCredit) + '</td></tr>' +
+      '</tbody></table>';
+  }
+
+  // Section 7: Shift Settlement Reconciliation
+  h += '<div style="font-weight:800;font-size:12px;margin:14px 0 4px;color:#0f172a">7. SHIFT SETTLEMENT RECONCILIATION &amp; CASH TALLY:</div>' +
     '<table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:14px">' +
       '<thead><tr style="background:#062A6B;color:#fff">' +
         '<th style="border:1px solid #062A6B;padding:6px 8px;color:#fff">Reconciliation Item</th>' +
         '<th class="r" style="border:1px solid #062A6B;padding:6px 8px;color:#fff">Amount (₹)</th>' +
       '</tr></thead><tbody>' +
-      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Gross Fuel Dispensed Sales (A)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:600">' + inr(d.sales || 0) + '</td></tr>' +
-      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Lubes &amp; Shop Items (B)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:600">' + inr(d.lube || 0) + '</td></tr>' +
-      '<tr style="background:#f8fafc;font-weight:700"><td style="border:1px solid #cbd5e1;padding:5px 7px">Total Gross Forecourt Sales (A + B)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr((d.sales || 0) + (d.lube || 0)) + '</td></tr>' +
-      (d.recovery ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(+) Credit Recoveries Received (C)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(d.recovery) + '</td></tr>' : '') +
-      (d.credit ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(−) Less Credit Sales / Indents (D)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#475569">−' + inr(d.credit) + '</td></tr>' : '') +
-      (d.exp ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(−) Less Operating Expenses Paid (E)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#e11d48">−' + inr(d.exp) + '</td></tr>' : '') +
-      '<tr style="background:#f1f5f9;font-weight:800"><td style="border:1px solid #cbd5e1;padding:6px 8px">EXPECTED TOTAL COLLECTIONS (A + B + C − D − E)</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px">' + inr(d.expected || 0) + '</td></tr>';
-
-  Object.keys(payObj).filter(function(k){ return k[0] !== '_'; }).forEach(function(k){
-    var mTitle = (mn && mn[k]) || (k.charAt(0).toUpperCase() + k.slice(1));
-    var mAmt = Number(payObj[k] || 0);
-    h += '<tr><td style="border:1px solid #cbd5e1;padding:4px 7px;padding-left:18px;color:#334155">• Collected via ' + esc(mTitle) + '</td><td class="r" style="border:1px solid #cbd5e1;padding:4px 7px">' + inr(mAmt) + '</td></tr>';
-  });
-
-  h += '<tr style="background:#ecfdf5;font-weight:800"><td style="border:1px solid #cbd5e1;padding:6px 8px">TOTAL ACTUAL COLLECTIONS RECEIVED</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:#059669;font-size:12.5px">' + inr(d.collected || 0) + '</td></tr>' +
-    '<tr style="background:' + (Math.abs(d.diff || 0) < 1 ? '#f0fdf4' : '#fef2f2') + ';font-weight:800">' +
-      '<td style="border:1px solid #cbd5e1;padding:6px 8px">NET SHORTAGE / EXCESS VARIANCE</td>' +
-      '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:13px;color:' + (Math.abs(d.diff || 0) < 1 ? '#059669' : '#e11d48') + '">' + sgn(d.diff || 0) + (Math.abs(d.diff || 0) < 1 ? ' (BALANCED ✓)' : (d.diff < 0 ? ' (SHORTAGE ⚠)' : ' (EXCESS)')) + '</td>' +
-    '</tr>' +
-  '</tbody></table>';
+      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Gross Fuel Dispensed Sales (A)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:600">' + inr(totFuelSales) + '</td></tr>' +
+      (totLube > 0 ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">Lubes &amp; Shop Items (B)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;font-weight:600">' + inr(totLube) + '</td></tr>' : '') +
+      (totRec > 0 ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px">(+) Credit Recoveries Received (C)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px;color:#059669">+' + inr(totRec) + '</td></tr>' : '') +
+      '<tr style="background:#f1f5f9;font-weight:800"><td style="border:1px solid #cbd5e1;padding:6px 8px">GROSS SALES OBLIGATION (A + B + C)</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:12px">' + inr(totalObligation) + '</td></tr>' +
+      '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px;padding-left:18px;color:#334155">• Payments Received (Cash &amp; Digital) (D)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(totalCollectedPayments) + '</td></tr>' +
+      (totExp > 0 ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px;padding-left:18px;color:#334155">• (+) Operating Expenses Paid from Till (E)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(totExp) + '</td></tr>' : '') +
+      (totCredit > 0 ? '<tr><td style="border:1px solid #cbd5e1;padding:5px 7px;padding-left:18px;color:#334155">• (+) Credit Sales Given (F)</td><td class="r" style="border:1px solid #cbd5e1;padding:5px 7px">' + inr(totCredit) + '</td></tr>' : '') +
+      '<tr style="background:#ecfdf5;font-weight:800"><td style="border:1px solid #cbd5e1;padding:6px 8px">TOTAL ACCOUNTED &amp; REMITTED (D + E + F)</td><td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;color:#059669;font-size:12.5px">' + inr(totalAccounted) + '</td></tr>' +
+      '<tr style="background:' + (Math.abs(diff) < 1 ? '#f0fdf4' : '#fef2f2') + ';font-weight:800">' +
+        '<td style="border:1px solid #cbd5e1;padding:6px 8px">NET SHORTAGE / EXCESS VARIANCE</td>' +
+        '<td class="r" style="border:1px solid #cbd5e1;padding:6px 8px;font-size:13px;color:' + diffColor + '">' + sgn(diff) + ' (' + (Math.abs(diff) < 1 ? 'BALANCED ✓' : (diff < 0 ? 'SHORTAGE ⚠' : 'EXCESS')) + ')</td>' +
+      '</tr>' +
+    '</tbody></table>';
 
   if (d.note) {
     h += '<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;margin-bottom:14px;font-size:11px">' +
@@ -7807,11 +8011,19 @@ function downloadDutyPDF(dutyOrId) {
     window.print();
     return;
   }
-  if (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) {
+  if (typeof dutyOrId === "object" && dutyOrId && (dutyOrId.id || dutyOrId.lines)) {
     generateDutyPDFDoc(dutyOrId);
     return;
   }
-  var id = dutyOrId;
+  var id = (typeof dutyOrId === "object" && dutyOrId && dutyOrId.id) ? dutyOrId.id : dutyOrId;
+  if (CURRENT_VIEWED_DUTY && (!id || String(CURRENT_VIEWED_DUTY.id) === String(id))) {
+    generateDutyPDFDoc(CURRENT_VIEWED_DUTY);
+    return;
+  }
+  if (DF && (String(DF.id) === String(id) || (!id && DF.id))) {
+    generateDutyPDFDoc(dutyFromDF(DF));
+    return;
+  }
   if (!id) {
     toast("No duty selected for PDF generation.");
     return;
@@ -8401,7 +8613,15 @@ function renderW(){
     var dfNum = parseFloat(d.diff) || 0;
     var dfCol = (dfNum < -0.01) ? 'var(--due)' : 'var(--ok)';
     var dfText = (dfNum < -0.01) ? ('Shortage ' + sgn(dfNum)) : (dfNum > 0.01 ? ('Excess ' + sgn(dfNum)) : 'Balanced ₹0');
-    h+='<div class="cust" tabindex="0" onclick="viewMyDuty('+d.id+')"><div class="row"><b>'+esc(d.shift||"Shift")+' \u00b7 '+esc(d.d||"")+'</b><span class="sub" style="flex:none;color:'+(d.status=="closed"?'var(--ok)':'var(--warn)')+'">'+(d.status=="closed"?"Closed":"Waiting for manager")+'</span></div><div class="sub">'+(d.litres!=null?d.litres:0)+' L \u00b7 Sales '+inr((d.sales||0)+(d.lube||0))+' \u00b7 Collected '+inr(d.collected||0)+' \u00b7 <span style="font-weight:700;color:'+dfCol+'">'+dfText+'</span></div></div>';
+    h+='<div class="cust" style="cursor:default;margin-bottom:12px;padding:12px 14px">'
+      +'<div class="row" style="cursor:pointer;align-items:center;justify-content:space-between;gap:8px" onclick="viewMyDuty('+d.id+')"><b>'+esc(d.shift||"Shift")+' · '+esc(d.d||"")+'</b><span class="sub" style="flex:none;color:'+(d.status=="closed"?'var(--ok)':'var(--warn)')+'">'+(d.status=="closed"?"Closed":"Waiting for manager")+'</span></div>'
+      +'<div class="sub" style="margin-top:2px">'+(d.litres!=null?d.litres:0)+' L · Sales '+inr((d.sales||0)+(d.lube||0))+' · Collected '+inr(d.collected||0)+' · <span style="font-weight:700;color:'+dfCol+'">'+dfText+'</span></div>'
+      +'<div class="row noprint" style="gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)">'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px" onclick="viewMyDuty('+d.id+')">🔍 View Details</button>'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="printSingleDuty('+d.id+')">🖨️ Print Voucher</button>'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700" onclick="shareDutyWhatsApp('+d.id+')">📲 WhatsApp Share</button>'
+      +'<button class="ghost" style="padding:5px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="downloadDutyPDF('+d.id+')">📄 PDF</button>'
+      +'</div></div>';
   });
   document.getElementById("app").innerHTML=h;
 }
@@ -8476,8 +8696,6 @@ function renderWAssign(r){
 
   h+='<label>Business day<input value="'+r.date+' ('+(r.day=="open"?"Open":"Closed")+')" disabled style="background:var(--bg)"></label>';
 
-  h+='<label>Handover note (optional)<input id="wa_note" placeholder="e.g. Cash till checked, dip taken, notes for incoming worker"></label>';
-
   h+='<div class="sub" style="font-weight:700;color:var(--ink);margin:16px 0 6px">Nozzle readings from closed duty ('+(r.nozzles?r.nozzles.length:0)+' nozzles)</div>';
   h+='<div class="tbl"><table><tr><th>Nozzle & Fuel</th><th class="r">Starting opening</th><th class="r">Rate</th></tr>';
   (r.nozzles||[]).forEach(function(n){
@@ -8545,7 +8763,7 @@ function doWorkerAssign(){
     else toast(e.error||"Could not complete handover.");
   });
 }
-function viewMyDuty(id){api("GET","/api/my-duties/"+id).then(function(r){var mn={};r.modes.forEach(function(m){mn[m.key]=m.name});document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="loadW()">← Back to my duties</button><button class="ghost" onclick="downloadDutyPDF('+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF Report</button></div><div style="margin-top:10px">'+dutyBlock(r.duty,mn)+'</div>'}).catch(function(e){toast(e.error||"Could not open the duty.")})}
+function viewMyDuty(id){api("GET","/api/my-duties/"+id).then(function(r){var mn={};r.modes.forEach(function(m){mn[m.key]=m.name});CURRENT_VIEWED_DUTY=r.duty;document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="row noprint" style="justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="loadW()">← Back to my duties</button><div style="display:inline-flex;gap:6px;flex-wrap:wrap"><button class="ghost" onclick="printSingleDuty(CURRENT_VIEWED_DUTY||'+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px">🖨️ Print Voucher</button><button class="ghost" onclick="shareDutyWhatsApp(CURRENT_VIEWED_DUTY||'+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px;color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700">📲 WhatsApp Share</button><button class="ghost" onclick="downloadDutyPDF(CURRENT_VIEWED_DUTY||'+r.duty.id+')" style="display:inline-flex;align-items:center;gap:6px">📄 Download PDF Report</button></div></div><div style="margin-top:10px">'+dutyBlock(r.duty,mn)+'</div>'}).catch(function(e){toast(e.error||"Could not open the duty.")})}
 function wSave(sub){
   if(sub){confirmDutyModal();return}
   if(autoSaveTimer){clearTimeout(autoSaveTimer);autoSaveTimer=null}
@@ -8579,7 +8797,7 @@ function cancelDuty(id){ask("Cancel this duty? The nozzles become free again.",f
 function assignForm(){api("GET","/api/assign-info").then(function(r){
 if(!r.workers.length)return toast("Add a worker in the Team tab first.");
 if(r.day!="open")return toast("Today's business day is closed. Ask the owner to reopen it.");
-if(!r.nozzles.length)return toast("Add nozzles in Pump setup first (owner).");
+if(!r.nozzles.length)return toast("Add nozzles in Settings first (owner).");
 openM('<h2>Assign duty</h2><div class="sub">Business day '+r.date+'</div><label>Worker<select id="as_w">'+r.workers.map(function(w){return '<option value="'+w.id+'">'+esc(w.name)+'</option>'}).join("")+'</select></label><label>Shift<select id="as_s"><option>Morning</option><option>Evening</option><option>Night</option></select></label><div class="sub" style="margin-top:12px">Nozzles</div>'+r.nozzles.map(function(n){var why=n.busy_by?"with "+n.busy_by:n.rate==null?"no rate set":n.opening==null?"no opening reading":"";return '<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" class="an" value="'+n.id+'" style="width:auto;margin:0"'+(why?' disabled':'')+'>'+esc(n.name)+' \u00b7 '+esc(n.fuel)+(why?' <span class="sub">('+esc(why)+')</span>':' <span class="sub">(starts at '+(n.opening!=null?Number(n.opening).toFixed(2):'0.00')+', '+m2(n.rate)+'/L)</span>')+'</label>'}).join("")+'<div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="doAssign()">Assign duty</button></div>')}).catch(function(e){toast(e.error||"Could not load.")})}
 function doAssign(){var ids=[].slice.call(document.querySelectorAll(".an:checked")).map(function(x){return x.value});if(!ids.length)return er("Choose at least one nozzle.");api("POST","/api/duties/assign",{worker_id:v("as_w"),shift:v("as_s"),nozzle_ids:ids}).then(function(){close();renderDutyTab()}).catch(function(e){er(e.error||"Could not assign.")})}
 function reviewDuty(id){fetchCL();api("GET","/api/duties/"+id).then(function(d){var pay=d.pay||{};
@@ -9330,19 +9548,19 @@ function installAllModules(){
 
 function applyOmcCompliancePreset(){
   if(!S.modules) S.modules = {};
-  var mandatory = ["duty", "pricerev", "density", "wmvault", "tanks", "compliance", "amenities", "inv", "stock", "book", "audit"];
+  var mandatory = ["duty", "amenities", "book"];
   PETRO_MODULE_CATALOG.forEach(function(m){
     S.modules[m.id] = (mandatory.indexOf(m.id) >= 0);
   });
   save();
-  toast("✓ Applied OMC Compliance Preset (11 core modules enabled).");
+  toast("✓ Applied OMC Compliance Preset.");
   renderDrawerContent();
   renderModulesTab(SU === "modules" && tab === "setup");
 }
 
 function applyMinimalPreset(){
   if(!S.modules) S.modules = {};
-  var minimal = ["duty", "stock", "book", "pricerev"];
+  var minimal = ["duty", "book"];
   PETRO_MODULE_CATALOG.forEach(function(m){
     S.modules[m.id] = (minimal.indexOf(m.id) >= 0);
   });
@@ -9448,7 +9666,7 @@ function renderModulesTab(insideSetup){
   var setupSubtabs = "";
   if(insideSetup){
     var T = [["nozzles","Nozzles"],["tanks","Tanks"],["rates","Fuel rates"],["cats","Expense categories"],["modes","Payment modes"],["cust","Credit customers"],["biz","Business details"],["team","Team"],["bak","Backup"],["modules","Modules Store"]];
-    setupSubtabs = '<h1>Pump setup</h1><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:16px">' +
+    setupSubtabs = '<h1>Settings</h1><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:16px">' +
       T.map(function(t){
         return '<button style="padding:9px 4px;font-size:12px;min-width:0;line-height:1.2" class="' + (SU==t[0]?'':'ghost') + '" onclick="SU=\'' + t[0] + '\';renderSetup()">' + t[1] + '</button>';
       }).join("") + '</div>';
@@ -9584,28 +9802,122 @@ function renderModulesTab(insideSetup){
   }
 }
 
-// ---- Pump setup (owner)
+// ---- Station Settings (owner/manager)
 function rateNow(f,d){var b=null;S.rates.forEach(function(r){if(r.fuel==f&&r.from<=d&&(!b||r.from>b.from||(r.from==b.from&&r.id>b.id)))b=r});return b}
-function renderSetup(){var A=document.getElementById("app");if(!SRV){A.innerHTML=nav()+'<div class="empty">Pump setup needs the server. It is not available in this preview.</div>';return}
+function renderSetup(){var A=document.getElementById("app");if(!SRV){A.innerHTML=nav()+'<div class="empty">Settings needs the server. It is not available in this preview.</div>';return}
 tab="setup";if(SU=="open"||!SU)SU="nozzles";
 if(SU=="modules") return renderModulesTab(true);
 var T=[["nozzles","Nozzles"],["tanks","Tanks"],["rates","Fuel rates"],["cats","Expense categories"],["modes","Payment modes"],["cust","Credit customers"],["biz","Business details"],["team","Team"],["bak","Backup"],["reset","Reset Data"],["modules","Modules Store"]];
-var h=nav()+'<h1>Pump setup</h1><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px">'+T.map(function(t){return '<button style="padding:9px 4px;font-size:12px;min-width:0;line-height:1.2" class="'+((SU==t[0]||(SU=="bak"&&t[0]=="reset"&&window.BAK_SUBTAB=="reset")||(SU=="reset"&&t[0]=="reset"))?'':'ghost')+'" onclick="'+(t[0]=="reset"?'window.BAK_SUBTAB=\'reset\';SU=\'bak\';renderSetup()':(t[0]=="bak"?'window.BAK_SUBTAB=\'backup\';SU=\'bak\';renderSetup()':'SU=\''+t[0]+'\';renderSetup()'))+'">'+t[1]+'</button>'}).join("")+'</div>';
+var h=nav()+'<h1>Settings</h1><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:12px">'+T.map(function(t){return '<button style="padding:9px 4px;font-size:12px;min-width:0;line-height:1.2" class="'+((SU==t[0]||(SU=="bak"&&t[0]=="reset"&&window.BAK_SUBTAB=="reset")||(SU=="reset"&&t[0]=="reset"))?'':'ghost')+'" onclick="'+(t[0]=="reset"?'window.BAK_SUBTAB=\'reset\';SU=\'bak\';renderSetup()':(t[0]=="bak"?'window.BAK_SUBTAB=\'backup\';SU=\'bak\';renderSetup()':'SU=\''+t[0]+'\';renderSetup()'))+'">'+t[1]+'</button>'}).join("")+'</div>';
 var tn=function(id){var t=S.tanks.filter(function(x){return x.id==id})[0];return t?t.name:"No tank"};
-if(SU=="nozzles"){h+='<div class="btns"><button onclick="nozEdit(0)">Add nozzle</button></div>';if(!S.nozzles.length)h+='<div class="empty">No nozzles yet. Tap Add nozzle to configure pump nozzles and their opening meter readings.</div>';
-S.nozzles.forEach(function(n){h+='<div class="cust" style="cursor:default'+(n.active===false?';opacity:.6':'')+'"><div class="row"><b>'+esc(n.name)+'</b><span class="sub" style="flex:none">'+(n.active===false?'Inactive':'Active')+'</span></div><div class="sub">'+esc(n.fuel)+' \u00b7 '+esc(tn(n.tank_id))+'</div><div class="sub" style="margin-top:4px">Opening reading: '+(n.open!=null?'<b style="color:var(--ink)">'+Number(n.open).toFixed(2)+'</b>':'<span style="color:var(--warn);font-weight:700">Not set (required for duties)</span>')+'</div><div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="nozEdit(\''+n.id+'\')">Edit</button></div></div>'})}
-else if(SU=="tanks"){h+='<div class="sub">Underground fuel storage tanks, capacities, and calibration dip charts.</div><div class="btns"><button onclick="tankEdit(0)">Add tank</button></div>';if(!S.tanks.length)h+='<div class="empty">No storage tanks configured yet. Tap Add tank to set up storage tanks for petrol, diesel, and power fuels.</div>';S.tanks.forEach(function(t){var linked=S.nozzles.filter(function(n){return n.tank_id==t.id});var nozNames=linked.map(function(n){return n.name}).join(", ");h+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(t.name)+' \u00b7 '+esc(t.fuel)+'</b><span class="amt" style="flex:none">'+(t.capacity?lt(t.capacity):'No capacity set')+'</span></div><div class="sub">'+(t.chart&&t.chart.length>1?'Dip chart calibrated ('+t.chart.length+' points)':'No dip chart set')+'</div><div class="sub" style="margin-top:4px">Connected nozzles: '+(nozNames?esc(nozNames):'<span style="color:var(--mute)">None</span>')+'</div><div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="tankEdit('+t.id+')">Edit tank</button><button class="ghost" style="padding:6px 10px;color:var(--due)" onclick="tankDel('+t.id+')">Delete</button></div></div>'})}
-else if(SU=="rates"){var fs=[];S.nozzles.forEach(function(n){if(fs.indexOf(n.fuel)<0)fs.push(n.fuel)});S.rates.forEach(function(r){if(fs.indexOf(r.fuel)<0)fs.push(r.fuel)});
-h+='<div class="sub">A new rate applies to duties on or after its start date. Duties already assigned keep the rate they started with.</div>';if(!fs.length)h+='<div class="empty">Add nozzles first.</div>';
-fs.forEach(function(f){var c=rateNow(f,bizToday());h+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(f)+'</b><span class="amt" style="flex:none">'+(c?m2(c.rate)+' /L':'No rate')+'</span></div>'+(c?'<div class="sub">From '+c.from+'</div>':'')+'<div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="rateAdd(\''+esc(f)+'\')">Set new rate</button></div></div>'});
-var hs=S.rates.slice().sort(function(a,b){return a.from<b.from?1:-1});if(hs.length){h+=sect("Rate history");hs.forEach(function(r){h+='<div class="row" style="margin-top:6px"><span>'+esc(r.fuel)+' \u00b7 '+m2(r.rate)+'<div class="sub">From '+r.from+'</div></span><button class="ghost" style="flex:none;padding:5px 8px" onclick="rateDel('+r.id+')">Delete</button></div>'})}}
-else if(SU=="cats"){h+='<div class="sub">Workers choose from these when they enter an expense.</div>';cats().forEach(function(c,i){h+='<div class="row" style="margin-top:8px"><span>'+esc(c)+'</span><button class="ghost" style="flex:none;padding:5px 8px" onclick="catDel('+i+')">Remove</button></div>'});
-h+='<label>New category<input id="nc"></label><div class="err" id="er"></div><button style="margin-top:10px" onclick="catAdd()">Add category</button>'}
-else if(SU=="modes"){h+='<div class="sub">Turn off the payment modes you do not use. They disappear from duty forms. Cash is always on.</div>';allModes().forEach(function(m,i){h+='<div class="row" style="margin-top:8px"><span>'+esc(m.name)+'</span><button class="'+(m.active!==false?'':'ghost')+'" style="flex:none;padding:6px 10px"'+(m.key=="cash"?' disabled':'')+' onclick="modeTog('+i+')">'+(m.active!==false?'On':'Off')+'</button></div>'});
-h+='<label>Add a payment mode<input id="nm" placeholder="e.g. Fleet card"></label><div class="err" id="er"></div><button style="margin-top:10px" onclick="modeAdd()">Add mode</button>'}
-else if(SU=="cust"){h+='<div class="sub">Inactive customers are hidden from workers and invoices. Their ledger stays.</div>';if(!S.c.length)h+='<div class="empty">No credit customers yet.</div>';S.c.forEach(function(c){h+='<div class="row" style="margin-top:8px"><span>'+esc(c.name)+'</span><button class="'+(c.active===false?'ghost':'')+'" style="flex:none;padding:6px 10px" onclick="custTog('+c.id+')">'+(c.active===false?'Inactive':'Active')+'</button></div>'})}
-else if(SU=="biz"){var b=S.biz||{name:"",addr:"",gst:""};h+='<div class="sub">These pump details appear on GST invoices, statements, and reports.</div>';if(b.name){h+='<div class="cust" style="cursor:default;margin-bottom:14px"><div class="row"><b style="font-size:16px">'+esc(b.name)+'</b></div>'+(b.addr?'<div class="sub">'+esc(b.addr)+'</div>':'')+'<div class="sub" style="margin-top:4px">GSTIN: '+(b.gst?'<b style="color:var(--ink)">'+esc(b.gst)+'</b>':'<span style="color:var(--warn);font-weight:700">Not set</span>')+'</div></div>'}h+='<label>Pump name<input id="bz1" placeholder="e.g. Mahud Auto Fuel Station" value="'+esc(b.name||"")+'"></label><label>Address<input id="bz2" placeholder="e.g. NH 65, Mahud, Solapur" value="'+esc(b.addr||"")+'"></label><label>GSTIN (15 characters)<input id="bz3" placeholder="e.g. 27ABCDE1234F1Z5" autocapitalize="characters" value="'+esc(b.gst||"")+'"></label><div class="err" id="er"></div><div class="btns" style="margin-top:12px"><button onclick="saveBizSetup()">Save business details</button></div>'}
-else if(SU=="team"){h+='<div class="sub">Worker and manager accounts for this petrol pump.</div><div class="btns"><button onclick="userForm()">Add user</button></div><div id="setup_team"><div class="empty">Loading team\u2026</div></div>';A.innerHTML=h;api("GET","/api/users").then(function(U){if(tab!="setup"||SU!="team")return;var el=document.getElementById("setup_team");if(!el)return;TEAM_USERS=U;if(!U.length){el.innerHTML='<div class="empty">No team members yet. Tap Add user to create accounts.</div>';return}var th="";U.forEach(function(u){th+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(u.name)+'</b><span class="sub" style="flex:none;text-align:right">'+u.role+(u.active?'':' \u00b7 inactive')+'</span></div><div class="sub">Mobile '+esc(u.mobile)+'</div><div class="btns" style="margin:10px 0 0"><button class="ghost" onclick="editUserForm('+u.id+')">Edit user</button>'+(u.role=="owner"?'':'<button class="ghost" onclick="userAct('+u.id+',\''+(u.active?'off':'on')+'\')">'+(u.active?'Deactivate':'Activate')+'</button><button class="ghost" onclick="resetPw('+u.id+')">Reset password</button>')+'</div></div>'});el.innerHTML=th}).catch(function(e){var el=document.getElementById("setup_team");if(el)el.innerHTML='<div class="empty">Could not load the team. '+esc(e.error||"")+'</div>'});return}
+if(SU=="nozzles"){
+  h+='<div class="sub">Forecourt fuel dispensing nozzles, connected tanks, and opening meter totalizers. All settings are editable.</div><div class="btns"><button onclick="nozEdit(0)">Add nozzle</button></div>';
+  if(!S.nozzles.length)h+='<div class="empty">No nozzles yet. Tap Add nozzle to configure pump nozzles and their opening meter readings.</div>';
+  S.nozzles.forEach(function(n){
+    h+='<div class="cust" style="cursor:default'+(n.active===false?';opacity:.6':'')+'"><div class="row"><b>'+esc(n.name)+'</b><span class="sub" style="flex:none">'+(n.active===false?'Inactive':'Active')+'</span></div><div class="sub">'+esc(n.fuel)+' \u00b7 '+esc(tn(n.tank_id))+'</div><div class="sub" style="margin-top:4px">Opening reading: '+(n.open!=null?'<b style="color:var(--ink)">'+Number(n.open).toFixed(2)+'</b>':'<span style="color:var(--warn);font-weight:700">Not set (required for duties)</span>')+'</div><div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="nozEdit(\''+n.id+'\')">Edit nozzle</button><button class="'+(n.active!==false?'':'ghost')+'" style="padding:6px 10px" onclick="nozTog(\''+n.id+'\')">'+(n.active!==false?'Deactivate':'Activate')+'</button><button class="ghost" style="padding:6px 10px;color:var(--due)" onclick="nozDel(\''+n.id+'\')">Delete</button></div></div>';
+  });
+}
+else if(SU=="tanks"){
+  h+='<div class="sub">Underground fuel storage tanks, capacities, and calibration dip charts. All settings are editable.</div><div class="btns"><button onclick="tankEdit(0)">Add tank</button></div>';
+  if(!S.tanks.length)h+='<div class="empty">No storage tanks configured yet. Tap Add tank to set up storage tanks for petrol, diesel, and power fuels.</div>';
+  S.tanks.forEach(function(t){
+    var linked=S.nozzles.filter(function(n){return n.tank_id==t.id});
+    var nozNames=linked.map(function(n){return n.name}).join(", ");
+    h+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(t.name)+' \u00b7 '+esc(t.fuel)+'</b><span class="amt" style="flex:none">'+(t.capacity?lt(t.capacity):'No capacity set')+'</span></div><div class="sub">'+(t.chart&&t.chart.length>1?'Dip chart calibrated ('+t.chart.length+' points)':'No dip chart set')+'</div><div class="sub" style="margin-top:4px">Connected nozzles: '+(nozNames?esc(nozNames):'<span style="color:var(--mute)">None</span>')+'</div><div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="tankEdit('+t.id+')">Edit tank</button><button class="ghost" style="padding:6px 10px;color:var(--due)" onclick="tankDel('+t.id+')">Delete</button></div></div>';
+  });
+}
+else if(SU=="rates"){
+  var fs=[];
+  S.nozzles.forEach(function(n){if(fs.indexOf(n.fuel)<0)fs.push(n.fuel)});
+  S.rates.forEach(function(r){if(fs.indexOf(r.fuel)<0)fs.push(r.fuel)});
+  h+='<div class="sub">A new rate applies to duties on or after its start date. Current and historical rates are editable below.</div>';
+  if(!fs.length)h+='<div class="empty">Add nozzles first.</div>';
+  fs.forEach(function(f){
+    var c=rateNow(f,bizToday());
+    h+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(f)+'</b><span class="amt" style="flex:none">'+(c?m2(c.rate)+' /L':'No rate')+'</span></div>'+(c?'<div class="sub">Effective from '+c.from+'</div>':'')+'<div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="rateAdd(\''+esc(f)+'\')">Set new rate</button>'+(c?'<button class="ghost" style="padding:6px 10px" onclick="rateEdit('+c.id+')">Edit rate</button>':'')+'</div></div>';
+  });
+  var hs=S.rates.slice().sort(function(a,b){return a.from<b.from?1:-1});
+  if(hs.length){
+    h+=sect("Rate history & modifications");
+    hs.forEach(function(r){
+      h+='<div class="row" style="margin-top:6px"><span>'+esc(r.fuel)+' \u00b7 <b>'+m2(r.rate)+' /L</b><div class="sub">From '+r.from+'</div></span><div style="display:flex;gap:6px"><button class="ghost" style="flex:none;padding:5px 8px" onclick="rateEdit('+r.id+')">Edit</button><button class="ghost" style="flex:none;padding:5px 8px;color:var(--due)" onclick="rateDel('+r.id+')">Delete</button></div></div>';
+    });
+  }
+}
+else if(SU=="cats"){
+  h+='<div class="sub">Workers choose from these when they enter forecourt expenses. All categories are editable.</div>';
+  cats().forEach(function(c,i){
+    h+='<div class="row" style="margin-top:8px"><span>'+esc(c)+'</span><div style="display:flex;gap:6px"><button class="ghost" style="flex:none;padding:5px 8px" onclick="catEdit('+i+')">Edit</button><button class="ghost" style="flex:none;padding:5px 8px;color:var(--due)" onclick="catDel('+i+')">Remove</button></div></div>';
+  });
+  h+='<label>New category<input id="nc" placeholder="e.g. Generator Maintenance, Tea / Snacks"></label><div class="err" id="er"></div><button style="margin-top:10px" onclick="catAdd()">Add category</button>';
+}
+else if(SU=="modes"){
+  h+='<div class="sub">Turn off or rename payment modes you do not use. Cash is always required. All modes are editable.</div>';
+  allModes().forEach(function(m,i){
+    h+='<div class="row" style="margin-top:8px"><span>'+esc(m.name)+'</span><div style="display:flex;gap:6px"><button class="ghost" style="flex:none;padding:6px 10px" onclick="modeEdit('+i+')">Edit</button><button class="'+(m.active!==false?'':'ghost')+'" style="flex:none;padding:6px 10px"'+(m.key=="cash"?' disabled':'')+' onclick="modeTog('+i+')">'+(m.active!==false?'On':'Off')+'</button>'+(m.key!="cash"?'<button class="ghost" style="flex:none;padding:6px 10px;color:var(--due)" onclick="modeDel('+i+')">Delete</button>':'')+'</div></div>';
+  });
+  h+='<label>Add a payment mode<input id="nm" placeholder="e.g. Fleet card, HP Pay, PhonePe QR"></label><div class="err" id="er"></div><button style="margin-top:10px" onclick="modeAdd()">Add mode</button>';
+}
+else if(SU=="cust"){
+  h+='<div class="sub">Credit customers registered for credit billing, vehicle limits, and ledgers. All details are editable.</div><div class="btns"><button onclick="custForm(0)">Add credit customer</button></div>';
+  if(!S.c.length)h+='<div class="empty">No credit customers yet. Tap Add credit customer to register a new account.</div>';
+  S.c.forEach(function(c){
+    var vehList=(c.veh||[]).join(", ");
+    h+='<div class="cust" style="cursor:default'+(c.active===false?';opacity:0.65':'')+'"><div class="row"><b>'+esc(c.name)+'</b><span class="amt" style="flex:none;font-size:13px;color:var(--mute)">Limit: <b>'+inr(c.limit||0)+'</b></span></div><div class="sub">Phone: '+(c.phone?esc(c.phone):'None')+(c.gst?' \u00b7 GST: '+esc(c.gst):'')+'</div>'+(vehList?'<div class="sub" style="margin-top:2px">Vehicles: '+esc(vehList)+'</div>':'')+'<div class="btns" style="margin:8px 0 0"><button class="ghost" style="padding:6px 10px" onclick="custForm('+c.id+')">Edit customer</button><button class="'+(c.active===false?'ghost':'')+'" style="padding:6px 10px" onclick="custTog('+c.id+')">'+(c.active===false?'Inactive':'Active')+'</button></div></div>';
+  });
+}
+else if(SU=="biz"){
+  var b=S.biz||{name:"",addr:"",gst:""};
+  h+='<div class="sub">These pump and station profile details appear on GST tax invoices, statements, and reports. All settings are editable below.</div>';
+  if(b.name){
+    h+='<div class="cust" style="cursor:default;margin-bottom:14px;border:1.5px solid var(--line);background:var(--card)"><div class="row"><b style="font-size:16px">'+esc(b.name)+'</b>'+(b.brand?'<span class="role-badge" style="background:var(--btn);color:#fff">'+esc(b.brand)+'</span>':'')+'</div>'+(b.addr?'<div class="sub">'+esc(b.addr)+'</div>':'')+'<div class="sub" style="margin-top:4px;display:flex;gap:12px;flex-wrap:wrap"><span>GSTIN: '+(b.gst?'<b style="color:var(--ink)">'+esc(b.gst)+'</b>':'<span style="color:var(--warn);font-weight:700">Not set</span>')+'</span>'+(b.dealerCode?'<span>RO Code: <b style="color:var(--ink)">'+esc(b.dealerCode)+'</b></span>':'')+(b.phone?'<span>Phone: <b style="color:var(--ink)">'+esc(b.phone)+'</b></span>':'')+'</div>'+(b.bankName?'<div class="sub" style="margin-top:4px">Bank: <b>'+esc(b.bankName)+'</b> \u00b7 A/C: <b>'+esc(b.bankAcc||'')+'</b> \u00b7 IFSC: <b>'+esc(b.bankIfsc||'')+'</b></div>':'')+(b.footerNote?'<div class="sub" style="margin-top:4px;font-style:italic">Bill note: "'+esc(b.footerNote)+'"</div>':'')+'</div>';
+  }
+  var brands=["IOCL (Indian Oil)","HPCL (Hindustan Petroleum)","BPCL (Bharat Petroleum)","Shell","Nayara Energy","Jio-bp","Reliance Petroleum","Independent / Other"];
+  h+='<div style="display:flex;flex-direction:column;gap:10px">'
+    +'<label>Petrol pump / Station trade name<input id="bz1" placeholder="e.g. Mahud Auto Fuel Station" value="'+esc(b.name||"")+'"></label>'
+    +'<label>Station address<input id="bz2" placeholder="e.g. NH 65, Mahud, Solapur, Maharashtra 413306" value="'+esc(b.addr||"")+'"></label>'
+    +'<div class="row" style="gap:10px">'
+    +'<label style="flex:1">Oil company (OMC brand)<select id="bz4"><option value="">Select brand</option>'+brands.map(function(br){return '<option value="'+esc(br)+'"'+(b.brand==br?' selected':'')+'>'+esc(br)+'</option>'}).join("")+'</select></label>'
+    +'<label style="flex:1">RO / Dealer code<input id="bz5" placeholder="e.g. 142055" value="'+esc(b.dealerCode||"")+'"></label>'
+    +'</div>'
+    +'<div class="row" style="gap:10px">'
+    +'<label style="flex:1">GSTIN (15 characters)<input id="bz3" placeholder="e.g. 27ABCDE1234F1Z5" autocapitalize="characters" value="'+esc(b.gst||"")+'"></label>'
+    +'<label style="flex:1">Contact phone / WhatsApp<input id="bz6" inputmode="tel" placeholder="e.g. 9876543210" value="'+esc(b.phone||"")+'"></label>'
+    +'</div>'
+    +'<label>Station email (optional)<input id="bz7" type="email" placeholder="e.g. station@example.com" value="'+esc(b.email||"")+'"></label>'
+    +'<div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--line)">'
+    +'<b style="font-size:13px;color:var(--ink)">Bank account for invoice receipts (optional)</b>'
+    +'<div class="row" style="gap:10px;margin-top:6px">'
+    +'<label style="flex:1">Bank name<input id="bz8" placeholder="e.g. State Bank of India" value="'+esc(b.bankName||"")+'"></label>'
+    +'<label style="flex:1">Account number<input id="bz9" placeholder="e.g. 10293847561" value="'+esc(b.bankAcc||"")+'"></label>'
+    +'<label style="flex:1">IFSC code<input id="bz10" placeholder="e.g. SBIN0001234" autocapitalize="characters" value="'+esc(b.bankIfsc||"")+'"></label>'
+    +'</div>'
+    +'</div>'
+    +'<label style="margin-top:6px">Receipt / Bill footer message<input id="bz11" placeholder="e.g. Thank you for fueling with us! Drive safely." value="'+esc(b.footerNote||"")+'"></label>'
+    +'<div class="err" id="er"></div>'
+    +'<div class="btns" style="margin-top:14px"><button onclick="saveBizSetup()">Save all station settings</button></div>'
+    +'</div>';
+}
+else if(SU=="team"){
+  h+='<div class="sub">Worker and manager accounts for this petrol pump. All users and permissions are editable.</div><div class="btns"><button onclick="userForm()">Add user</button></div><div id="setup_team"><div class="empty">Loading team\u2026</div></div>';
+  A.innerHTML=h;
+  api("GET","/api/users").then(function(U){
+    if(tab!="setup"||SU!="team")return;
+    var el=document.getElementById("setup_team");
+    if(!el)return;
+    TEAM_USERS=U;
+    if(!U.length){el.innerHTML='<div class="empty">No team members yet. Tap Add user to create accounts.</div>';return}
+    var th="";
+    U.forEach(function(u){
+      th+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(u.name)+'</b><span class="sub" style="flex:none;text-align:right">'+u.role+(u.active?'':' \u00b7 inactive')+'</span></div><div class="sub">Mobile '+esc(u.mobile)+'</div><div class="btns" style="margin:10px 0 0"><button class="ghost" onclick="editUserForm('+u.id+')">Edit user</button>'+(u.role=="owner"?'':'<button class="ghost" onclick="userAct('+u.id+',\''+(u.active?'off':'on')+'\')">'+(u.active?'Deactivate':'Activate')+'</button><button class="ghost" onclick="resetPw('+u.id+')">Reset password</button><button class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="userDel('+u.id+')">Delete user</button>')+'</div></div>';
+    });
+    el.innerHTML=th;
+  }).catch(function(e){
+    var el=document.getElementById("setup_team");
+    if(el)el.innerHTML='<div class="empty">Could not load the team. '+esc(e.error||"")+'</div>';
+  });
+  return;
+}
 else if(SU=="bak"||SU=="reset"){
   var curBakSub=(SU=="reset"?"reset":(window.BAK_SUBTAB||"backup"));
   var n=function(a){return (a||[]).length};
@@ -9684,20 +9996,49 @@ else if(SU=="bak"||SU=="reset"){
   }
 }
 A.innerHTML=h}
-function saveBizSetup(){var nm=(v("bz1")||"").trim(),ad=(v("bz2")||"").trim(),g=(v("bz3")||"").trim().toUpperCase();if(!nm)return er("Enter the pump name.");if(g&&g.length!=15)return er("GSTIN must be 15 characters (or leave blank).");S.biz={name:nm,addr:ad,gst:g};save();toast("Business details saved.");renderSetup()}
+function saveBizSetup(){
+  var nm=(v("bz1")||"").trim(),
+      ad=(v("bz2")||"").trim(),
+      g=(v("bz3")||"").trim().toUpperCase(),
+      br=(v("bz4")||"").trim(),
+      ro=(v("bz5")||"").trim(),
+      ph=(v("bz6")||"").trim(),
+      em=(v("bz7")||"").trim(),
+      bn=(v("bz8")||"").trim(),
+      ba=(v("bz9")||"").trim(),
+      bi=(v("bz10")||"").trim().toUpperCase(),
+      fn=(v("bz11")||"").trim();
+  if(!nm)return er("Enter the pump or station name.");
+  if(g&&g.length!=15)return er("GSTIN must be 15 characters (or leave blank).");
+  S.biz=Object.assign(S.biz||{},{
+    name:nm,addr:ad,gst:g,brand:br,dealerCode:ro,phone:ph,email:em,
+    bankName:bn,bankAcc:ba,bankIfsc:bi,footerNote:fn
+  });
+  save();toast("All station settings saved.");renderSetup();
+}
 function nozEdit(id){var n=(id&&id!="0")?S.nozzles.filter(function(x){return String(x.id)==String(id)})[0]:{name:"",fuel:FUELS[0],tank_id:"",active:true,open:""};
 openM('<h2>'+((id&&id!="0")?'Edit nozzle':'Add nozzle')+'</h2><label>Name<input id="n1" placeholder="e.g. Nozzle 1 (HSD East)" value="'+esc(n.name)+'"></label><label>Fuel<select id="n2">'+FUELS.map(function(f){return '<option'+(f==n.fuel?' selected':'')+'>'+f+'</option>'}).join("")+'</select></label><label>Tank<select id="n3"><option value="">No tank linked</option>'+S.tanks.map(function(t){return '<option value="'+t.id+'"'+(n.tank_id==t.id?' selected':'')+'>'+esc(t.name)+'</option>'}).join("")+'</select></label><label>Status<select id="n4"><option value="1"'+(n.active!==false?' selected':'')+'>Active</option><option value="0"'+(n.active===false?' selected':'')+'>Inactive</option></select></label><label>Opening meter reading (up to two decimals, e.g. 0.00)<input id="n5" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 0.00" value="'+(n.open==null?"":Number(n.open).toFixed(2))+'" oninput="var parts=this.value.split(\'.\');if(parts.length>1&&parts[1].length>2)this.value=parts[0]+\'.\'+parts[1].slice(0,2)" onchange="if(this.value!==\'\'&&!isNaN(parseFloat(this.value)))this.value=(Math.round(parseFloat(this.value)*100)/100).toFixed(2)"><div class="sub" style="margin-top:3px">The opening totalizer meter reading on the pump dispenser (up to two decimals). This reading is used for the nozzle\'s first shift duty.</div></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveNoz(\''+(id||0)+'\')">Save nozzle</button></div>')}
 function saveNoz(id){var nm=(v("n1")||"").trim(),op=(v("n5")||"").trim();if(!nm)return er("Enter a nozzle name.");if((!id||id=="0")&&op===""){return er("Enter the opening meter reading for this nozzle (e.g. 0.00).");}if(op!==""&&(isNaN(parseFloat(op))||parseFloat(op)<0)){return er("Opening reading must be a valid number (0 or higher).");}if(op!==""&&op.indexOf(".")!==-1&&op.split(".")[1].length>2){return er("Opening reading must be up to two decimals (e.g. "+parseFloat(op).toFixed(2)+").");}
 var parsedOpen=op===""?null:Math.round(parseFloat(op)*100)/100;var o={name:nm,fuel:v("n2"),tank_id:v("n3"),active:v("n4")=="1",open:parsedOpen};if(id&&id!="0"){var target=S.nozzles.filter(function(x){return String(x.id)==String(id)})[0];if(target)Object.assign(target,o)}else{o.id=Date.now();S.nozzles.push(o)}save();close();toast((id&&id!="0")?"Nozzle updated.":"Nozzle added with opening reading "+(parsedOpen!=null?parsedOpen.toFixed(2):"0.00")+".");renderSetup()}
+function nozDel(id){var n=S.nozzles.filter(function(x){return String(x.id)==String(id)})[0];if(!n)return;ask("Delete nozzle '"+(n.name||"")+"'?",function(){S.nozzles=S.nozzles.filter(function(x){return String(x.id)!=String(id)});save();toast("Nozzle deleted.");renderSetup()})}
+function nozTog(id){var n=S.nozzles.filter(function(x){return String(x.id)==String(id)})[0];if(!n)return;n.active=(n.active===false);save();toast(n.active?"Nozzle activated.":"Nozzle deactivated.");renderSetup()}
 function saveOpen(){var vals=[];for(var i=0;i<S.nozzles.length;i++){var t=document.getElementById("op"+i).value.trim();if(t!==""&&(isNaN(parseFloat(t))||parseFloat(t)<0))return er("Check the reading for "+S.nozzles[i].name+". Must be 0 or higher.");if(t!==""&&t.indexOf(".")!==-1&&t.split(".")[1].length>2)return er("Reading for "+S.nozzles[i].name+" must be up to two decimals.");vals.push(t===""?null:Math.round(parseFloat(t)*100)/100)}vals.forEach(function(x,i){S.nozzles[i].open=x});save();toast("Opening readings saved.");setTimeout(renderSetup,400)}
 function rateAdd(f){openM('<h2>New rate for '+esc(f)+'</h2><label>Rate (\u20b9 per litre)<input id="r1" inputmode="decimal"></label><label>Applies from<input id="r2" type="date" value="'+bizToday()+'"></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="rateSave(\''+f.replace(/'/g,"\\'")+'\')">Save rate</button></div>')}
 function rateSave(f){var r=parseFloat(v("r1")),d=v("r2");if(!(r>0))return er("Enter the rate.");if(!d)return er("Choose the start date.");S.rates.push({id:Date.now(),fuel:f,rate:r,from:d});save();close();renderSetup()}
+function rateEdit(id){var r=S.rates.filter(function(x){return x.id==id})[0];if(!r)return;openM('<h2>Edit fuel rate for '+esc(r.fuel)+'</h2><label>Fuel<select id="re_fuel">'+FUELS.map(function(f){return '<option'+(f==r.fuel?' selected':'')+'>'+f+'</option>'}).join("")+'</select></label><label>Rate (\u20b9 per litre)<input id="re_rate" inputmode="decimal" value="'+(r.rate||'')+'"></label><label>Applies from<input id="re_from" type="date" value="'+(r.from||bizToday())+'"></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveRateEdit('+r.id+')">Save rate changes</button></div>')}
+function saveRateEdit(id){var r=S.rates.filter(function(x){return x.id==id})[0];if(!r)return;var fuel=v("re_fuel"),rate=parseFloat(v("re_rate")),from=v("re_from");if(!(rate>0))return er("Enter a valid rate above zero.");if(!from)return er("Choose the effective start date.");r.fuel=fuel;r.rate=rate;r.from=from;save();close();toast("Fuel rate updated.");renderSetup()}
 function rateDel(id){ask("Delete this rate?",function(){S.rates=S.rates.filter(function(r){return r.id!=id});save();renderSetup()})}
 function catAdd(){var c=v("nc");if(!c)return er("Enter a category name.");var l=cats().slice();if(l.indexOf(c)>=0)return er("That category already exists.");l.push(c);S.expcats=l;save();renderSetup()}
+function catEdit(i){var l=cats().slice(),curr=l[i];if(!curr)return;openM('<h2>Edit expense category</h2><label>Category name<input id="ec_name" value="'+esc(curr)+'"></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveCatEdit('+i+')">Save changes</button></div>')}
+function saveCatEdit(i){var nm=(v("ec_name")||"").trim();if(!nm)return er("Enter a category name.");var l=cats().slice();l[i]=nm;S.expcats=l;save();close();toast("Expense category updated.");renderSetup()}
 function catDel(i){var l=cats().slice();l.splice(i,1);if(!l.length)l=["Other"];S.expcats=l;save();renderSetup()}
 function modeTog(i){var l=allModes().map(function(m){return Object.assign({},m)});if(l[i].key=="cash")return;l[i].active=l[i].active===false;S.paymodes=l;save();renderSetup()}
+function modeEdit(i){var l=allModes(),m=l[i];if(!m)return;openM('<h2>Edit payment mode</h2><label>Payment mode name<input id="me_name" value="'+esc(m.name)+'"></label><label>Status<select id="me_act"><option value="1"'+(m.active!==false?' selected':'')+'>Active (Enabled)</option><option value="0"'+(m.active===false?' selected':'')+''+(m.key=="cash"?' disabled':'')+'>Inactive (Disabled)</option></select></label><div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveModeEdit('+i+')">Save changes</button></div>')}
+function saveModeEdit(i){var nm=(v("me_name")||"").trim();if(!nm)return er("Enter a mode name.");var act=v("me_act")=="1";var l=allModes().map(function(m){return Object.assign({},m)});l[i].name=nm;if(l[i].key!="cash")l[i].active=act;S.paymodes=l;save();close();toast("Payment mode updated.");renderSetup()}
+function modeDel(i){var l=allModes().slice();if(l[i].key=="cash")return toast("Cash cannot be deleted.");ask("Delete payment mode '"+l[i].name+"'?",function(){l.splice(i,1);S.paymodes=l;save();toast("Payment mode deleted.");renderSetup()})}
 function modeAdd(){var nm=v("nm");if(!nm)return er("Enter a name.");var l=allModes().map(function(m){return Object.assign({},m)});if(l.some(function(m){return m.name.toLowerCase()==nm.toLowerCase()}))return er("That mode already exists.");l.push({key:"m"+Date.now(),name:nm,active:true});S.paymodes=l;save();renderSetup()}
 function custTog(id){var c=find(id);c.active=c.active===false;save();renderSetup()}
+function userDel(id){var u=(window.TEAM_USERS||[]).filter(function(x){return x.id==id})[0];var name=u?u.name:"user";ask("Permanently delete account for '"+name+"'?",function(){api("DELETE","/api/users/"+id).then(function(){toast("User account deleted.");renderTeam()}).catch(function(e){toast(e.error||"Could not delete user.")})})}
 var TK=null;
 function lt(n){return (Math.round(n*10)/10).toLocaleString("en-IN")+" L"}
 function tdate(t){return new Date(t*1000).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
@@ -9715,7 +10056,7 @@ h+='<div class="ops-subtabs noprint" style="margin-bottom:14px;background:rgba(0
   +'<button class="ops-subtab-btn" onclick="window.TANKS_SUBTAB=\'lossgain\';renderLossGainTab()">📊 Evaporation & Loss / Gain Reconciliation</button>'
   +'</div>';
 h+='<h1>Fuel tanks</h1><div class="btns"><button onclick="dipForm()">Add dip reading</button><button onclick="delivForm()">Fuel delivery</button><button class="ghost" onclick="tab=\'setup\';SU=\'tanks\';renderSetup()">Tank setup</button></div>';
-if(!T.length)h+='<div class="empty">No tanks yet. Tap <a href="javascript:void(0)" onclick="tab=\\\'setup\\\';SU=\\\'tanks\\\';renderSetup()" style="color:var(--btn);font-weight:700">Pump setup &rarr; Tanks</a> to add your tanks.</div>';
+if(!T.length)h+='<div class="empty">No tanks yet. Tap <a href="javascript:void(0)" onclick="tab=\\\'setup\\\';SU=\\\'tanks\\\';renderSetup()" style="color:var(--btn);font-weight:700">Settings &rarr; Tanks</a> to add your tanks.</div>';
 T.forEach(function(t){var pc=t.capacity&&t.book!=null?Math.max(0,Math.min(100,t.book/t.capacity*100)):0;
 var ullage=t.capacity?Math.max(0,t.capacity-(t.book||0)):0;
 h+='<div class="cust" style="cursor:default"><div class="row"><b>'+esc(t.name)+' \u00b7 '+esc(t.fuel)+'</b><span class="amt" style="flex:none;color:'+(t.book!=null?'var(--ink)':'var(--mute)')+'">'+(t.book!=null?lt(t.book):'No dip yet')+'</span></div><div class="sub">'+(t.last?'Last dip '+lt(t.last.litres)+' on '+tdate(t.last.t)+' by '+esc(t.last.by):'Add a dip reading to start tracking stock')+'</div><div id="d3-tks-tank-'+t.id+'" class="tank-viz-box"></div><div class="tank-stat-row">';
@@ -9748,7 +10089,7 @@ T.forEach(function(t){
 });}).catch(function(e){badge(e.error||"Could not load tank stock.")})}
 function dipFields(tanks){return '<label>Tank<select id="t1"><option value="">Choose tank</option>'+tanks.map(function(t){return '<option value="'+t.id+'">'+esc(t.name)+' ('+esc(t.fuel)+')</option>'}).join("")+'</select></label><label>Litres (from the dip chart)<input id="t2" inputmode="decimal"></label><div class="sub" style="margin-top:8px">or</div><label>Dip reading (same unit as your dip chart)<input id="t3" inputmode="decimal"></label><label>Note (optional)<input id="t4"></label><div class="err" id="er"></div>'}
 function postDip(done){var b={tank_id:v("t1"),litres:v("t2"),dip:v("t3"),note:v("t4")};if(!b.tank_id)return er("Choose a tank.");if(!b.litres&&!b.dip)return er("Enter the litres or the dip reading.");api("POST","/api/dips",b).then(function(){TK_STOCK_CACHE=null;done()}).catch(function(e){er(e.error||"Could not save. Check your connection.")})}
-function dipForm(){if(!S.tanks.length)return toast("Add your tanks first in Pump setup.");openM('<h2>Dip reading</h2>'+dipFields(S.tanks)+'<div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="postDip(function(){close();if(tab==\'stock\')renderStock();else renderTanks()})">Save reading</button></div>')}
+function dipForm(){if(!S.tanks.length)return toast("Add your tanks first in Settings.");openM('<h2>Dip reading</h2>'+dipFields(S.tanks)+'<div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="postDip(function(){close();if(tab==\'stock\')renderStock();else renderTanks()})">Save reading</button></div>')}
 function delDip(id){ask("Delete this dip reading? The stock checks will be recalculated.",function(){api("DELETE","/api/dips/"+id).then(function(){TK_STOCK_CACHE=null;if(tab=="stock")renderStock();else renderTanks()}).catch(function(e){badge(e.error||"Could not delete.")})})}
 function loadDip(){api("GET","/api/tanks").then(function(r){TK=r;renderWDip()}).catch(function(e){document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">Could not load. '+esc(e.error||"Check your connection.")+'</div>'})}
 function renderWDip(){var h=ubar()+wnav()+'<h1>Tank dip reading</h1>';
@@ -9765,7 +10106,7 @@ if(!nm)return er("Enter the tank name.");if(!(cap>0))return er("Enter the tank c
 for(var i=0;i<ls.length;i++){var p=ls[i].split(/[,\s]+/),a=parseFloat(p[0]),b=parseFloat(p[1]);if(p.length!=2||isNaN(a)||isNaN(b))return er("Dip chart line "+(i+1)+" should look like: 10, 500");ch.push({cm:a,l:b})}
 ch.sort(function(x,y){return x.cm-y.cm});
 var o={name:nm,fuel:v("k2"),capacity:cap,chart:ch};if(id)Object.assign(S.tanks.filter(function(x){return x.id==id})[0],o);else{o.id=Date.now();S.tanks.push(o)}TK_STOCK_CACHE=null;save();close();toast(id?"Tank updated.":"Tank added.");if(tab=="setup")renderSetup();else if(tab=="tanks")renderTanks();else if(tab=="stock")renderStock();else render()}
-function delivForm(){var oc=S.sup.filter(function(s){return s.kind=="Oil company"});if(!oc.length)return toast("Add the oil company in Suppliers first.");if(!S.tanks.length)return toast("Add your tanks first in Pump setup.");
+function delivForm(){var oc=S.sup.filter(function(s){return s.kind=="Oil company"});if(!oc.length)return toast("Add the oil company in Suppliers first.");if(!S.tanks.length)return toast("Add your tanks first in Settings.");
 var rows="";for(var i=0;i<3;i++)rows+='<div class="row"><label>Tank<select id="vt'+i+'"><option value="">None</option>'+S.tanks.map(function(t){return '<option value="'+t.id+'">'+esc(t.name)+'</option>'}).join("")+'</select></label><label>Litres<input id="vl'+i+'" inputmode="decimal"></label></div>';
 openM('<h2>Fuel delivery</h2><div class="sub">Records the litres in each tank and adds the bill to the oil company account.</div><label>Date<input id="dd" type="date" value="'+today()+'"></label><label>Oil company<select id="ds">'+oc.map(function(s){return '<option value="'+s.id+'">'+esc(s.name)+'</option>'}).join("")+'</select></label><label>Bill number (optional)<input id="db"></label><label>Bill amount (\u20b9)<input id="da" inputmode="decimal"></label><label style="margin-top:16px">Litres received per tank (up to 3 tanks)</label>'+rows+'<div class="err" id="er"></div><div class="row" style="margin-top:12px"><button class="ghost" onclick="close()">Cancel</button><button onclick="saveDeliv()">Save delivery</button></div>')}
 function saveDeliv(){var a=parseFloat(v("da")),ls=[];if(!(a>0))return er("Enter the bill amount.");
@@ -9836,6 +10177,11 @@ function payCard(w,own){
       +(w.net_short>0&&!own?'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;color:#7c3aed;border-color:rgba(124,58,237,0.3)" onclick="loanFormForShortage('+w.id+','+w.net_short+')">Recover via EMI</button>':'')
       +'</div></div>';
   }
+  if(w.excess>0){
+    h+='<div style="margin-top:8px;padding:8px 12px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<div><span style="font-weight:700;color:var(--ok)">📈 Forecourt Cash Excess:</span> <b>+'+inr(w.excess)+'</b> across '+((w.excess_list&&w.excess_list.length)||1)+' shift handover(s) credited to salary/advance</div>'
+      +'</div>';
+  }
 
   if(w.missing_rate&&!isMonthly){h+='<div class="sub" style="color:var(--due);margin-top:4px">⚠️ Some shifts have no rate configured, counted as ₹0.</div>';}
   if(w.pending){h+='<div class="sub" style="color:var(--warn);margin-top:4px">⏳ '+w.pending+' duty open/submitted, will be included once closed.</div>';}
@@ -9848,6 +10194,7 @@ function payCard(w,own){
     +(w.incentive?L("Forecourt Lube &amp; Fuel Incentives<div class=\"sub\">Lube sales: "+inr(w.lube_sold||0)+(w.lube_incentive_pct?' ('+w.lube_incentive_pct+'%)':'')+(w.premium_liters?' · Premium fuel: '+Math.round(w.premium_liters)+'L ('+inr(w.premium_fuel_rate||0)+'/L)':'')+"</div>","+"+inr(w.incentive),'var(--green)'):'')
     +(w.bonus?L("Bonus / Festival Ex-gratia","+"+inr(w.bonus),'var(--green)'):'')
     +(w.deposit_refund?L("Uniform Deposit Refund","+"+inr(w.deposit_refund),'var(--green)'):'')
+    +(w.excess?L("Shift Cash Excess Credited<div class=\"sub\">Handover excess collections added</div>","+"+inr(w.excess),'var(--green)'):'')
     +L("<b>Gross Total Earnings</b>","<b>"+inr(w.gross||w.earn)+"</b>",'',true)
     +(w.advance?L("Cash Advances","\u2212"+inr(w.advance),'var(--due)'):'')
     +(w.lop_deduction?L("Loss of Pay (LOP Deducted)<div class=\"sub\">"+w.lop_days+" absent day(s) below standard quota</div>","\u2212"+inr(w.lop_deduction),'var(--due)'):'')
@@ -9985,7 +10332,7 @@ function renderSalary(){
       +'</div>';
 
     if(!workers.length){
-      h+='<div class="empty">No workers or staff accounts found. Add workers under Pump Setup → Team Users.</div>';
+      h+='<div class="empty">No workers or staff accounts found. Add workers under Settings → Team.</div>';
     } else {
       workers.forEach(function(w){h+=payCard(w,false)});
     }
@@ -15594,7 +15941,6 @@ setInterval(function(){if(!SRV||!ME||ME.role=="worker"||tab!="ledger"||document.
 <script src="/extra-operations.js"></script>
 <script src="/bowser-pnl-wm.js"></script>
 <script src="/indian-pump-modules.js"></script>
-<script src="/expense-module.js"></script>
 <script>
 function applyResponsiveTableLabels(rootEl) {
   var root = rootEl || document;
