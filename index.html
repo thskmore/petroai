@@ -2316,7 +2316,7 @@ var PETRO_MODULE_CATALOG = [
     summary: "Nozzle meter reading entry, cash/UPI collection, shift closing & worker handovers.",
     details: "Tracks nozzle opening and closing readings, worker shift allocation, fuel dispensing totals, short/excess cash difference calculation, and shift handover records.",
     features: ["Digital nozzle meter readings", "Shift-wise cash, UPI & card collections", "Shortage/excess automated detection", "Handover audit trail with worker signatures"],
-    tabs: ["duty", "wduty", "handover"],
+    tabs: ["duty", "wduty", "handover", "wcal"],
     roles: ["Owner", "Manager", "Worker"],
     defaultInstalled: true,
     isCore: false
@@ -2376,8 +2376,8 @@ var PETRO_MODULE_CATALOG = [
     summary: "Worker monthly wages, overtime, attendance, mid-month cash advances, and salary slips.",
     details: "Calculates net payout after deducting mid-shift cash advances and short-cash penalties. Generates printable salary pay slips.",
     features: ["Monthly staff salary register", "Shift advance deduction tracking", "Short cash recovery adjustments", "One-click pay slip generation"],
-    tabs: ["pay", "mypay"],
-    roles: ["Owner"],
+    tabs: ["pay", "mypay", "wcal"],
+    roles: ["Owner", "Manager"],
     defaultInstalled: true,
     isCore: false
   },
@@ -2430,7 +2430,7 @@ var PETRO_MODULE_CATALOG = [
 
 function isModuleInstalled(modId){
   if(!modId) return true;
-  if(modId === "home" || modId === "ledger" || modId === "setup" || modId === "modules" || modId === "admin" || modId === "credit") return true;
+  if(modId === "home" || modId === "ledger" || modId === "setup" || modId === "modules" || modId === "admin" || modId === "credit" || modId === "wcal" || modId === "pay" || modId === "duty") return true;
   if(S && S.modules && S.modules[modId] !== undefined) {
     return Boolean(S.modules[modId]);
   }
@@ -2443,7 +2443,7 @@ function isTabAllowedByModules(tabId){
   if(!tabId) return true;
   var removed = ["equipment","generator","indents","loyalty","inv","gstbreakup","wmvault","calibration","wmreseal","bowser","lubes","expenses","compliance","audit","analytics","pricerev","density","waterdip","tanks","lossgain","wdip","pnl"];
   if(removed.indexOf(tabId) >= 0) return false;
-  if(tabId === "home" || tabId === "ledger" || tabId === "setup" || tabId === "modules" || tabId === "admin" || tabId === "credit" || tabId === "bak" || tabId === "team" || tabId === "stock" || tabId === "sup") return true;
+  if(tabId === "home" || tabId === "ledger" || tabId === "setup" || tabId === "modules" || tabId === "admin" || tabId === "credit" || tabId === "bak" || tabId === "team" || tabId === "stock" || tabId === "sup" || tabId === "wcal" || tabId === "pay" || tabId === "duty" || tabId === "wduty" || tabId === "mypay") return true;
   var mod = PETRO_MODULE_CATALOG.find(function(m){
     return m.id === tabId || (m.tabs && m.tabs.indexOf(tabId) >= 0);
   });
@@ -2466,7 +2466,7 @@ function find(id){if(!S||!S.c)return null;return S.c.filter(function(c){return c
 function render(){if(!S)S=emptyS();if(!S.c)S.c=[];if(SRV&&!ME)return;
 if(SRV && ME && ME.role === "worker"){
   if(tab === "wduty") return loadW();
-  if(tab === "mypay") return loadMyPay();
+  if(tab === "mypay") return loadWorkerCalendarHome("pay");
   if(tab === "wassign") return loadWAssign(SELECTED_HANDOVER_DUTY_ID);
   tab = "wcal";
   return loadWorkerCalendarHome();
@@ -2479,15 +2479,15 @@ if(tab=="rep")return renderRep();
 if(tab=="bak"){tab="setup";SU="bak";return renderSetup();}
 if(tab=="team"){tab="setup";SU="team";return renderSetup();}
 if(tab=="credit")return renderCredit();
+if(tab=="wcal")return loadWorkerCalendarHome();
 if(tab=="duty")return renderDutyTab();
 if(tab=="handover")return renderHandover();
 if(tab=="vault")return renderVaultTab();
 if(tab=="amenities")return renderAmenitiesTab();
-if(tab=="pay")return renderSalary();
+if(tab=="pay"||tab=="mypay")return loadWorkerCalendarHome("pay");
 if(tab=="stock")return renderStock();
 if(tab=="sup")return renderSup();
 if(tab=="setup")return renderSetup();
-if(tab=="mypay")return loadMyPay();
 if(tab=="wduty")return loadW();var h="";
 if(!view){var tot=S.c.reduce(function(s,c){return s+due(c)},0),q=(document.getElementById("q")||{}).value||"";
 h+=nav()+pendHtml()+'<h1>Total credit outstanding</h1><div class="total">'+inr(tot)+'</div><div class="row"><input id="q" placeholder="Search name or vehicle" value="'+esc(q)+'" oninput="render();var i=document.getElementById(\'q\');i.focus();i.setSelectionRange(99,99)"><button onclick="custForm()">Add customer</button></div><button class="ghost" style="width:100%;margin-top:8px" onclick="bulkForm()">Send reminders to everyone with dues</button><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto;margin:0" '+(onlyDue?'checked':'')+' onchange="onlyDue=this.checked;render()">Only customers with dues</label>';
@@ -3095,27 +3095,24 @@ function getNavTabsList(){
 
   if (SRV && ME && ME.role == "worker") {
     var workerTabs = [
-      { id: "wcal", label: "Duty Calendar & Attendance", icon: icons.duty, group: "Overview" },
-      { id: "wduty", label: "My Shift Duty", icon: icons.wduty, group: "Worker Tasks" },
-      { id: "mypay", label: "My Pay & Advances", icon: icons.mypay, group: "Worker Tasks" }
+      { id: "wcal", label: "Duty Calendar, Attendance & Pay", icon: icons.duty, group: "Overview" },
+      { id: "wduty", label: "My Shift Duty", icon: icons.wduty, group: "Worker Tasks" }
     ];
     return workerTabs;
   }
 
   if (SRV) {
     var ops = [
+      { id: "wcal", label: "Duty Calendar, Attendance & Staff Payroll", icon: icons.duty, group: "Operations" },
       { id: "duty", label: "Shift Duty", icon: icons.duty, group: "Operations" },
       { id: "handover", label: "Handover History", icon: icons.handover, group: "Operations" },
       { id: "vault", label: "Cash-Safe Vault", icon: icons.vault, group: "Operations" },
       { id: "amenities", label: "Customer Amenities", icon: icons.amenities, group: "Operations" }
     ];
-    if (ME && ME.role == "owner") {
-      ops.push({ id: "pay", label: "Salary & Pay", icon: icons.pay, group: "Operations" });
-    }
     T.splice.apply(T, [1, 0].concat(ops));
   } else {
     T.splice(1, 0,
-      { id: "pay", label: "Salary & Pay", icon: icons.pay, group: "Operations" }
+      { id: "wcal", label: "Duty Calendar, Attendance & Staff Payroll", icon: icons.duty, group: "Operations" }
     );
   }
   var installedCount = PETRO_MODULE_CATALOG.filter(function(m){ return isModuleInstalled(m.id); }).length;
@@ -3169,10 +3166,14 @@ function selectNavTab(tabId){
   }
   if(SRV && ME && ME.role === "worker"){
     if(tabId === "wduty"){ tab = "wduty"; return loadW(); }
-    if(tabId === "mypay"){ tab = "mypay"; return loadMyPay(); }
+    if(tabId === "mypay"){ tab = "wcal"; return loadWorkerCalendarHome("pay"); }
     if(tabId === "wassign"){ tab = "wassign"; return loadWAssign(SELECTED_HANDOVER_DUTY_ID); }
     tab = "wcal";
     return loadWorkerCalendarHome();
+  }
+  if(tabId === "wcal" || tabId === "pay" || tabId === "mypay"){
+    tab = "wcal";
+    return loadWorkerCalendarHome(tabId === "pay" || tabId === "mypay" ? "pay" : undefined);
   }
   if(tabId === "admin"){
     return renderAdminConsole();
@@ -3461,11 +3462,11 @@ function nav(){
   setTimeout(renderDrawerContent, 0);
 
   var isDutyActive = (tab === "wduty" || tab === "duty" || tab === "wassign");
-  var isPayActive = (tab === "mypay" || tab === "pay");
+  var isCalPayActive = (tab === "wcal" || tab === "home" || tab === "mypay" || tab === "pay" || !tab);
 
   var workerQuickSwitch = (ME && ME.role === "worker") ? ('<div class="row noprint" style="gap:8px;margin:8px 0 14px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(6,42,107,0.04)">' +
+    '<button type="button" class="' + (isCalPayActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isCalPayActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wcal\';loadWorkerCalendarHome()">📅 Duty Calendar, Attendance &amp; Pay</button>' +
     '<button type="button" class="' + (isDutyActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isDutyActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wduty\';loadW()">⛽ My Duty</button>' +
-    '<button type="button" class="' + (isPayActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isPayActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'mypay\';loadMyPay()">💵 My Pay &amp; Advances</button>' +
   '</div>') : '';
 
   // 1. Mobile Touch App Topbar (Visible on screens < 900px)
@@ -5890,18 +5891,16 @@ function R2(a,b){return '<div class="row"><span>'+a+'</span><span style="text-al
 function sect(t){return '<h1 style="margin:16px 0 6px;color:var(--ink);font-size:17px;font-weight:800">'+t+'</h1>'}
 function wnav(){
   var T=[
-    ["wcal","Duty Calendar","loadWorkerCalendarHome","Forecourt Duty Calendar & Attendance"],
-    ["wduty","Shift Duty","loadW","My Shift Duty"],
-    ["mypay","My Pay","loadMyPay","My Pay & Wages"]
+    ["wcal","Duty Calendar & Pay","loadWorkerCalendarHome","Forecourt Duty Calendar, Attendance & Pay"],
+    ["wduty","Shift Duty","loadW","My Shift Duty"]
   ];
-  var curW = T.find(function(t){ return tab==t[0] || (tab=="wassign"&&t[0]=="wduty") || (tab=="home"&&t[0]=="wcal"); }) || T[0];
+  var curW = T.find(function(t){ return tab==t[0] || (tab=="wassign"&&t[0]=="wduty") || (tab=="home"&&t[0]=="wcal") || (tab=="mypay"&&t[0]=="wcal"); }) || T[0];
   var pumpTitle = (S&&S.biz&&S.biz.name) ? S.biz.name : "Rituraj Petrolieum";
 
   setTimeout(renderDrawerContent, 0);
 
-  var isCalActive = (tab === "wcal" || tab === "home" || !tab);
+  var isCalActive = (tab === "wcal" || tab === "home" || tab === "mypay" || !tab);
   var isDutyActive = (tab === "wduty" || tab === "wassign");
-  var isPayActive = (tab === "mypay");
 
   var workerMobileTopbar = '<div class="app-topbar noprint">' +
     '<div class="app-topbar-left">' +
@@ -5947,9 +5946,8 @@ function wnav(){
   '</div>';
 
   var workerQuickSwitch = '<div class="row noprint" style="gap:8px;margin:8px 0 14px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(6,42,107,0.04)">' +
-    '<button type="button" class="' + (isCalActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isCalActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wcal\';loadWorkerCalendarHome()">📅 Duty Calendar</button>' +
+    '<button type="button" class="' + (isCalActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isCalActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wcal\';loadWorkerCalendarHome()">📅 Forecourt Duty Calendar, Attendance &amp; Pay</button>' +
     '<button type="button" class="' + (isDutyActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isDutyActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wduty\';loadW()">⛽ Shift Duty</button>' +
-    '<button type="button" class="' + (isPayActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isPayActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'mypay\';loadMyPay()">💵 My Pay &amp; Advances</button>' +
   '</div>';
 
   return workerMobileTopbar + workerDesktopTopbar + workerQuickSwitch;
@@ -10536,7 +10534,7 @@ function filterHighAdvanceStaff(){
   renderSalaryList();
 }
 
-function payCard(w,own){
+function payCard(w, own){
   var L=function(a,b,c,bold){return '<tr><td'+(bold?' style="font-weight:700"':'')+'>'+a+'</td><td class="r" style="'+(bold?'font-weight:700;':'')+(c?'color:'+c+';':'')+'">'+b+'</td></tr>'};
   var isMonthly=(w.pay_type==="monthly");
   var du=SHS.filter(function(x){return w.count&&w.count[x]>0}).map(function(x){return x+' \u00d7 '+w.count[x]+(w.rates&&w.rates[x]!=null?' @ '+inr(w.rates[x]):' (no rate)')}).join(", ")||"No closed duties";
@@ -10547,133 +10545,93 @@ function payCard(w,own){
   var isHighAdv = advAmt >= advThreshold && advAmt > 0;
   var initials = (w.name || "E").split(" ").map(function(p){return p[0]}).slice(0,2).join("").toUpperCase();
 
-  var h='<div class="cust emp-card" style="cursor:default;margin-bottom:14px;border:1.5px solid '+(isHighAdv?'#f59e0b':'var(--line)')+';border-radius:12px;padding:16px;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,0.03);position:relative">'
+  var roleTitle = w.role_title || (w.role === "manager" ? "Manager" : "Nozzle Attendant");
+  var hasNoSalary = (w.monthly_salary == null || w.monthly_salary <= 0);
+
+  var isEmpDisabled = (w.active === false || w.active === 0);
+
+  var h='<div class="cust emp-card" style="cursor:default;margin-bottom:14px;border:1.5px solid '+(isHighAdv?'#f59e0b':'var(--line)')+';border-radius:12px;padding:16px;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,0.03);position:relative;'+(isEmpDisabled?'opacity:0.75;':'')+'">'
+    // Top Row: Avatar + Info + Action Icons
     +'<div class="row" style="align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">'
     // Left: Avatar & Info
     +'<div style="display:flex;gap:12px;align-items:flex-start">'
     +'<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(2,132,199,0.25)">'+esc(initials)+'</div>'
     +'<div>'
-    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-    +'<b style="font-size:17px;color:var(--ink)">'+esc(w.name)+'</b>'
-    +'<span class="role-badge" style="background:'+(isMonthly?'#0284c7':'#7c3aed')+';color:#fff;font-size:11px;font-weight:700">'+(isMonthly?'Monthly Base: '+inr(w.monthly_salary):'Shift-based Wage')+'</span>'
-    +'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">'+esc(w.role)+'</span>'
-    +(w.active===false?'<span class="role-badge" style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700">Inactive</span>':'<span class="role-badge" style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700">Active</span>')
+    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+    +'<b style="font-size:16.5px;color:var(--ink)">'+esc(w.name)+'</b>'
+    +(hasNoSalary?'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:10.5px">no salary</span>':'')
+    +(isEmpDisabled?'<span class="role-badge" style="background:#fee2e2;color:#991b1b;font-size:10.5px;font-weight:700">disabled</span>':'')
     +'</div>'
-    +(w.mobile?'<div class="sub" style="margin-top:3px;font-size:12.5px">📞 +91 <b>'+esc(w.mobile)+'</b>'+(w.bank_acc?' · A/C: ••••'+esc(w.bank_acc.slice(-4))+(w.bank_ifsc?' ('+esc(w.bank_ifsc)+')':''):'')+(w.bank_upi?' · UPI: '+esc(w.bank_upi):'')+'</div>':'')
-    +'<div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-    +'<span class="role-badge" style="background:var(--bg);color:var(--ink);border:1px solid var(--line);font-size:11.5px;font-weight:600">📅 '+esc(attStr)+'</span>'
-    // Advance Ledger Pill
-    +(advAmt>0
-      ? '<button type="button" class="ghost" style="padding:2px 8px;font-size:11.5px;font-weight:800;border-radius:6px;border-color:'+(isHighAdv?'#f59e0b':'rgba(245,158,11,0.4)')+';background:'+(isHighAdv?'rgba(245,158,11,0.12)':'rgba(245,158,11,0.06)')+';color:'+(isHighAdv?'#b45309':'#d97706')+';display:inline-flex;align-items:center;gap:4px" onclick="showAdvanceLedgerModal('+w.id+')">'+(isHighAdv?'🚨 High Advance: ':'💸 Advance Balance: ')+inr(advAmt)+' <span style="font-size:10px;text-decoration:underline">Ledger &rarr;</span></button>'
-      : '<button type="button" class="ghost" style="padding:2px 8px;font-size:11.5px;font-weight:700;border-radius:6px;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05);color:var(--ok);display:inline-flex;align-items:center;gap:4px" onclick="showAdvanceLedgerModal('+w.id+')">✅ No Advance (₹0) <span style="font-size:10px;text-decoration:underline">Ledger &rarr;</span></button>')
-    +(w.epf_opted?'<span class="role-badge" style="background:rgba(5,150,105,0.1);color:var(--ok);font-size:11px;font-weight:700">EPF (12%) Active'+(w.uan_no?' · UAN: '+esc(w.uan_no):'')+'</span>':'')
-    +(w.esic_opted?'<span class="role-badge" style="background:rgba(2,132,199,0.1);color:#0284c7;font-size:11px;font-weight:700">ESIC (0.75%) Active'+(w.esic_no?' · IP: '+esc(w.esic_no):'')+'</span>':'')
+    +'<div class="sub" style="margin-top:3px;font-size:12px;color:var(--mute)">'
+    +(roleTitle ? esc(roleTitle)+' · ' : '')
+    +(hasNoSalary ? 'No salary (shift staff)' : 'Monthly Salary '+inr(w.monthly_salary))
+    +' · '+PM
+    +(w.mobile ? ' · 📞 '+esc(w.mobile) : '')
     +'</div>'
     +'</div>'
     +'</div>'
 
-    // Right: Amounts
-    +'<div style="text-align:right">'
-    +'<span class="amt" style="font-size:20px;font-weight:900;color:var(--ink)">'+inr(w.net)+'</span>'
-    +'<div class="sub" style="font-size:11.5px;font-weight:700;color:var(--mute)">Net Take-Home ('+PM+')</div>'
-    +(w.balance>0
-      ?'<div style="font-size:13px;font-weight:800;color:var(--due);margin-top:2px">Pending Due: '+inr(w.balance)+'</div>'
-      :'<div style="font-size:13px;font-weight:800;color:var(--ok);margin-top:2px">✅ Fully Settled</div>')
+    // Right: Action Icons (matching PetroPulse360 A7 card toolbar)
+    +'<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">'
+    +(!own ? '<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px" title="Add transaction" onclick="openUnifiedTxModal('+w.id+')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Transaction</button>' : '')
+    +'<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;font-weight:700;color:#d97706;display:inline-flex;align-items:center;gap:4px" title="View ledger" onclick="showAdvanceLedgerModal('+w.id+')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Ledger</button>'
+    +(!own ? '<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px" title="Edit employee" onclick="openEditEmployeeModal('+w.id+')">✏️ Edit</button>' : '')
+    +(!own ? '<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;color:var(--mute)" title="'+(isEmpDisabled?'Enable employee':'Disable employee')+'" onclick="toggleEmployeeActive('+w.id+','+(isEmpDisabled?1:0)+')">'+(isEmpDisabled?'Enable':'Disable')+'</button>' : '')
+    +(!own ? '<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;color:var(--due)" title="Remove employee" onclick="deleteEmployeePrompt('+w.id+',\''+esc(w.name)+'\')">🗑️</button>' : '')
     +'</div>'
+    +'</div>';
+
+  // PetroPulse360 4-Metric Grid per employee card
+  var paidOrAdv = (w.paid || 0) + (w.advance || 0);
+  var pendingBal = (w.balance > 0 ? w.balance : 0);
+  var outAdv = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
+  var lastTxStr = "—";
+  if(w.lastTransaction && w.lastTransaction.transaction_date){
+    var txDt = w.lastTransaction.transaction_date.slice(5);
+    var txName = w.lastTransaction.transaction_type || "Txn";
+    if(txName === "salary_payment" || txName === "paid") txName = "Salary";
+    else if(txName === "salary_advance" || txName === "advance") txName = "Advance";
+    else if(txName === "advance_cash_recovery" || txName === "cash_recovery") txName = "Recovery";
+    lastTxStr = txDt + ' — ' + txName + ' ' + inr(w.lastTransaction.amount);
+  }
+
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12px">'
+    +'<div><div class="sub" style="font-size:11px;color:var(--mute)">Paid / Advanced</div><b style="font-size:14px;color:var(--ok)">'+inr(paidOrAdv)+'</b></div>'
+    +'<div><div class="sub" style="font-size:11px;color:var(--mute)">Pending</div><b style="font-size:14px;color:'+(pendingBal>0?'#ea580c':'var(--ok)')+'">'+inr(pendingBal)+'</b></div>'
+    +'<div><div class="sub" style="font-size:11px;color:var(--mute)">Outstanding Advance</div><b style="font-size:14px;color:'+(outAdv>0?'#d97706':'var(--ink)')+'">'+inr(outAdv)+'</b></div>'
+    +'<div><div class="sub" style="font-size:11px;color:var(--mute)">Last Transaction</div><div style="font-weight:600;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+esc(lastTxStr)+'">'+esc(lastTxStr)+'</div></div>'
     +'</div>';
 
   // Shift Shortage / Excess Banners (Forecourt auto-sync)
   if(w.short>0){
-    h+='<div style="margin-top:10px;padding:9px 12px;background:rgba(225,29,72,0.06);border:1px solid rgba(225,29,72,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-      +'<div><span style="font-weight:800;color:var(--due)">⚠️ Forecourt Cash Shortages (Auto-Linked):</span> <b>'+inr(w.short)+'</b> across '+((w.short_list&&w.short_list.length)||1)+' shift handover(s)'
-      +(w.waived?' <span style="color:var(--ok)">('+inr(w.waived)+' waived by dealer, Net Due: '+inr(w.net_short)+')</span>':'')
+    h+='<div style="margin-top:10px;padding:8px 10px;background:rgba(225,29,72,0.06);border:1px solid rgba(225,29,72,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<div><span style="font-weight:800;color:var(--due)">⚠️ Forecourt Cash Shortage (Auto-Linked):</span> <b>'+inr(w.short)+'</b>'
+      +(w.waived?' <span style="color:var(--ok)">('+inr(w.waived)+' waived, Net: '+inr(w.net_short)+')</span>':'')
       +'</div>'
       +'<div style="display:flex;gap:6px">'
       +'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;font-weight:700;color:var(--due);border-color:rgba(225,29,72,0.3)" onclick="showShortBreakdown('+w.id+')">Inspect Shifts &rarr;</button>'
       +(w.net_short>0&&!own?'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;color:var(--warn);border-color:rgba(245,158,11,0.3)" onclick="payForm('+w.id+',\'waive\','+w.net_short+',\'Waive shift cash shortage\')">Waive All</button>':'')
-      +(w.net_short>0&&!own?'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;color:#7c3aed;border-color:rgba(124,58,237,0.3)" onclick="loanFormForShortage('+w.id+','+w.net_short+')">Recover via EMI</button>':'')
       +'</div></div>';
   }
   if(w.excess>0){
-    h+='<div style="margin-top:10px;padding:9px 12px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-      +'<div><span style="font-weight:800;color:var(--ok)">📈 Forecourt Cash Excess:</span> <b>+'+inr(w.excess)+'</b> across '+((w.excess_list&&w.excess_list.length)||1)+' shift handover(s) credited to salary/advance</div>'
+    h+='<div style="margin-top:10px;padding:8px 10px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<div><span style="font-weight:800;color:var(--ok)">📈 Forecourt Cash Excess:</span> <b>+'+inr(w.excess)+'</b> added from shift handovers</div>'
       +'<div style="display:flex;gap:6px">'
       +'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;font-weight:700;color:var(--ok);border-color:rgba(5,150,105,0.3)" onclick="showExcessBreakdown('+w.id+')">Inspect Shifts &rarr;</button>'
       +'</div></div>';
   }
 
-  if(w.missing_rate&&!isMonthly){h+='<div class="sub" style="color:var(--due);margin-top:4px">⚠️ Some shifts have no rate configured, counted as ₹0.</div>';}
-  if(w.pending){h+='<div class="sub" style="color:var(--warn);margin-top:4px">⏳ '+w.pending+' duty open/submitted, will be included once closed.</div>';}
-
-  // Earnings vs Deductions Table
-  h+='<div class="tbl" style="margin-top:12px"><table style="min-width:0;font-size:13px">'
-    +(isMonthly?L("Fixed Basic Salary<div class=\"sub\">"+(w.duties||0)+" closed shifts recorded ("+(w.days_worked||0)+" days)</div>",inr(w.earn))
-              :L("Shift Duties Pay<div class=\"sub\">"+esc(du)+"</div>",inr(w.earn)))
-    +(w.auto_night_allowance?L("Night Shift Forecourt Allowance<div class=\"sub\">"+(w.night_shifts||0)+" night duties @ "+inr(w.night_shift_allowance||0)+"/shift</div>","+"+inr(w.auto_night_allowance),'var(--green)'):'')
-    +(w.ot?L("Overtime (OT) &amp; Double Shifts"+(w.auto_ot?'<div class=\"sub\">Auto OT: '+inr(w.auto_ot)+' ('+(w.double_shifts||0)+' double shifts @ '+inr(w.ot_rate||0)+'/shift)</div>':''),"+"+inr(w.ot),'var(--green)'):'')
-    +(w.incentive?L("Forecourt Lube &amp; Fuel Incentives<div class=\"sub\">Lube sales: "+inr(w.lube_sold||0)+(w.lube_incentive_pct?' ('+w.lube_incentive_pct+'%)':'')+(w.premium_liters?' · Premium fuel: '+Math.round(w.premium_liters)+'L ('+inr(w.premium_fuel_rate||0)+'/L)':'')+"</div>","+"+inr(w.incentive),'var(--green)'):'')
-    +(w.bonus?L("Bonus / Festival Ex-gratia","+"+inr(w.bonus),'var(--green)'):'')
-    +(w.deposit_refund?L("Uniform Deposit Refund","+"+inr(w.deposit_refund),'var(--green)'):'')
-    +(w.excess?L("Shift Cash Excess Credited<div class=\"sub\">Handover excess collections added</div>","+"+inr(w.excess),'var(--green)'):'')
-    +L("<b>Gross Total Earnings</b>","<b>"+inr(w.gross||w.earn)+"</b>",'',true)
-    +(w.advance?L("Cash Advances (This Month)","\u2212"+inr(w.advance),'var(--due)'):'')
-    +(w.lop_deduction?L("Loss of Pay (LOP Deducted)<div class=\"sub\">"+w.lop_days+" absent day(s) below standard quota</div>","\u2212"+inr(w.lop_deduction),'var(--due)'):'')
-    +(w.short?L("Shift Cash Shortage Recovery"+(w.waived?'<div class=\"sub\">'+inr(w.waived)+' waived by dealer</div>':''),"\u2212"+inr(w.net_short||0),'var(--due)'):'')
-    +(w.epf_ee?L("EPF Contribution (12% Employee)<div class=\"sub\">Employer matching (12%): "+inr(w.epf_er)+(w.uan_no?' · UAN: '+esc(w.uan_no):'')+"</div>","\u2212"+inr(w.epf_ee),'var(--due)'):'')
-    +(w.esic_ee?L("ESIC Contribution (0.75% Employee)<div class=\"sub\">Employer contribution (3.25%): "+inr(w.esic_er)+(w.esic_no?' · IP: '+esc(w.esic_no):'')+"</div>","\u2212"+inr(w.esic_ee),'var(--due)'):'')
-    +(w.loan_emi?L("Staff Loan EMI Recovery","\u2212"+inr(w.loan_emi),'var(--due)'):'')
-    +(w.uniform_deposit?L("Uniform / Safety Shoes Deposit","\u2212"+inr(w.uniform_deposit),'var(--due)'):'')
-    +(w.deduction?L("Forecourt Deductions (Mess/Uniform/Other)","\u2212"+inr(w.deduction),'var(--due)'):'')
-    +(w.paid?L("Already Disbursed to Staff","\u2212"+inr(w.paid),'#0284c7'):'')
-    +L("<b>Net Balance Due to Disburse</b>","<b>"+inr(w.balance)+"</b>",(w.balance>0?'var(--due)':'var(--green)'),true)
-    +'</table></div>';
-
-  // Active Loans Widget
-  if(w.loans&&w.loans.length){
-    h+='<div style="margin-top:10px;padding:8px 10px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:8px">'
-      +'<div style="font-size:12px;font-weight:700;color:var(--warn);display:flex;align-items:center;justify-content:space-between"><span>💰 Active Staff Loans</span><span style="font-size:11px;color:var(--mute)">EMI Auto-Deduction</span></div>'
-      +w.loans.map(function(ln){
-        var rem=Math.max(0,ln.total_amount-ln.paid_amount);
-        return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-top:4px">'
-          +'<span>• '+esc(ln.purpose)+' (EMI: '+inr(ln.monthly_emi)+'/mo)</span>'
-          +'<span>Remaining: <b>'+inr(rem)+'</b> of '+inr(ln.total_amount)+' '+(!own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px" onclick="repayLoanForm('+ln.id+','+ln.monthly_emi+',\''+esc(ln.purpose)+'\')">Deduct EMI</button>':'')+'</span></div>';
-      }).join("")
-      +'</div>';
-  }
-
-  // Monthly items audit list
-  if(w.items&&w.items.length){
-    h+='<div class="sub" style="margin-top:12px;font-weight:700">Detailed Payroll Transactions for '+PM+':</div>';
-    w.items.forEach(function(x){
-      var isAdd=(x.kind==="bonus"||x.kind==="ot"||x.kind==="incentive"||x.kind==="deposit_refund");
-      var isPaid=(x.kind==="paid");
-      h+='<div class="row" style="margin-top:4px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px">'
-        +'<span><b>'+esc(KL[x.kind]||x.kind)+'</b>'+(x.note?' \u00b7 '+esc(x.note):'')+'<span class="sub" style="margin-left:6px">'+x.d+'</span></span>'
-        +'<div style="display:flex;align-items:center;gap:6px">'
-        +'<span style="font-weight:600;color:'+(isPaid?'#0284c7':isAdd?'var(--green)':'var(--due)')+'">'+(isAdd?'+':'-')+inr(x.amount)+'</span>'
-        +(!own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px;color:var(--due)" onclick="delPay('+x.id+')">✕</button>':'')
-        +'</div></div>';
-    });
-  }
-
-  // Action Buttons Strip (PetroPulse360 Style)
-  h+='<div class="btns" style="margin-top:14px;gap:6px;flex-wrap:wrap">';
-  h+='<button type="button" class="ghost" style="font-weight:700;color:#d97706;border-color:rgba(217,119,6,0.3);background:rgba(217,119,6,0.04);display:inline-flex;align-items:center;gap:4px" onclick="showAdvanceLedgerModal('+w.id+')">📑 Advance Ledger</button>';
-  if(!own){
-    h+='<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3);font-weight:700" onclick="openAdvanceModal('+w.id+',\'advance\')">💸 Give Advance</button>'
-      +'<button type="button" class="ghost" style="color:var(--ok);border-color:rgba(5,150,105,0.3);font-weight:700" onclick="openAdvanceModal('+w.id+',\'cash_recovery\')">🔄 Cash Recovery</button>';
-  }
+  // Action Buttons Strip
+  h+='<div class="btns" style="margin-top:12px;gap:6px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:10px">';
   h+='<button type="button" class="ghost" style="font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="showPaySlipById('+w.id+')">📄 Pay Slip</button>';
   h+='<button type="button" class="ghost" style="color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="sendSalaryWhatsApp('+w.id+')">📱 WhatsApp</button>';
   h+='<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showVoucherModalById('+w.id+')">🧾 Voucher</button>';
-  h+='<button type="button" class="ghost" style="color:var(--brand);border-color:rgba(14,165,233,0.3);font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showDutyCalendarModal('+w.id+')">📅 Duty ('+(w.duties||0)+')</button>';
+  h+='<button type="button" class="ghost" style="color:var(--brand);border-color:rgba(14,165,233,0.3);font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showDutyCalendarModal('+w.id+')">📅 Shifts ('+(w.duties||0)+')</button>';
   if(!own){
-    h+='<button type="button" class="ghost" style="font-weight:600" onclick="workerSalaryForm('+w.id+')">⚙️ Rates &amp; Profile</button>'
-      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'ot\')">+ OT</button>'
-      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'incentive\')">+ Incentive</button>'
-      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'bonus\')">+ Bonus</button>'
-      +(w.balance>0?'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="payForm('+w.id+',\'paid\','+w.balance+',\'Monthly salary payment\')">✅ Disburse Salary</button>':'')
-      +'<button type="button" class="ghost" style="font-size:11px;color:var(--mute)" onclick="toggleEmployeeActive('+w.id+','+(w.active===false?1:0)+')">'+(w.active===false?'Activate Staff':'Deactivate')+'</button>';
+    h+='<button type="button" class="ghost" style="font-weight:600" onclick="workerSalaryForm('+w.id+')">⚙️ Rates &amp; Profile</button>';
+    if(w.balance > 0){
+      h+='<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="openUnifiedTxModal('+w.id+',\'salary_payment\','+w.balance+')">✅ Disburse Salary</button>';
+    }
   }
   h+='</div></div>';
   return h;
@@ -10682,88 +10640,99 @@ function payCard(w,own){
 function monthPick(fn){
   return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">'
     +'<label style="margin:0;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">Payroll Period:'
-    +'<input type="month" value="'+PM+'" style="padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit" onchange="PM=this.value||PM;'+fn+'()">'
+    +'<input type="month" value="'+PM+'" style="padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit" onchange="PM=this.value||PM;DUTY_CAL_MONTH=this.value||DUTY_CAL_MONTH;loadWorkerCalendarHome(\'pay\')">'
     +'</label>'
     +'</div>';
 }
 
 function renderSalary(){
-  var A=document.getElementById("app");
-  if(SRV && ME && ME.role === "worker"){
-    return loadMyPay();
-  }
-  if(!SRV){A.innerHTML=nav()+'<div class="empty">Salary needs the server database. It is not available in local mode.</div>';return}
-  tab="pay";
-  A.innerHTML=nav()+'<div class="empty">Loading PetroPulse360 staff &amp; payroll suite\u2026</div>';
-  api("GET","/api/payroll?month="+PM).then(function(r){
-    if(tab!="pay")return;
-    LAST_PAYROLL_DATA=r;
-    renderSalaryView();
-  }).catch(function(e){
-    badge(e.error||"Could not load payroll.");
-  });
+  tab = "wcal";
+  DUTY_CAL_SUBTAB = "pay";
+  return loadWorkerCalendarHome("pay");
 }
 
-function renderSalaryView(){
-  var A=document.getElementById("app");
-  if(!A||!LAST_PAYROLL_DATA)return;
+function getOwnerManagerPayrollHTML(isInline){
+  if(!LAST_PAYROLL_DATA && WORKER_PAY_CACHE && WORKER_PAY_CACHE.workers){
+    LAST_PAYROLL_DATA = WORKER_PAY_CACHE;
+  }
+  if(!LAST_PAYROLL_DATA || !LAST_PAYROLL_DATA.workers){
+    return '<div class="empty" style="padding:40px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px"><div style="font-size:28px;margin-bottom:8px">👥</div><b>Loading staff payroll and wage register…</b><div class="sub" style="margin-top:6px">Please wait while staff balances and attendance records synchronize.</div></div>';
+  }
   var r=LAST_PAYROLL_DATA;
   var workers=r.workers||[];
   var summary=r.summary||{};
+  var settings=r.settings||{};
   var isLocked=!!r.locked;
   var pendAdv=(r.advance_requests||[]).filter(function(x){return x.status==="pending"});
 
-  var totNet = summary.total_net_payable != null ? summary.total_net_payable : workers.reduce(function(acc,w){return acc+(w.net||0)},0);
-  var totPaid = summary.total_paid != null ? summary.total_paid : workers.reduce(function(acc,w){return acc+(w.paid||0)},0);
-  var totBal = summary.total_balance_due != null ? summary.total_balance_due : workers.reduce(function(acc,w){return acc+(w.balance||0)},0);
-  var totAdv = summary.total_outstanding_advances != null ? summary.total_outstanding_advances : workers.reduce(function(acc,w){return acc+(w.outstanding_advance||w.advance||0)},0);
   var totalCommitment = summary.total_commitment != null ? summary.total_commitment : workers.reduce(function(acc,w){return acc+(w.pay_type==='monthly'?w.monthly_salary:w.earn)},0);
+  var totalPaid = summary.total_paid != null ? summary.total_paid : workers.reduce(function(acc,w){return acc+(w.paid||0)},0);
+  var totalAdvanceAllocated = summary.total_advance_allocated != null ? summary.total_advance_allocated : workers.reduce(function(acc,w){return acc+(w.advance||0)},0);
+  var totalBal = summary.total_balance_due != null ? summary.total_balance_due : workers.reduce(function(acc,w){return acc+(w.balance||0)},0);
+  var totAdv = summary.total_outstanding_advances != null ? summary.total_outstanding_advances : workers.reduce(function(acc,w){return acc+(w.outstanding_advance||w.advance||0)},0);
+  var advRecoveredMonth = summary.advance_recovered_month || 0;
+
   var totalStaff = summary.total_staff != null ? summary.total_staff : workers.length;
   var activeStaff = summary.active_staff != null ? summary.active_staff : workers.filter(function(w){return w.active!==false}).length;
+  var unsettledAdvances = summary.unsettled_advances || [];
+  var isCashIntegrationOn = (settings.advance_recovery_cash_integration === 1 || settings.advance_recovery_cash_integration === true);
 
-  var highAlerts = summary.high_advance_alerts || [];
+  var h="";
 
-  var h=nav();
-  // Header title & quick action toolbar
-  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">'
-    +'<div>'
-    +'<div style="display:flex;align-items:center;gap:8px">'
-    +'<h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.3px">Staff, Advances &amp; Forecourt Payroll</h1>'
-    +(isLocked?'<span class="role-badge" style="background:#059669;color:#fff;font-size:11px;font-weight:700">🔒 Finalized &amp; Locked</span>':'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">Open Period</span>')
-    +'</div>'
-    +'<div class="sub" style="margin-top:3px">PetroPulse360 integrated forecourt staff directory, live advance ledgers, shift shortage link, and statutory compliance.</div>'
-    +'</div>'
-    +'<div class="btns" style="margin:0;gap:6px;flex-wrap:wrap">'
-    +'<button type="button" style="background:linear-gradient(135deg,#0A63F8,#0640aa);color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="addEmployeeModal()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>+ Add Employee</button>'
-    +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3);font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAdvanceModal(null,\'advance\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>💸 Issue Advance</button>'
-    +'<button type="button" class="ghost" style="color:var(--ok);border-color:rgba(5,150,105,0.3);font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAdvanceModal(null,\'cash_recovery\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>🔄 Cash Recovery to Drawer</button>'
-    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showBankDisbursementModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank NEFT</button>'
-    +'<button type="button" class="ghost" style="color:#059669;border-color:rgba(5,150,105,0.3);font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showBulkWaModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Bulk WhatsApp</button>'
-    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showStatutoryChallanModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v4"/><path d="M12 14v4"/><path d="M16 14v4"/></svg>EPF &amp; ESIC</button>'
-    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="loanForm()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Issue Loan</button>'
-    +(isLocked
-      ?'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--ok);border-color:rgba(5,150,105,0.4)" onclick="toggleMonthLock(false)">🔓 Unlock Month</button>'
-      :'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--ink)" onclick="toggleMonthLock(true)">🔒 Lock Month</button>')
-    +'</div>'
-    +'</div>';
-
-  // High Advance Warning Alert Banner (PetroPulse360 Feature)
-  if(highAlerts.length){
-    h+='<div style="background:rgba(245,158,11,0.08);border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'
-      +'<div style="display:flex;align-items:center;gap:10px">'
-      +'<span style="font-size:24px">⚠️</span>'
-      +'<div>'
-      +'<b style="color:#b45309;font-size:13.5px">Outstanding Advance Limit Alert ('+highAlerts.length+' staff over 40% threshold):</b>'
-      +'<div class="sub" style="margin-top:2px;color:#78350f">'+highAlerts.map(function(a){return '<b>'+esc(a.name)+'</b> ('+inr(a.outstanding)+')'}).join(', ')+' have accumulated high advances. Review ledgers before issuing fresh payouts.'+'</div>'
+  // 1. Top PetroPulse360 Unsettled Advances Banner (zGe)
+  if(unsettledAdvances.length > 0){
+    var oldestStaff = unsettledAdvances[0];
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff7ed;border:1px solid #fdba74;border-radius:10px;padding:12px 16px;margin-bottom:14px;flex-wrap:wrap">'
+      +'<div style="color:#9a3412">'
+      +'<p style="margin:0;font-weight:700;font-size:13.5px">💰 '+unsettledAdvances.length+' employee'+(unsettledAdvances.length>1?'s have':' has')+' unsettled advances</p>'
+      +'<p style="margin:3px 0 0;font-size:12px;color:#c2410c">Total: <b>'+inr(totAdv)+'</b> · Oldest: <b>'+esc(oldestStaff.name)+'</b> — '+oldestStaff.oldest_days+' days</p>'
       +'</div>'
-      +'</div>'
-      +'<div style="display:flex;gap:6px">'
-      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;font-weight:700;border-color:#b45309;color:#b45309;background:#fff" onclick="filterHighAdvanceStaff()">'+(EMP_ONLY_HIGH_ADV?'Show All Staff':'Filter High Advances')+'</button>'
-      +'</div>'
+      +'<button type="button" class="ghost" style="padding:5px 12px;font-size:12px;font-weight:700;border-color:#fb923c;color:#9a3412;background:#fff" onclick="showAdvanceLedgerModal('+oldestStaff.id+')">View Details &rarr;</button>'
       +'</div>';
   }
 
-  // Pending Advance Requests Bar
+  // 2. Employee Advance Recovery Cash Integration Toggle Card
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.02)">'
+    +'<div style="display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,0.02);border:1px solid var(--line);border-radius:8px;padding:12px 14px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'
+    +'<div style="flex:1;min-width:260px">'
+    +'<div style="font-size:13.5px;font-weight:700;color:var(--ink)">Employee Advance Recovery Cash Integration</div>'
+    +'<div style="font-size:12px;color:var(--mute);margin-top:2px">'
+    +(isCashIntegrationOn
+      ? '<b>ON</b> — cash returned by staff against advances is automatically included in Expected Cash and the Daily Cash Flow total. Never affects P&amp;L or Net Profit.'
+      : '<b>OFF (manual mode)</b> — recoveries only reduce the employee\'s outstanding advance. Keep this OFF if the returned cash is already inside your manually entered cash figures.')
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--mute);margin-top:2px">Only recoveries with payment method <b>Cash</b> are counted. UPI / Bank / Cheque never move drawer cash.</div>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<span class="role-badge" style="background:'+(isCashIntegrationOn?'#0284c7':'var(--bg)')+';color:'+(isCashIntegrationOn?'#fff':'var(--mute)')+';border:1px solid var(--line);font-size:11px;font-weight:700">'+(isCashIntegrationOn?'ON':'OFF')+'</span>'
+    +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;font-weight:700;color:'+(isCashIntegrationOn?'var(--due)':'#0284c7')+';border-color:'+(isCashIntegrationOn?'rgba(220,38,38,0.3)':'rgba(2,132,199,0.3)')+'" onclick="toggleAdvanceCashIntegration('+(!isCashIntegrationOn)+')">'+(isCashIntegrationOn?'Turn OFF':'Turn ON')+'</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+
+  // 3. Header: Employees & Staff (X/50) + Action buttons
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px">'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-0.3px">👥 Employees &amp; Staff ('+totalStaff+'/50)</h1>'
+    +(isLocked?'<span class="role-badge" style="background:#059669;color:#fff;font-size:11px;font-weight:700">🔒 Locked</span>':'')
+    +'</div>'
+    +'<div class="btns" style="margin:0;gap:6px;flex-wrap:wrap">'
+    +'<button type="button" class="ghost" style="font-weight:700;display:inline-flex;align-items:center;gap:5px" onclick="openUnifiedTxModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Transaction</button>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:5px" onclick="openAddEmployeeModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>+ Add</button>'
+    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="openVarianceThresholdModal()">⚠️ Thresholds</button>'
+    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showBankDisbursementModal()">💳 Bank NEFT</button>'
+    +'<button type="button" class="ghost" style="color:#059669;border-color:rgba(5,150,105,0.3);font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showBulkWaModal()">📱 WhatsApp</button>'
+    +(isLocked
+      ?'<button type="button" class="ghost" style="padding:6px 10px;font-size:12px;font-weight:700;color:var(--ok)" onclick="toggleMonthLock(false)">🔓 Unlock</button>'
+      :'<button type="button" class="ghost" style="padding:6px 10px;font-size:12px;font-weight:700;color:var(--ink)" onclick="toggleMonthLock(true)">🔒 Lock</button>')
+    +'</div>'
+    +'</div>';
+
+  h+='<p style="margin:0 0 14px;font-size:12px;color:var(--mute)">Salary is tracked by <b>salary period</b> (which month\'s salary), not by the date the money moved.</p>';
+
+  // Pending Advance Requests from Workers Bar
   if(pendAdv.length){
     h+='<div style="background:rgba(2,132,199,0.08);border:1.5px solid #0284c7;border-radius:10px;padding:12px;margin-bottom:14px">'
       +'<div style="font-weight:800;font-size:13px;color:#0284c7;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
@@ -10779,43 +10748,15 @@ function renderSalaryView(){
       +'</div>';
   }
 
-  // Month Picker & Top Controls
-  h+=monthPick("renderSalary");
-
-  // PetroPulse360 Top 4 Metric KPI Cards
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
-    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px">TOTAL STAFF ROSTER</div>'
-    +'<div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">'
-    +'<b style="font-size:22px;color:var(--ink)">'+activeStaff+'</b>'
-    +'<span class="sub" style="font-size:12px">Active / '+totalStaff+' total</span>'
-    +'</div></div>'
-
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
-    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px">MONTHLY PAYROLL COMMITMENT</div>'
-    +'<b style="font-size:22px;color:var(--ink);display:block;margin-top:4px">'+inr(totalCommitment)+'</b>'
-    +'<div class="sub" style="font-size:11px;margin-top:2px">Base wage commitments</div></div>'
-
-    +'<div style="background:var(--card);border:1.5px solid '+(totAdv>0?'rgba(245,158,11,0.5)':'var(--line)')+';border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
-    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px;color:'+(totAdv>0?'#b45309':'var(--mute)')+'">TOTAL OUTSTANDING ADVANCES</div>'
-    +'<b style="font-size:22px;color:'+(totAdv>0?'#d97706':'var(--ink)')+';display:block;margin-top:4px">'+inr(totAdv)+'</b>'
-    +'<div class="sub" style="font-size:11px;margin-top:2px">Across all staff ledgers</div></div>'
-
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
-    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px">PENDING DISBURSEMENT</div>'
-    +'<b style="font-size:22px;color:'+(totBal>0?'var(--due)':'var(--ok)')+';display:block;margin-top:4px">'+inr(totBal)+'</b>'
-    +'<div class="sub" style="font-size:11px;margin-top:2px">'+inr(totPaid)+' already disbursed</div></div>'
-    +'</div>';
-
-  // Search & Filter Bar
-  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'
+  // 4. Search & Filter Bar
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'
     +'<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:240px">'
     +'<input id="emp_search_input" placeholder="🔍 Search staff by name, mobile, role..." value="'+esc(EMP_SEARCH_QUERY)+'" style="flex:1;padding:6px 12px;border:1px solid var(--line);border-radius:6px;font:inherit" oninput="EMP_SEARCH_QUERY=this.value.toLowerCase();renderSalaryList()">'
     +'</div>'
     +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
     +'<select id="emp_role_filter" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);font:inherit" onchange="EMP_ROLE_FILTER=this.value;renderSalaryList()">'
     +'<option value="all"'+(EMP_ROLE_FILTER==='all'?' selected':'')+'>All Roles</option>'
-    +'<option value="worker"'+(EMP_ROLE_FILTER==='worker'?' selected':'')+'>Pump Attendants (DSMs)</option>'
+    +'<option value="worker"'+(EMP_ROLE_FILTER==='worker'?' selected':'')+'>Pump Attendants</option>'
     +'<option value="manager"'+(EMP_ROLE_FILTER==='manager'?' selected':'')+'>Managers</option>'
     +'</select>'
     +'<select id="emp_status_filter" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);font:inherit" onchange="EMP_STATUS_FILTER=this.value;renderSalaryList()">'
@@ -10826,14 +10767,133 @@ function renderSalaryView(){
     +'</div>'
     +'</div>';
 
+  // 5. Staff Cards Container
   h+='<div id="salary_cards_container"></div>';
-  A.innerHTML=h;
+
+  // 6. PetroPulse360 Payroll Summary Component (RGe)
+  var monthOptions = "";
+  var dNow = new Date();
+  for(var i=0; i<18; i++){
+    var dtM = new Date(dNow.getFullYear(), dNow.getMonth() - i, 1);
+    var yyyy = dtM.getFullYear();
+    var mm = String(dtM.getMonth() + 1).padStart(2, "0");
+    var valM = yyyy + "-" + mm;
+    var labelM = dtM.toLocaleString("en-US", { month: "long", year: "numeric" });
+    monthOptions += '<option value="'+valM+'"'+(valM === PM ? ' selected' : '')+'>'+labelM+'</option>';
+  }
+
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:22px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:12px">'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800">'
+    +'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>'
+    +'Payroll Summary'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<select style="padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:700;font-size:12.5px" onchange="PM=this.value;DUTY_CAL_MONTH=this.value;loadWorkerCalendarHome(\'pay\')">'
+    +monthOptions
+    +'</select>'
+    +'</div>'
+    +'</div>'
+
+    // 6 Key KPI Metric Boxes
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">'
+    +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+    +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">Salary Liability</div>'
+    +'<b style="font-size:18px;color:var(--ink);display:block;margin-top:2px">'+inr(totalCommitment)+'</b>'
+    +'</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+    +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">Salary Paid</div>'
+    +'<b style="font-size:18px;color:var(--ok);display:block;margin-top:2px">'+inr(totalPaid)+'</b>'
+    +'</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+    +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">Advances Allocated</div>'
+    +'<b style="font-size:18px;color:var(--ink);display:block;margin-top:2px">'+inr(totalAdvanceAllocated)+'</b>'
+    +'</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+    +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">Salary Pending</div>'
+    +'<b style="font-size:18px;color:'+(totalBal>0?'#ea580c':'var(--ok)')+';display:block;margin-top:2px">'+inr(totalBal)+'</b>'
+    +'</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+    +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">Outstanding Advances</div>'
+    +'<b style="font-size:18px;color:'+(totAdv>0?'#d97706':'var(--ink)')+';display:block;margin-top:2px">'+inr(totAdv)+'</b>'
+    +'</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px">'
+    +'<div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">Advance Recovered</div>'
+    +'<b style="font-size:18px;color:var(--ok);display:block;margin-top:2px">'+inr(advRecoveredMonth)+'</b>'
+    +'</div>'
+    +'</div>'
+
+    // Summary Roster Rows
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +workers.filter(function(w){return w.active!==false}).map(function(w){
+      var gross = (w.pay_type === "monthly" ? w.monthly_salary : w.earn);
+      var pd = (w.paid || 0);
+      var adv = (w.advance || 0);
+      var pnd = (w.balance > 0 ? w.balance : 0);
+      var outA = (w.outstanding_advance || 0);
+      var hasNoSal = (gross == null || gross <= 0);
+      return '<div style="display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 12px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+        +'<div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="font-size:13.5px;font-weight:700;color:var(--ink)">'+esc(w.name)+'</span>'
+        +(hasNoSal ? '<span class="role-badge" style="background:rgba(0,0,0,0.04);color:var(--mute);border:1px solid var(--line);font-size:9.5px">no salary</span>' : '')
+        +'</div>'
+        +'<div style="font-size:13.5px;font-weight:700;color:var(--ink)">'+inr(gross)+'</div>'
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;font-size:11.5px">'
+        +'<div><span class="sub" style="color:var(--mute)">Paid: </span><b style="color:var(--ok)">'+inr(pd)+'</b></div>'
+        +'<div><span class="sub" style="color:var(--mute)">Advanced: </span><b>'+inr(adv)+'</b></div>'
+        +'<div><span class="sub" style="color:var(--mute)">Pending: </span><b style="color:'+(pnd>0?'#ea580c':'var(--ok)')+'">'+inr(pnd)+'</b></div>'
+        +'<div><span class="sub" style="color:var(--mute)">Outstanding Adv.: </span><b>'+inr(outA)+'</b></div>'
+        +'</div>'
+        +'</div>';
+    }).join("")
+    +'</div>'
+    +'</div>';
+
+  // 7. PetroPulse360 Variance Thresholds Card (BGe)
+  var vWatch = settings.variance_threshold_watch != null ? settings.variance_threshold_watch : 10;
+  var vHigh = settings.variance_threshold_high != null ? settings.variance_threshold_high : 30;
+
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;margin-bottom:4px">'
+    +'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    +'Variance Thresholds'
+    +'</div>'
+    +'<p style="margin:0 0 12px;font-size:12px;color:var(--mute)">Average variance per shift above these limits marks a person 🟡 Watch or 🔴 High in the Payroll Summary.</p>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">'
+    +'<div style="flex:1;min-width:140px">'
+    +'<label style="font-size:11.5px;font-weight:700;margin-bottom:3px;display:block">Watch (litres)</label>'
+    +'<input id="var_th_watch" type="number" step="1" value="'+vWatch+'" style="width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font:inherit">'
+    +'</div>'
+    +'<div style="flex:1;min-width:140px">'
+    +'<label style="font-size:11.5px;font-weight:700;margin-bottom:3px;display:block">High (litres)</label>'
+    +'<input id="var_th_high" type="number" step="1" value="'+vHigh+'" style="width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font:inherit">'
+    +'</div>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:7px 16px;height:36px" onclick="saveVarianceThresholds()">Save Thresholds</button>'
+    +'</div>'
+    +'</div>';
+
+  return h;
+}
+
+function renderSalaryView(){
+  var A=document.getElementById("app");
+  if(!A||!LAST_PAYROLL_DATA)return;
+  A.innerHTML=nav()+getOwnerManagerPayrollHTML(false);
   renderSalaryList();
 }
 
 function renderSalaryList(){
   var container=document.getElementById("salary_cards_container");
-  if(!container||!LAST_PAYROLL_DATA)return;
+  if(!container)return;
+  if(!LAST_PAYROLL_DATA && WORKER_PAY_CACHE && WORKER_PAY_CACHE.workers){
+    LAST_PAYROLL_DATA = WORKER_PAY_CACHE;
+  }
+  if(!LAST_PAYROLL_DATA || !LAST_PAYROLL_DATA.workers){
+    container.innerHTML='<div class="empty" style="padding:28px 14px"><div style="font-size:24px;margin-bottom:6px">👥</div><b>Loading staff payroll and wage register…</b></div>';
+    return;
+  }
   var workers=LAST_PAYROLL_DATA.workers||[];
 
   var filtered=workers.filter(function(w){
@@ -10841,16 +10901,16 @@ function renderSalaryList(){
       var q=EMP_SEARCH_QUERY.trim().toLowerCase();
       var matchName = (w.name||"").toLowerCase().indexOf(q)!==-1;
       var matchMobile = (w.mobile||"").indexOf(q)!==-1;
-      var matchRole = (w.role||"").toLowerCase().indexOf(q)!==-1;
+      var matchRole = (w.role||"").toLowerCase().indexOf(q)!==-1 || (w.role_title||"").toLowerCase().indexOf(q)!==-1;
       if(!matchName&&!matchMobile&&!matchRole) return false;
     }
     if(EMP_ROLE_FILTER!=="all"){
       if(w.role!==EMP_ROLE_FILTER) return false;
     }
     if(EMP_STATUS_FILTER==="active"){
-      if(w.active===false) return false;
+      if(w.active===false || w.active===0) return false;
     } else if(EMP_STATUS_FILTER==="inactive"){
-      if(w.active!==false) return false;
+      if(w.active!==false && w.active!==0) return false;
     }
     if(EMP_ONLY_HIGH_ADV){
       var adv = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
@@ -10873,73 +10933,139 @@ function renderSalaryList(){
 }
 
 // ----------------------------------------------------------------------------
-// PetroPulse360 Interactive Advance Ledger Modal
+// PetroPulse360 Interactive Advance & Salary Ledger Modal (PGe)
 // ----------------------------------------------------------------------------
-function showAdvanceLedgerModal(workerId){
+var CURRENT_LEDGER_TAB = "ledger";
+var CURRENT_LEDGER_TYPE_FILTER = "all";
+var CURRENT_LEDGER_MONTH_FILTER = "all";
+
+function showAdvanceLedgerModal(workerId, tabKey){
   if(ME && ME.role === "worker"){
     workerId = ME.id;
   }
   if(!LAST_PAYROLL_DATA)return toast("Load payroll first.");
-  openM('<h2>📑 Employee Advance Ledger</h2><div class="empty">Loading advance history and audit trail\u2026</div>');
+  if(tabKey) CURRENT_LEDGER_TAB = tabKey;
+  openM('<h2>📑 Employee Salary &amp; Advance Ledger</h2><div class="empty">Loading ledger history and audit trail\u2026</div>');
   api("GET","/api/employees/advance-ledger/"+workerId).then(function(r){
     var emp = r.employee || {};
     var ledger = r.ledger || [];
     var totOut = r.total_outstanding || 0;
+    var curPend = r.current_pending || 0;
+    var ytdPaid = r.ytd_paid || 0;
+    var lastSal = r.last_salary_payment;
+    var monthHist = r.month_history || [];
 
-    var h='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px">'
+    var lastSalStr = "—";
+    var lastSalSub = "";
+    if(lastSal){
+      lastSalStr = inr(lastSal.amount);
+      lastSalSub = lastSal.salary_period + ' · ' + lastSal.transaction_date;
+    }
+
+    var h='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:12px">'
       +'<div>'
-      +'<h2 style="margin:0;font-size:19px">📑 Advance Ledger: '+esc(emp.name)+'</h2>'
-      +'<div class="sub" style="margin-top:3px">'+esc(emp.role)+' · 📞 +91 '+esc(emp.mobile||"")+' · Basic: '+(emp.pay_type==="monthly"?inr(emp.monthly_salary)+"/mo":"Shift Rates")+'</div>'
+      +'<h2 style="margin:0;font-size:18px">'+esc(emp.name)+' — Salary &amp; Advance Ledger</h2>'
+      +'<div class="sub" style="margin-top:3px">'+esc(emp.role_title||emp.role)+' · 📞 +91 '+esc(emp.mobile||"")+' · Basic: '+(emp.pay_type==="monthly"?inr(emp.monthly_salary)+"/mo":"Shift Rates")+'</div>'
       +'</div>'
-      +'<div style="text-align:right">'
-      +'<div class="sub" style="font-size:11px;font-weight:700">NET OUTSTANDING ADVANCE BALANCE</div>'
-      +'<b style="font-size:22px;color:'+(totOut>0?'#d97706':'var(--ok)')+'">'+inr(totOut)+'</b>'
+      +'<div class="btns" style="margin:0;gap:6px">'
+      +((!ME || ME.role !== "worker") ? '<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:5px 12px;font-size:12px" onclick="openUnifiedTxModal('+emp.id+')">⚡ Add Transaction</button>' : '')
       +'</div>'
       +'</div>';
 
-    var isWorker = (ME && ME.role === "worker");
-    // Quick Action Buttons inside Ledger Modal
-    h+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
-      +(isWorker
-        ? '<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 14px;font-size:12.5px" onclick="requestAdvanceModal()">➕ Request Salary Advance</button>'
-        : '<button type="button" style="background:var(--due);color:#fff;font-weight:700;padding:6px 12px;font-size:12.5px" onclick="openAdvanceModal('+emp.id+',\'advance\')">💸 Give Fresh Advance</button>'
-          +'<button type="button" style="background:#059669;color:#fff;font-weight:700;padding:6px 12px;font-size:12.5px" onclick="openAdvanceModal('+emp.id+',\'cash_recovery\')">🔄 Record Cash Recovery</button>'
-          +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px" onclick="payForm('+emp.id+',\'waive\',0,\'Waive advance/shortage\')">🤝 Waive / Adjust</button>')
+    // 4 Top KPI Cards
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px">'
+      +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px">'
+      +'<div class="sub" style="font-size:10.5px">Current Salary Pending</div>'
+      +'<b style="font-size:16px;color:'+(curPend>0?'#ea580c':'var(--ok)')+'">'+inr(curPend)+'</b>'
+      +'</div>'
+      +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px">'
+      +'<div class="sub" style="font-size:10.5px">Outstanding Advance</div>'
+      +'<b style="font-size:16px;color:'+(totOut>0?'#d97706':'var(--ok)')+'">'+inr(totOut)+'</b>'
+      +'</div>'
+      +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px">'
+      +'<div class="sub" style="font-size:10.5px">Last Salary Payment</div>'
+      +'<b style="font-size:16px;color:var(--ink)">'+lastSalStr+'</b>'
+      +(lastSalSub?'<div class="sub" style="font-size:10px">'+esc(lastSalSub)+'</div>':'')
+      +'</div>'
+      +'<div style="background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px">'
+      +'<div class="sub" style="font-size:10.5px">Year-to-Date Paid</div>'
+      +'<b style="font-size:16px;color:var(--ok)">'+inr(ytdPaid)+'</b>'
+      +'</div>'
       +'</div>';
 
-    if(!ledger.length){
-      h+='<div class="empty" style="padding:24px">No advance or deduction transactions recorded for this employee.</div>';
+    // Sub-Tabs Header (Ledger vs Month-wise History)
+    h+='<div style="display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px">'
+      +'<button type="button" class="ghost" style="padding:6px 14px;border:none;border-bottom:2px solid '+(CURRENT_LEDGER_TAB==="ledger"?'#0284c7':'transparent')+';font-weight:700;color:'+(CURRENT_LEDGER_TAB==="ledger"?'#0284c7':'var(--mute)')+';border-radius:0" onclick="showAdvanceLedgerModal('+emp.id+',\'ledger\')">Ledger</button>'
+      +'<button type="button" class="ghost" style="padding:6px 14px;border:none;border-bottom:2px solid '+(CURRENT_LEDGER_TAB==="months"?'#0284c7':'transparent')+';font-weight:700;color:'+(CURRENT_LEDGER_TAB==="months"?'#0284c7':'var(--mute)')+';border-radius:0" onclick="showAdvanceLedgerModal('+emp.id+',\'months\')">Month-wise History</button>'
+      +'</div>';
+
+    if(CURRENT_LEDGER_TAB === "months"){
+      // Month-wise History Table
+      if(!monthHist.length){
+        h+='<div class="empty" style="padding:20px">No monthly salary history recorded yet.</div>';
+      } else {
+        h+='<div class="tbl" style="max-height:300px;overflow-y:auto;margin-bottom:12px"><table>'
+          +'<thead><tr><th>Salary Period</th><th class="r">Gross Salary</th><th class="r">Paid</th><th class="r">Advanced</th><th class="r">Deductions</th><th class="r">Net Settled</th><th class="r">Pending</th><th>Status</th></tr></thead><tbody>';
+        monthHist.forEach(function(mh){
+          h+='<tr>'
+            +'<td><b>'+esc(mh.period)+'</b></td>'
+            +'<td class="r">'+inr(mh.gross_salary)+'</td>'
+            +'<td class="r" style="color:var(--ok)">'+inr(mh.salary_paid)+'</td>'
+            +'<td class="r">'+inr(mh.advance_allocated)+'</td>'
+            +'<td class="r">'+inr(mh.deductions)+'</td>'
+            +'<td class="r" style="font-weight:700">'+inr(mh.net_settled)+'</td>'
+            +'<td class="r" style="font-weight:700;color:'+(mh.pending>0?'#ea580c':'var(--ok)')+'">'+inr(mh.pending)+'</td>'
+            +'<td><span class="role-badge" style="background:'+(mh.status==="Settled"?'rgba(5,150,105,0.1)':'rgba(234,88,12,0.1)')+';color:'+(mh.status==="Settled"?'var(--ok)':'#ea580c')+';font-weight:700;font-size:10.5px">'+esc(mh.status)+'</span></td>'
+            +'</tr>';
+        });
+        h+='</tbody></table></div>';
+      }
     } else {
-      h+='<div class="tbl" style="max-height:340px;overflow-y:auto;margin-bottom:12px"><table>'
-        +'<thead><tr><th>Date</th><th>Transaction Type</th><th>Reference / Remarks</th><th class="r">Debit (Given)</th><th class="r">Credit (Recovered)</th><th class="r">Running Balance</th></tr></thead><tbody>';
-
+      // Ledger Tab with Filters & Reversal Action
       var typeLabels = {
-        advance: "💸 Advance Payout",
-        cash_recovery: "🔄 Cash Recovery (Drawer)",
-        waive: "🤝 Waived by Owner",
-        paid: "✅ Salary Payment",
-        excess: "📈 Shift Excess Credit",
-        loan_emi: "💰 Loan EMI",
-        deduction: "Forecourt Deduction"
+        salary_payment: "Salary Payment",
+        paid: "Salary Payment",
+        salary_advance: "Salary Advance",
+        advance: "Salary Advance",
+        advance_salary_adjustment: "Advance Adjustment",
+        advance_adjustment: "Advance Adjustment",
+        advance_cash_recovery: "Advance Cash Recovery",
+        cash_recovery: "Cash Recovery",
+        bonus: "Bonus",
+        salary_deduction: "Salary Deduction",
+        deduction: "Deduction",
+        correction: "Correction",
+        waive: "Waived by Owner",
+        excess: "Shift Excess"
       };
 
-      ledger.forEach(function(tx){
-        var isDebit = tx.debit > 0;
-        var isCredit = tx.credit > 0;
-        var typeName = typeLabels[tx.kind] || tx.kind;
-        var ref = tx.duty_id ? ('Shift Duty #'+tx.duty_id+(tx.duty_shift?' ('+tx.duty_shift+')':'')) : (tx.note || 'Direct Entry');
+      if(!ledger.length){
+        h+='<div class="empty" style="padding:24px">No transactions recorded for this employee.</div>';
+      } else {
+        h+='<div class="tbl" style="max-height:340px;overflow-y:auto;margin-bottom:12px"><table>'
+          +'<thead><tr><th>Date</th><th>Type</th><th>Month</th><th>Payment Method</th><th class="r">Amount</th><th>Status</th>'+((!ME||ME.role!=="worker")?'<th>Action</th>':'')+'</tr></thead><tbody>';
 
-        h+='<tr>'
-          +'<td><b>'+esc(tx.d)+'</b></td>'
-          +'<td><span style="font-weight:700;color:'+(tx.kind==='advance'?'var(--due)':tx.kind==='cash_recovery'?'var(--ok)':'var(--ink)')+'">'+esc(typeName)+'</span></td>'
-          +'<td>'+esc(ref)+'</td>'
-          +'<td class="r" style="font-weight:700;color:var(--due)">'+(isDebit?'+'+inr(tx.debit):'—')+'</td>'
-          +'<td class="r" style="font-weight:700;color:var(--ok)">'+(isCredit?'\u2212'+inr(tx.credit):'—')+'</td>'
-          +'<td class="r" style="font-weight:800;color:var(--ink)">'+inr(tx.running_balance)+'</td>'
-          +'</tr>';
-      });
+        ledger.forEach(function(tx){
+          var isRev = (tx.status === "reversed");
+          var typeName = typeLabels[tx.transaction_type || tx.kind] || tx.kind;
+          var isOutgoing = (tx.kind === "advance" || tx.kind === "paid" || tx.kind === "bonus");
+          var isIncoming = (tx.kind === "cash_recovery" || tx.kind === "excess");
 
-      h+='</tbody></table></div>';
+          h+='<tr style="'+(isRev?'opacity:0.45;text-decoration:line-through;':'')+'">'
+            +'<td><b>'+esc(tx.d)+'</b></td>'
+            +'<td><span style="font-weight:700;color:'+(isIncoming?'var(--ok)':isOutgoing?'var(--due)':'var(--ink)')+'">'+esc(typeName)+'</span>'+(tx.note?'<div class="sub" style="font-size:11px">'+esc(tx.note)+'</div>':'')+'</td>'
+            +'<td>'+esc(tx.month||tx.salary_period||"—")+'</td>'
+            +'<td>'+esc(tx.payment_method||"Cash")+'</td>'
+            +'<td class="r" style="font-weight:700;color:'+(isIncoming?'var(--ok)':isOutgoing?'var(--due)':'var(--ink)')+'">'+(isIncoming?'+':'-')+inr(tx.amount)+'</td>'
+            +'<td>'+(isRev?'<span class="role-badge" style="background:#fee2e2;color:#991b1b;font-size:10px">Reversed</span>':'<span class="role-badge" style="background:#dcfce7;color:#166534;font-size:10px">Active</span>')+'</td>'
+            +((!ME||ME.role!=="worker")
+              ? ('<td>'+(!isRev ? '<button type="button" class="ghost" style="padding:2px 6px;font-size:11px;color:var(--due)" title="Reverse transaction" onclick="reverseTransactionPrompt('+tx.id+','+emp.id+')">🔄 Reverse</button>' : '')+'</td>')
+              : '')
+            +'</tr>';
+        });
+
+        h+='</tbody></table></div>';
+      }
     }
 
     h+='<div class="row" style="margin-top:14px;justify-content:flex-end"><button type="button" class="ghost" onclick="close()">Close</button></div>';
@@ -10950,165 +11076,270 @@ function showAdvanceLedgerModal(workerId){
 }
 
 // ----------------------------------------------------------------------------
-// PetroPulse360 Advance & Cash Drawer Recovery Modal
+// PetroPulse360 Unified Salary & Advance Transaction Modal (aW)
 // ----------------------------------------------------------------------------
-function openAdvanceModal(workerId, defaultKind){
-  if(ME && ME.role === "worker"){
-    return requestAdvanceModal();
-  }
+function openUnifiedTxModal(defaultWorkerId, defaultType, defaultAmt){
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
-  var workers = LAST_PAYROLL_DATA.workers;
-  var kind = defaultKind || "advance";
-  var isRecovery = (kind === "cash_recovery");
+  var workers = LAST_PAYROLL_DATA.workers.filter(function(w){return w.active!==false});
+  var selectedType = defaultType || "salary_payment";
 
-  var h='<h2>'+(isRecovery ? '🔄 Record Cash Recovery (Repayment)' : '💸 Issue Employee Cash Advance')+'</h2>'
-    +'<div class="sub" style="margin-bottom:12px">'+(isRecovery ? 'Staff member returns cash back into the pump register drawer or bank.' : 'Issue advance cash payout with automatic sync to today\'s shift cash drawer.')+'</div>';
+  var helpTexts = {
+    salary_payment: "Normal salary paid for a chosen salary month.",
+    salary_advance: "Money given before the salary is settled.",
+    advance_salary_adjustment: "Allocate an earlier advance against a salary month. No new cash moves.",
+    advance_cash_recovery: "Employee physically returns advance money back to the station.",
+    bonus: "Extra payment. Does not change the monthly salary obligation.",
+    salary_deduction: "Reduces salary payable for a month. No cash moves.",
+    correction: "Authorised correction entry, kept in the audit trail."
+  };
 
-  h+='<label>Staff Member'
-    +'<select id="adv_worker_id">'+workers.map(function(w){
-      var adv = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
-      return '<option value="'+w.id+'"'+(workerId==w.id?' selected':'')+'>'+esc(w.name)+' ('+esc(w.role)+') · Bal: '+inr(adv)+'</option>';
-    }).join("")+'</select>'
-    +'</label>';
+  var dNow = new Date();
+  var monthOpts = "";
+  for(var i=0; i<18; i++){
+    var dtM = new Date(dNow.getFullYear(), dNow.getMonth() - i, 1);
+    var valM = dtM.getFullYear() + "-" + String(dtM.getMonth() + 1).padStart(2, "0");
+    var labelM = dtM.toLocaleString("en-US", { month: "long", year: "numeric" });
+    monthOpts += '<option value="'+valM+'"'+(valM === PM ? ' selected' : '')+'>'+labelM+'</option>';
+  }
+
+  var h='<h2>⚡ Employee Salary &amp; Advance Transaction</h2>'
+    +'<div class="sub" style="margin-bottom:12px">Record salary payouts, advances, recoveries, or ledger adjustments for forecourt staff.</div>';
+
+  h+='<label>Employee'
+    +'<select id="utx_worker" onchange="updateUtxEmployeeInfo()">'
+    +workers.map(function(w){
+      return '<option value="'+w.id+'"'+(defaultWorkerId==w.id?' selected':'')+'>'+esc(w.name)+' ('+esc(w.role_title||w.role)+') · Basic: '+(w.monthly_salary>0?inr(w.monthly_salary):'Shift staff')+'</option>';
+    }).join("")
+    +'</select></label>';
+
+  h+='<div id="utx_emp_info" style="font-size:11.5px;color:var(--mute);margin:-4px 0 10px 2px"></div>';
 
   h+='<label>Transaction Type'
-    +'<select id="adv_kind" onchange="var isRec=(this.value===\'cash_recovery\');document.getElementById(\'adv_drawer_hint\').textContent=isRec?\'Cash will be ADDED to today\\\'s physical cash drawer.\':\'Cash will be DEDUCTED from today\\\'s physical cash drawer.\'">'
-    +'<option value="advance"'+(!isRecovery?' selected':'')+'>💸 Advance Payout (Staff receives cash)</option>'
-    +'<option value="cash_recovery"'+(isRecovery?' selected':'')+'>🔄 Cash Recovery (Staff returns cash to drawer)</option>'
-    +'</select>'
-    +'</label>';
+    +'<select id="utx_type" onchange="onUtxTypeChange(this.value)">'
+    +'<option value="salary_payment"'+(selectedType==="salary_payment"?' selected':'')+'>Salary Payment (Outgoing, closes salary)</option>'
+    +'<option value="salary_advance"'+(selectedType==="salary_advance"?' selected':'')+'>Salary Advance (Outgoing payout)</option>'
+    +'<option value="advance_salary_adjustment"'+(selectedType==="advance_salary_adjustment"?' selected':'')+'>Advance Salary Adjustment (Non-cash allocation)</option>'
+    +'<option value="advance_cash_recovery"'+(selectedType==="advance_cash_recovery"?' selected':'')+'>Advance Cash Recovery (Incoming, staff returns cash)</option>'
+    +'<option value="bonus"'+(selectedType==="bonus"?' selected':'')+'>Bonus (Outgoing extra reward)</option>'
+    +'<option value="salary_deduction"'+(selectedType==="salary_deduction"?' selected':'')+'>Salary Deduction (Non-cash reduction)</option>'
+    +'<option value="correction"'+(selectedType==="correction"?' selected':'')+'>Correction (Audit entry)</option>'
+    +'</select></label>';
+
+  h+='<div id="utx_help" style="background:rgba(2,132,199,0.05);border:1px solid rgba(2,132,199,0.25);border-radius:6px;padding:6px 10px;font-size:11.5px;color:var(--ink);margin-bottom:10px">'+(helpTexts[selectedType]||"")+'</div>';
 
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<label>Amount (\u20b9)<input id="adv_amt" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 2000"></label>'
-    +'<label>Date<input id="adv_date" type="date" value="'+today()+'"></label>'
+    +'<label>Salary Period<select id="utx_period">'+monthOpts+'</select></label>'
+    +'<label>Transaction Date<input id="utx_date" type="date" value="'+today()+'"></label>'
     +'</div>';
 
-  h+='<label>Reason / Note<input id="adv_note" placeholder="e.g. Mid-month festival advance / Emergency medical"></label>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<label>Amount (\u20b9)<input id="utx_amt" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 2000" value="'+(defaultAmt!=null?defaultAmt:'')+'"></label>'
+    +'<label>Payment Method<select id="utx_method"><option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Bank">Bank Transfer</option><option value="Cheque">Cheque</option></select></label>'
+    +'</div>';
 
-  // Bi-directional cash drawer sync box
-  h+='<div style="background:rgba(2,132,199,0.05);border:1.5px solid rgba(2,132,199,0.35);border-radius:8px;padding:12px;margin-top:12px">'
-    +'<label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;font-weight:700;font-size:13px">'
-    +'<input type="checkbox" id="adv_sync_drawer" checked style="width:17px;height:17px;accent-color:#0284c7"> Sync with Shift Cash Drawer (Day Book &amp; Physical Cash Count)'
+  h+='<div id="utx_sync_box" style="background:rgba(0,0,0,0.02);border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0">'
+    +'<label style="display:flex;align-items:center;gap:6px;font-weight:700;font-size:12.5px;margin:0;cursor:pointer">'
+    +'<input type="checkbox" id="utx_sync_cash" checked style="width:16px;height:16px;accent-color:#0284c7"> Sync to Daily Cash Drawer &amp; Day Book'
     +'</label>'
-    +'<div id="adv_drawer_hint" class="sub" style="margin:4px 0 8px 25px;font-size:11.5px">'+(isRecovery?'Cash will be ADDED to today\'s physical cash drawer.':'Cash will be DEDUCTED from today\'s physical cash drawer.')+'</div>'
-    +'<div style="margin-left:25px"><label style="margin:0;font-size:12px">Payment Channel'
-    +'<select id="adv_pay_mode"><option value="Cash">Cash (Forecourt Counter Drawer)</option><option value="Bank">Bank NEFT / IMPS Transfer</option><option value="UPI">UPI / GPay / PhonePe</option></select>'
-    +'</label></div>'
+    +'<div class="sub" style="margin-left:22px;font-size:11px">Posts payment or recovery entry into Station Cash Book automatically.</div>'
     +'</div>';
+
+  h+='<label>Notes / Remarks (Optional)<input id="utx_notes" placeholder="e.g. Diwali advance, festival bonus, mess deduction"></label>';
 
   h+='<div class="err" id="er"></div>'
-    +'<div class="row" style="margin-top:16px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="saveAdvanceTransaction()">Save Transaction</button></div>';
+    +'<div class="row" style="margin-top:16px;gap:8px;justify-content:flex-end">'
+    +'<button type="button" class="ghost" onclick="close()">Cancel</button>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="submitUnifiedTransaction()">Save Transaction</button>'
+    +'</div>';
 
   openM(h);
+  setTimeout(updateUtxEmployeeInfo, 10);
 }
 
-function saveAdvanceTransaction(){
-  var wid = v("adv_worker_id");
-  var kind = v("adv_kind");
-  var amt = v("adv_amt");
-  var dt = v("adv_date");
-  var note = v("adv_note");
-  var chk = document.getElementById("adv_sync_drawer");
-  var syncDrawer = chk && chk.checked;
-  var sel = document.getElementById("adv_pay_mode");
-  var payMode = sel ? sel.value : "Cash";
+function onUtxTypeChange(val){
+  var helpTexts = {
+    salary_payment: "Normal salary paid for a chosen salary month.",
+    salary_advance: "Money given before the salary is settled.",
+    advance_salary_adjustment: "Allocate an earlier advance against a salary month. No new cash moves.",
+    advance_cash_recovery: "Employee physically returns advance money back to the station.",
+    bonus: "Extra payment. Does not change the monthly salary obligation.",
+    salary_deduction: "Reduces salary payable for a month. No cash moves.",
+    correction: "Authorised correction entry, kept in the audit trail."
+  };
+  var elHelp = document.getElementById("utx_help");
+  if(elHelp) elHelp.textContent = helpTexts[val] || "";
+  var syncBox = document.getElementById("utx_sync_box");
+  if(syncBox){
+    var isNonCash = (val === "advance_salary_adjustment" || val === "salary_deduction" || val === "correction");
+    syncBox.style.display = isNonCash ? "none" : "block";
+  }
+}
+
+function updateUtxEmployeeInfo(){
+  var wid = v("utx_worker");
+  var el = document.getElementById("utx_emp_info");
+  if(!el || !LAST_PAYROLL_DATA || !LAST_PAYROLL_DATA.workers) return;
+  var w = LAST_PAYROLL_DATA.workers.filter(function(x){return String(x.id)===String(wid)})[0];
+  if(!w) return;
+  el.textContent = "Current Pending: " + inr(w.balance > 0 ? w.balance : 0) + " · Outstanding Advance: " + inr(w.outstanding_advance || 0);
+}
+
+function submitUnifiedTransaction(){
+  var wid = v("utx_worker");
+  var ttype = v("utx_type");
+  var period = v("utx_period");
+  var dt = v("utx_date");
+  var amt = v("utx_amt");
+  var method = v("utx_method");
+  var notes = v("utx_notes");
+  var syncChk = document.getElementById("utx_sync_cash");
+  var syncCash = syncChk && syncChk.checked;
 
   if(!amt || parseFloat(amt) <= 0) return er("Please enter a valid amount.");
 
-  api("POST","/api/employees/advance",{
-    worker_id: wid,
-    kind: kind,
+  api("POST", "/api/payroll/transaction", {
+    employee_id: wid,
+    transaction_type: ttype,
     amount: amt,
-    d: dt,
-    note: note,
-    sync_cash_drawer: syncDrawer,
-    pay_mode: payMode
+    salary_period: period,
+    transaction_date: dt,
+    payment_method: method,
+    notes: notes,
+    sync_cash_drawer: syncCash
   }).then(function(res){
     close();
-    toast(res.message || "Advance entry recorded.");
+    toast(res.message || "Transaction recorded successfully.");
     renderSalary();
   }).catch(function(e){
     er(e.error || "Could not record transaction.");
   });
 }
 
+function reverseTransactionPrompt(itemId, workerId){
+  ask("Reverse this transaction? It will be marked reversed and kept in the audit trail.", function(){
+    api("POST", "/api/payroll/transaction/reverse", { item_id: itemId, reason: "Reversed from employee ledger" }).then(function(res){
+      toast(res.message || "Transaction reversed.");
+      showAdvanceLedgerModal(workerId);
+      renderSalary();
+    }).catch(function(e){
+      badge(e.error || "Could not reverse transaction.");
+    });
+  });
+}
+
 // ----------------------------------------------------------------------------
-// Add Employee Profile Modal (PetroPulse360 Feature)
+// PetroPulse360 Add Employee Profile Modal (Clean, NO EPF, NO ESIC)
 // ----------------------------------------------------------------------------
-function addEmployeeModal(){
-  var h='<h2>+ Add Forecourt Employee</h2>'
-    +'<div class="sub" style="margin-bottom:12px">Create a new staff profile for pump attendant (DSM), cashier, or forecourt manager.</div>';
+function openAddEmployeeModal(){
+  var h='<h2>+ Add Employee</h2>'
+    +'<div class="sub" style="margin-bottom:12px">Create a new forecourt staff profile.</div>';
 
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<label>Full Name<input id="new_emp_name" placeholder="e.g. Rahul Shinde"></label>'
-    +'<label>10-Digit Mobile<input id="new_emp_mobile" inputmode="numeric" placeholder="e.g. 9876543210"></label>'
-    +'</div>';
-
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +'<label>Role / Designation'
-    +'<select id="new_emp_role"><option value="worker">Pump Attendant (DSM)</option><option value="manager">Forecourt Manager</option></select>'
-    +'</label>'
-    +'<label>Compensation Structure'
-    +'<select id="new_emp_pay_type" onchange="var m=document.getElementById(\'sec_new_salary\');m.style.display=(this.value===\'monthly\'?\'block\':\'none\');">'
-    +'<option value="duty">Shift-based Wage (Per Closed Duty)</option>'
-    +'<option value="monthly">Fixed Monthly Basic Salary</option>'
-    +'</select>'
-    +'</label>'
-    +'</div>';
-
-  h+='<div id="sec_new_salary" style="display:none;background:rgba(2,132,199,0.04);border:1px solid rgba(2,132,199,0.25);border-radius:8px;padding:10px;margin-bottom:10px">'
-    +'<label style="margin:0">Monthly Basic Salary (\u20b9)<input id="new_emp_salary" inputmode="decimal" placeholder="e.g. 15000"></label>'
-    +'</div>';
-
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px">'
-    +'<label>Bank Account No<input id="new_emp_acc" inputmode="numeric" placeholder="e.g. 1234567890"></label>'
-    +'<label>Bank IFSC<input id="new_emp_ifsc" style="text-transform:uppercase" placeholder="e.g. SBIN0001234"></label>'
-    +'<label>Staff UPI ID<input id="new_emp_upi" placeholder="e.g. rahul@upi"></label>'
-    +'</div>';
-
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">'
-    +'<label style="display:flex;align-items:center;gap:6px;font-weight:700"><input type="checkbox" id="new_emp_epf" style="width:16px;height:16px;accent-color:var(--ok)"> Opt into EPF (12%)</label>'
-    +'<label style="display:flex;align-items:center;gap:6px;font-weight:700"><input type="checkbox" id="new_emp_esic" style="width:16px;height:16px;accent-color:#0284c7"> Opt into ESIC (0.75%)</label>'
-    +'</div>';
+  h+='<label>Name<input id="add_emp_name" placeholder="Employee name"></label>';
+  h+='<label>Role title (optional)<input id="add_emp_role" placeholder="Nozzle Attendant, Cashier, Manager…"></label>';
+  h+='<label>Monthly Salary (\u20b9) — optional<input id="add_emp_salary" type="number" step="1" placeholder="0">'
+    +'<div class="sub" style="font-size:11px;margin-top:2px">Leave blank for shift-only staff — they still appear in nozzle assignment and variance, but add no payroll liability.</div>'
+    +'</label>';
+  h+='<label>10-Digit Mobile (optional)<input id="add_emp_mobile" inputmode="numeric" placeholder="e.g. 9876543210"></label>';
 
   h+='<div class="err" id="er"></div>'
-    +'<div class="row" style="margin-top:16px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="saveNewEmployee()">Create Employee Profile</button></div>';
+    +'<div class="row" style="margin-top:16px;gap:8px;justify-content:flex-end">'
+    +'<button type="button" class="ghost" onclick="close()">Cancel</button>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="submitAddEmployee()">Add Employee</button>'
+    +'</div>';
 
   openM(h);
 }
 
-function saveNewEmployee(){
-  var nm = v("new_emp_name");
-  var mob = v("new_emp_mobile");
-  var rl = v("new_emp_role");
-  var pt = v("new_emp_pay_type");
-  var sal = v("new_emp_salary");
-  var acc = v("new_emp_acc");
-  var ifsc = v("new_emp_ifsc");
-  var upi = v("new_emp_upi");
-  var epf = document.getElementById("new_emp_epf") && document.getElementById("new_emp_epf").checked;
-  var esic = document.getElementById("new_emp_esic") && document.getElementById("new_emp_esic").checked;
+function submitAddEmployee(){
+  var nm = v("add_emp_name");
+  var roleTitle = v("add_emp_role");
+  var sal = v("add_emp_salary");
+  var mob = v("add_emp_mobile");
 
   if(!nm) return er("Please enter employee name.");
-  if(!mob || mob.length !== 10) return er("Please enter a valid 10-digit mobile number.");
 
-  api("POST","/api/employees",{
+  api("POST", "/api/employees", {
     name: nm,
-    mobile: mob,
-    role: rl,
-    pay_type: pt,
-    monthly_salary: sal,
-    bank_acc: acc,
-    bank_ifsc: ifsc,
-    bank_upi: upi,
-    epf_opted: epf,
-    esic_opted: esic
+    role_title: roleTitle || "Nozzle Attendant",
+    monthly_salary: sal || 0,
+    mobile: mob
   }).then(function(res){
     close();
     toast(res.message || "Employee added.");
     renderSalary();
   }).catch(function(e){
     er(e.error || "Could not add employee.");
+  });
+}
+
+// ----------------------------------------------------------------------------
+// PetroPulse360 Edit Employee Profile Modal
+// ----------------------------------------------------------------------------
+function openEditEmployeeModal(workerId){
+  if(!LAST_PAYROLL_DATA || !LAST_PAYROLL_DATA.workers) return toast("Load payroll first.");
+  var w = LAST_PAYROLL_DATA.workers.filter(function(x){return String(x.id)===String(workerId)})[0];
+  if(!w) return toast("Employee not found.");
+
+  var h='<h2>Edit Employee</h2>'
+    +'<div class="sub" style="margin-bottom:12px">Update staff details and monthly salary structure for <b>'+esc(w.name)+'</b>.</div>';
+
+  h+='<label>Name<input id="edit_emp_name" value="'+esc(w.name)+'"></label>';
+  h+='<label>Role title (optional)<input id="edit_emp_role" placeholder="Nozzle Attendant, Cashier, Manager…" value="'+esc(w.role_title||w.role)+'"></label>';
+  h+='<label>Monthly Salary (\u20b9) — optional<input id="edit_emp_salary" type="number" step="1" value="'+(w.monthly_salary||'')+'"></label>';
+  h+='<p class="sub" style="font-size:11px;color:var(--mute);margin:-4px 0 10px 2px">Changing the salary applies to new salary months only. Past months keep their recorded amount.</p>';
+  h+='<label>10-Digit Mobile<input id="edit_emp_mobile" inputmode="numeric" value="'+esc(w.mobile||"")+'"></label>';
+
+  h+='<div class="err" id="er"></div>'
+    +'<div class="row" style="margin-top:16px;gap:8px;justify-content:flex-end">'
+    +'<button type="button" class="ghost" onclick="close()">Cancel</button>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="submitEditEmployee('+w.id+')">Save Changes</button>'
+    +'</div>';
+
+  openM(h);
+}
+
+function submitEditEmployee(workerId){
+  var nm = v("edit_emp_name");
+  var roleTitle = v("edit_emp_role");
+  var sal = v("edit_emp_salary");
+  var mob = v("edit_emp_mobile");
+
+  if(!nm) return er("Please enter employee name.");
+
+  api("PUT", "/api/employees/" + workerId, {
+    name: nm,
+    role_title: roleTitle,
+    monthly_salary: sal || 0,
+    mobile: mob
+  }).then(function(res){
+    close();
+    toast(res.message || "Employee updated.");
+    renderSalary();
+  }).catch(function(e){
+    er(e.error || "Could not update employee.");
+  });
+}
+
+// ----------------------------------------------------------------------------
+// PetroPulse360 Delete Employee with confirmation
+// ----------------------------------------------------------------------------
+function deleteEmployeePrompt(workerId, workerName){
+  var h='<h2>Remove '+esc(workerName)+'?</h2>'
+    +'<p style="font-size:13px;color:var(--ink);margin:8px 0 16px">This deletes the employee and their salary ledger history. Prefer <b>Disable</b> to keep the financial record.</p>'
+    +'<div class="row" style="gap:8px;justify-content:flex-end">'
+    +'<button type="button" class="ghost" onclick="close()">Cancel</button>'
+    +'<button type="button" style="background:var(--due);color:#fff;font-weight:700" onclick="confirmDeleteEmployee('+workerId+')">Delete</button>'
+    +'</div>';
+  openM(h);
+}
+
+function confirmDeleteEmployee(workerId){
+  api("DELETE", "/api/employees/" + workerId).then(function(res){
+    close();
+    toast(res.message || "Employee removed.");
+    renderSalary();
+  }).catch(function(e){
+    badge(e.error || "Could not delete employee.");
   });
 }
 
@@ -11121,38 +11352,64 @@ function toggleEmployeeActive(workerId, active){
   });
 }
 
-function loadMyPay(){
-  api("GET","/api/my-pay?month="+PM).then(function(r){
-    LAST_PAYROLL_DATA={workers:[r.worker]};
-    var reqs=r.advance_requests||[];
-    var h=ubar()+wnav()
-      +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">'
-      +'<h1 style="margin:0">My Salary &amp; Wages</h1>'
-      +'<div class="btns" style="margin:0;gap:6px">'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--brand);border-color:rgba(14,165,233,0.3);display:inline-flex;align-items:center;gap:6px" onclick="showDutyCalendarModal(null)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>My Duty Calendar</button>'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:#0284c7;border-color:rgba(2,132,199,0.3);display:inline-flex;align-items:center;gap:6px" onclick="requestAdvanceModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>Request Salary Advance</button>'
-      +'</div></div>'
-      +monthPick("loadMyPay");
-
-    if(reqs.length){
-      h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:12px">'
-        +'<div style="font-weight:700;font-size:12px;color:var(--ink);margin-bottom:6px">📋 My Advance Requests for '+PM+':</div>'
-        +reqs.map(function(q){
-          var stColor=(q.status==='approved'?'var(--ok)':q.status==='rejected'?'var(--due)':'var(--warn)');
-          var stIcon=(q.status==='approved'?'✅ Approved':q.status==='rejected'?'❌ Rejected':'⏳ Pending Review');
-          return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.04)">'
-            +'<span>• <b>'+inr(q.amount)+'</b> ('+esc(q.reason||"Advance")+')</span>'
-            +'<span style="font-weight:700;color:'+stColor+'">'+stIcon+'</span>'
-            +'</div>';
-        }).join("")
-        +'</div>';
-    }
-
-    h+='<div style="margin-top:10px">'+payCard(r.worker,true)+'</div>';
-    document.getElementById("app").innerHTML=h;
+function toggleAdvanceCashIntegration(enabled){
+  api("PUT", "/api/payroll/settings", { advance_recovery_cash_integration: enabled ? 1 : 0 }).then(function(res){
+    toast(enabled ? "Cash advance recoveries are now included in Cash Reconciliation & Cash Flow" : "Manual mode — advance recoveries stay out of cash calculations");
+    renderSalary();
   }).catch(function(e){
-    document.getElementById("app").innerHTML=ubar()+wnav()+'<div class="empty">Could not load. '+esc(e.error||"Check your connection.")+'</div>';
+    badge(e.error || "Could not update setting.");
   });
+}
+
+function openVarianceThresholdModal(){
+  var st = (LAST_PAYROLL_DATA && LAST_PAYROLL_DATA.settings) || {};
+  var wVal = st.variance_threshold_watch != null ? st.variance_threshold_watch : 10;
+  var hVal = st.variance_threshold_high != null ? st.variance_threshold_high : 30;
+
+  var h='<h2>⚠️ Variance Thresholds</h2>'
+    +'<div class="sub" style="margin-bottom:12px">Average variance per shift above these limits marks a person 🟡 Watch or 🔴 High in the Payroll Summary.</div>';
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<label>Watch (litres)<input id="modal_var_watch" type="number" step="1" value="'+wVal+'"></label>'
+    +'<label>High (litres)<input id="modal_var_high" type="number" step="1" value="'+hVal+'"></label>'
+    +'</div>';
+
+  h+='<div class="err" id="er"></div>'
+    +'<div class="row" style="margin-top:16px;gap:8px;justify-content:flex-end">'
+    +'<button type="button" class="ghost" onclick="close()">Cancel</button>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="submitVarianceThresholds()">Save Thresholds</button>'
+    +'</div>';
+
+  openM(h);
+}
+
+function submitVarianceThresholds(){
+  var w = v("modal_var_watch");
+  var h = v("modal_var_high");
+  api("PUT", "/api/payroll/settings", { variance_threshold_watch: w, variance_threshold_high: h }).then(function(){
+    close();
+    toast("Variance thresholds updated.");
+    renderSalary();
+  }).catch(function(e){
+    er(e.error || "Could not save.");
+  });
+}
+
+function saveVarianceThresholds(){
+  var w = v("var_th_watch");
+  var h = v("var_th_high");
+  api("PUT", "/api/payroll/settings", { variance_threshold_watch: w, variance_threshold_high: h }).then(function(){
+    toast("Variance thresholds saved.");
+    renderSalary();
+  }).catch(function(e){
+    badge(e.error || "Could not save.");
+  });
+}
+
+function loadMyPay(subTab){
+  tab = "wcal";
+  DUTY_CAL_SUBTAB = subTab || "pay";
+  loadWorkerCalendarHome(DUTY_CAL_SUBTAB);
 }
 
 function workerSalaryForm(id){
@@ -11160,7 +11417,7 @@ function workerSalaryForm(id){
     var x=r.workers.filter(function(k){return k.id==id})[0];
     if(!x)return toast("Worker not found");
     var isMonthly=(x.pay_type==="monthly");
-    var h='<h2>Salary &amp; Wage Configuration</h2><div class="sub" style="margin-bottom:12px">Configure basic salary model, attendance &amp; LOP, overtime, night allowance, lube &amp; fuel incentives, statutory EPF/ESIC, and bank/UPI details for <b>'+esc(x.name)+'</b>.</div>';
+    var h='<h2>Salary &amp; Wage Configuration</h2><div class="sub" style="margin-bottom:12px">Configure basic salary model, attendance &amp; LOP, overtime, night allowance, lube &amp; fuel incentives, and bank/UPI details for <b>'+esc(x.name)+'</b>.</div>';
 
     h+='<label>Compensation Model'
       +'<select id="w_pay_type" onchange="var m=document.getElementById(\'sec_monthly\'),s=document.getElementById(\'sec_shift\');if(this.value===\'monthly\'){m.style.display=\'block\';s.style.display=\'none\'}else{m.style.display=\'none\';s.style.display=\'block\'}">'
@@ -11193,13 +11450,6 @@ function workerSalaryForm(id){
       +'</div>';
 
     h+='<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px">'
-      +'<div style="font-weight:700;font-size:12.5px;margin-bottom:6px">🏛️ Statutory Compliance (EPF &amp; ESIC):</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:rgba(5,150,105,0.04);border:1px solid rgba(5,150,105,0.25);border-radius:8px;padding:10px;margin-bottom:10px">'
-      +'<div><label style="display:flex;align-items:center;gap:6px;font-weight:700;margin-bottom:4px"><input type="checkbox" id="w_epf_opted" '+(x.epf_opted?'checked':'')+' style="width:16px;height:16px;accent-color:var(--ok)"> EPF Active (12%)</label><label style="margin:0;font-size:11.5px">UAN Number (12 digits)<input id="w_uan_no" inputmode="numeric" placeholder="e.g. 100912345678" value="'+esc(x.uan_no||"")+'"></label></div>'
-      +'<div><label style="display:flex;align-items:center;gap:6px;font-weight:700;margin-bottom:4px"><input type="checkbox" id="w_esic_opted" '+(x.esic_opted?'checked':'')+' style="width:16px;height:16px;accent-color:#0284c7"> ESIC Active (0.75%)</label><label style="margin:0;font-size:11.5px">ESIC IP Number (17 digits)<input id="w_esic_no" inputmode="numeric" placeholder="e.g. 31001234560001001" value="'+esc(x.esic_no||"")+'"></label></div>'
-      +'</div></div>';
-
-    h+='<div style="border-top:1px solid var(--line);padding-top:10px;margin-top:10px">'
       +'<div style="font-weight:700;font-size:12.5px;margin-bottom:6px">💳 Bank &amp; UPI Disbursement Details:</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">'
       +'<label>Bank Account Number<input id="w_bank_acc" inputmode="numeric" placeholder="e.g. 123456789012" value="'+esc(x.bank_acc||"")+'"></label>'
@@ -11225,12 +11475,6 @@ function saveWorkerSalarySettings(id){
   var acc=v("w_bank_acc");
   var ifsc=v("w_bank_ifsc");
   var upi=v("w_bank_upi");
-  var epfChk=document.getElementById("w_epf_opted");
-  var epfOpted=epfChk&&epfChk.checked;
-  var uan=v("w_uan_no");
-  var esicChk=document.getElementById("w_esic_opted");
-  var esicOpted=esicChk&&esicChk.checked;
-  var esicNo=v("w_esic_no");
 
   var b={};
   SHS.forEach(function(sh,i){var el=document.getElementById("r"+i);if(el)b[sh]=el.value});
@@ -11248,10 +11492,6 @@ function saveWorkerSalarySettings(id){
     bank_acc:acc,
     bank_ifsc:ifsc,
     bank_upi:upi,
-    epf_opted:epfOpted,
-    uan_no:uan,
-    esic_opted:esicOpted,
-    esic_no:esicNo,
     rates:b
   }).then(function(){
     close();toast("Salary settings saved.");renderSalary();
@@ -11480,91 +11720,7 @@ function showExcessBreakdown(workerId){
   openM(h);
 }
 
-function showStatutoryChallanModal(){
-  if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers||!LAST_PAYROLL_DATA.workers.length){
-    return toast("No payroll data loaded.");
-  }
-  var list=LAST_PAYROLL_DATA.workers.filter(function(w){return w.epf_opted||w.esic_opted});
-  var totEpfEe=list.reduce(function(a,w){return a+(w.epf_ee||0)},0);
-  var totEpfEr=list.reduce(function(a,w){return a+(w.epf_er||0)},0);
-  var totEsicEe=list.reduce(function(a,w){return a+(w.esic_ee||0)},0);
-  var totEsicEr=list.reduce(function(a,w){return a+(w.esic_er||0)},0);
-  var totStatutory=totEpfEe+totEpfEr+totEsicEe+totEsicEr;
 
-  var h='<h2>🏛️ Statutory EPF &amp; ESIC Monthly Statement</h2>'
-    +'<div class="sub" style="margin-bottom:12px">Compliance challan calculation for <b>'+PM+'</b> under EPFO &amp; ESIC rules.</div>';
-
-  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL EPF (EE+ER)</div><b style="font-size:16px;color:var(--ok)">'+inr(totEpfEe+totEpfEr)+'</b><div class="sub" style="font-size:10.5px">EE: '+inr(totEpfEe)+' · ER: '+inr(totEpfEr)+'</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL ESIC (EE+ER)</div><b style="font-size:16px;color:#0284c7">'+inr(totEsicEe+totEsicEr)+'</b><div class="sub" style="font-size:10.5px">EE: '+inr(totEsicEe)+' · ER: '+inr(totEsicEr)+'</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL CHALLAN REMITTANCE</div><b style="font-size:16px;color:var(--ink)">'+inr(totStatutory)+'</b><div class="sub" style="font-size:10.5px">For Bank Remittance</div></div>'
-    +'</div>';
-
-  if(!list.length){
-    h+='<div class="empty" style="padding:24px">No staff currently opted for EPF or ESIC. To enable statutory deductions, open any worker\'s card and tap <b>⚙️ Salary &amp; Rates</b> &rarr; check <b>EPF Active (12%)</b> or <b>ESIC Active (0.75%)</b>.</div>';
-  } else {
-    h+='<div class="tbl" style="max-height:300px;overflow-y:auto;margin-bottom:12px"><table>'
-      +'<thead><tr><th>Staff Name</th><th>UAN / IP Number</th><th class="r">Gross Wages</th><th class="r">EPF (12% EE)</th><th class="r">EPF (12% ER)</th><th class="r">ESIC (0.75% EE)</th><th class="r">ESIC (3.25% ER)</th><th class="r">Total Remit</th></tr></thead><tbody>';
-    list.forEach(function(w){
-      var wTot=(w.epf_ee||0)+(w.epf_er||0)+(w.esic_ee||0)+(w.esic_er||0);
-      h+='<tr>'
-        +'<td><b>'+esc(w.name)+'</b><div class="sub">'+esc(w.role)+'</div></td>'
-        +'<td>'+(w.uan_no?'UAN: <b>'+esc(w.uan_no)+'</b><br>':'')+(w.esic_no?'IP: <b>'+esc(w.esic_no)+'</b>':'—')+'</td>'
-        +'<td class="r">'+inr(w.gross)+'</td>'
-        +'<td class="r" style="color:var(--due)">'+(w.epf_ee?inr(w.epf_ee):'—')+'</td>'
-        +'<td class="r">'+(w.epf_er?inr(w.epf_er):'—')+'</td>'
-        +'<td class="r" style="color:var(--due)">'+(w.esic_ee?inr(w.esic_ee):'—')+'</td>'
-        +'<td class="r">'+(w.esic_er?inr(w.esic_er):'—')+'</td>'
-        +'<td class="r" style="font-weight:700">'+inr(wTot)+'</td>'
-        +'</tr>';
-    });
-    h+='</tbody></table></div>';
-  }
-
-  h+='<div class="row" style="margin-top:14px;gap:8px;justify-content:flex-end">'
-    +'<button type="button" class="ghost" onclick="close()">Close</button>'
-    +(list.length?'<button type="button" style="background:var(--ok);color:#fff;font-weight:700" onclick="exportStatutoryChallanCsv()">📥 Download Challan (.csv)</button>':'')
-    +'</div>';
-
-  openM(h);
-}
-
-function exportStatutoryChallanCsv(){
-  if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return;
-  var list=LAST_PAYROLL_DATA.workers.filter(function(w){return w.epf_opted||w.esic_opted});
-  var rows=[
-    ["Worker Name","Mobile","UAN Number","ESIC IP Number","Gross Wages","EPF Wages (Capped 15k)","Employee EPF (12%)","Employer EPF (12%)","Employee ESIC (0.75%)","Employer ESIC (3.25%)","Total Remittance","Month"]
-  ];
-  list.forEach(function(w){
-    var epfWage=w.epf_opted?Math.min(15000,w.gross):0;
-    var wTot=(w.epf_ee||0)+(w.epf_er||0)+(w.esic_ee||0)+(w.esic_er||0);
-    rows.push([
-      w.name,
-      w.mobile||"",
-      w.uan_no||"",
-      w.esic_no||"",
-      w.gross||0,
-      epfWage,
-      w.epf_ee||0,
-      w.epf_er||0,
-      w.esic_ee||0,
-      w.esic_er||0,
-      wTot,
-      PM
-    ]);
-  });
-  var csvContent="data:text/csv;charset=utf-8," + rows.map(function(e){
-    return e.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"'}).join(",");
-  }).join("\n");
-  var encodedUri=encodeURI(csvContent);
-  var link=document.createElement("a");
-  link.setAttribute("href",encodedUri);
-  link.setAttribute("download","Statutory-EPF-ESIC-Challan-"+PM+".csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  toast("Statutory Challan CSV downloaded.");
-}
 
 function showBankDisbursementModal(){
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers||!LAST_PAYROLL_DATA.workers.length){
@@ -11700,8 +11856,6 @@ function sendSalaryWhatsApp(workerId){
     +(w.advance?"• Cash Advances: -"+inr(w.advance)+"\n":"")
     +(w.lop_deduction?"• Loss of Pay (LOP): -"+inr(w.lop_deduction)+" ("+w.lop_days+" absent days)\n":"")
     +(w.net_short?"• Shift Cash Shortage: -"+inr(w.net_short)+(w.waived?" ("+inr(w.waived)+" waived)":"")+"\n":"")
-    +(w.epf_ee?"• EPF Deduction (12%): -"+inr(w.epf_ee)+(w.uan_no?" (UAN: "+w.uan_no+")":"")+"\n":"")
-    +(w.esic_ee?"• ESIC Deduction (0.75%): -"+inr(w.esic_ee)+(w.esic_no?" (IP: "+w.esic_no+")":"")+"\n":"")
     +(w.loan_emi?"• Staff Loan EMI: -"+inr(w.loan_emi)+"\n":"")
     +(w.uniform_deposit?"• Uniform Deposit: -"+inr(w.uniform_deposit)+"\n":"")
     +(w.deduction?"• Mess / Uniform / Other: -"+inr(w.deduction)+"\n":"")
@@ -11757,8 +11911,6 @@ function showPaySlip(w){
     +'<div>IFSC Code: <b>'+(w.bank_ifsc?esc(w.bank_ifsc):'—')+(w.bank_upi?' | UPI: '+esc(w.bank_upi):'')+'</b></div>'
     +'<div>Shifts Worked / Days: <b>'+(w.duties||0)+' shifts ('+(w.days_worked||0)+' days)</b></div>'
     +'<div>Overtime / Double Shifts: <b>'+(w.double_shifts||0)+' double shift(s)</b></div>'
-    +(w.epf_opted?'<div>EPF UAN: <b>'+(w.uan_no?esc(w.uan_no):'Pending')+'</b></div>':'')
-    +(w.esic_opted?'<div>ESIC IP Number: <b>'+(w.esic_no?esc(w.esic_no):'Pending')+'</b></div>':'')
     +'</div>'
 
     // Earnings vs Deductions Table
@@ -11784,8 +11936,6 @@ function showPaySlip(w){
     +'<div style="display:flex;justify-content:space-between"><span>Cash Advances:</span><b>'+(w.advance?'-'+inr(w.advance):'₹0')+'</b></div>'
     +(w.lop_deduction?'<div style="display:flex;justify-content:space-between"><span>Loss of Pay (LOP '+w.lop_days+'d):</span><b>-'+inr(w.lop_deduction)+'</b></div>':'')
     +'<div style="display:flex;justify-content:space-between"><span>Shift Cash Shortage:</span><b>'+(w.net_short?'-'+inr(w.net_short):'₹0')+'</b></div>'
-    +(w.epf_ee?'<div style="display:flex;justify-content:space-between"><span>EPF Deduction (12%):</span><b>-'+inr(w.epf_ee)+'</b></div>':'')
-    +(w.esic_ee?'<div style="display:flex;justify-content:space-between"><span>ESIC Deduction (0.75%):</span><b>-'+inr(w.esic_ee)+'</b></div>':'')
     +(w.loan_emi?'<div style="display:flex;justify-content:space-between"><span>Loan EMI Recovery:</span><b>-'+inr(w.loan_emi)+'</b></div>':'')
     +(w.uniform_deposit?'<div style="display:flex;justify-content:space-between"><span>Uniform / Kit Deposit:</span><b>-'+inr(w.uniform_deposit)+'</b></div>':'')
     +(w.deduction?'<div style="display:flex;justify-content:space-between"><span>Mess / Uniform / Other:</span><b>-'+inr(w.deduction)+'</b></div>':'')
@@ -11988,10 +12138,10 @@ function exportSalaryCsv(){
     return toast("No payroll data to export.");
   }
   var rows=[
-    ["Staff Name","Mobile","Role","Pay Structure","Days Worked","Shifts Worked","Double Shifts","Night Shifts","Bank Account","IFSC Code","UPI ID","Base Pay","Night Allowance","Overtime","Lube & Fuel Incentive","Bonus","Uniform Refund","Gross Earnings","Advances","Loss of Pay (LOP)","Shortage","EPF Employee (12%)","ESIC Employee (0.75%)","Loan EMI","Uniform Deposit","Deductions","Total Deductions","Net Payable","Already Paid","Balance Due","Month"]
+    ["Staff Name","Mobile","Role","Pay Structure","Days Worked","Shifts Worked","Double Shifts","Night Shifts","Bank Account","IFSC Code","UPI ID","Base Pay","Night Allowance","Overtime","Lube & Fuel Incentive","Bonus","Uniform Refund","Gross Earnings","Advances","Loss of Pay (LOP)","Shortage","Loan EMI","Uniform Deposit","Deductions","Total Deductions","Net Payable","Already Paid","Balance Due","Month"]
   ];
   LAST_PAYROLL_DATA.workers.forEach(function(w){
-    var totDed=(w.advance||0)+(w.lop_deduction||0)+(w.net_short||0)+(w.epf_ee||0)+(w.esic_ee||0)+(w.loan_emi||0)+(w.uniform_deposit||0)+(w.deduction||0);
+    var totDed=(w.advance||0)+(w.lop_deduction||0)+(w.net_short||0)+(w.loan_emi||0)+(w.uniform_deposit||0)+(w.deduction||0);
     rows.push([
       w.name,
       w.mobile||"",
@@ -12014,8 +12164,6 @@ function exportSalaryCsv(){
       w.advance||0,
       w.lop_deduction||0,
       w.net_short||0,
-      w.epf_ee||0,
-      w.esic_ee||0,
       w.loan_emi||0,
       w.uniform_deposit||0,
       w.deduction||0,
@@ -12081,7 +12229,8 @@ function changeDutyCalMonth(offset){
   if(m < 1){ m = 12; y--; }
   else if(m > 12){ m = 1; y++; }
   DUTY_CAL_MONTH = y + "-" + (m < 10 ? "0" + m : m);
-  if(tab === "wcal" && ME && ME.role === "worker"){
+  PM = DUTY_CAL_MONTH;
+  if(tab === "wcal"){
     loadWorkerCalendarHome();
   } else {
     loadAndRenderDutyCalendar();
@@ -12091,7 +12240,8 @@ function changeDutyCalMonth(offset){
 function setDutyCalMonth(val){
   if(val && /^\d{4}-\d{2}$/.test(val)){
     DUTY_CAL_MONTH = val;
-    if(tab === "wcal" && ME && ME.role === "worker"){
+    PM = DUTY_CAL_MONTH;
+    if(tab === "wcal"){
       loadWorkerCalendarHome();
     } else {
       loadAndRenderDutyCalendar();
@@ -12100,7 +12250,7 @@ function setDutyCalMonth(val){
 }
 
 function refreshDutyCalendarView(){
-  if(tab === "wcal" && ME && ME.role === "worker"){
+  if(tab === "wcal"){
     renderWorkerCalendarHome();
   } else {
     renderDutyCalendarModal();
@@ -12152,13 +12302,158 @@ function synthesizeOfflineDutyCal(month, workerId){
   };
 }
 
-function loadWorkerCalendarHome(){
+var DUTY_CAL_SUBTAB = "calendar";
+var WORKER_PAY_CACHE = null;
+
+function switchWorkerCalTab(subTab){
+  DUTY_CAL_SUBTAB = subTab || "calendar";
+  renderWorkerCalendarHome();
+}
+
+function renderManagerOwnerPaySnapshotStrip(){
+  var r = LAST_PAYROLL_DATA || WORKER_PAY_CACHE;
+  if(!r || !r.workers) return "";
+  var workers = r.workers || [];
+  var summary = r.summary || {};
+  var totalCommitment = summary.total_commitment != null ? summary.total_commitment : workers.reduce(function(acc,w){return acc+(w.pay_type==='monthly'?w.monthly_salary:w.earn)},0);
+  var totalPaid = summary.total_paid != null ? summary.total_paid : workers.reduce(function(acc,w){return acc+(w.paid||0)},0);
+  var totalBal = summary.total_balance_due != null ? summary.total_balance_due : workers.reduce(function(acc,w){return acc+(w.balance||0)},0);
+  var totAdv = summary.total_outstanding_advances != null ? summary.total_outstanding_advances : workers.reduce(function(acc,w){return acc+(w.outstanding_advance||w.advance||0)},0);
+  var totalStaff = summary.total_staff != null ? summary.total_staff : workers.length;
+  var activeStaff = summary.active_staff != null ? summary.active_staff : workers.filter(function(w){return w.active!==false && w.active!==0}).length;
+  var pendAdv = (r.advance_requests||[]).filter(function(x){return x.status==="pending"});
+
+  var h = '<div style="background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.03)">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">';
+  h += '<div style="display:flex;align-items:center;gap:10px">';
+  h += '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0A63F8,#0640aa);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:0 2px 6px rgba(10,99,248,0.25)">👥</div>';
+  h += '<div>';
+  h += '<div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-0.2px">Staff Payroll &amp; Wage Overview (' + activeStaff + '/' + totalStaff + ' Active Staff)</div>';
+  h += '<div class="sub" style="font-size:12px">Forecourt attendance synchronized payroll · ' + esc(DUTY_CAL_MONTH||PM) + (pendAdv.length ? ' · <b style="color:#0284c7">🔔 ' + pendAdv.length + ' Pending Advance' + (pendAdv.length>1?'s':'') + '</b>' : '') + '</div>';
+  h += '</div></div>';
+
+  h += '<div class="btns" style="margin:0;gap:6px;flex-wrap:wrap">';
+  h += '<button type="button" class="ghost" style="padding:6px 12px;font-size:12px;font-weight:700;color:#0284c7;border-color:rgba(2,132,199,0.3)" onclick="switchWorkerCalTab(\'pay\')">👥 View All Staff Payroll Cards →</button>';
+  h += '<button type="button" class="ghost" style="padding:6px 12px;font-size:12px;font-weight:700" onclick="openAddEmployeeModal()">+ Add Staff</button>';
+  h += '<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 12px;font-size:12px" onclick="openUnifiedTxModal()">⚡ Disburse / Transaction</button>';
+  h += '</div></div>';
+
+  // KPI boxes
+  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12px">';
+  h += '<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">TOTAL LIABILITY</div><b style="font-size:15px;color:var(--ink)">' + inr(totalCommitment) + '</b></div>';
+  h += '<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">SALARY PAID</div><b style="font-size:15px;color:var(--ok)">' + inr(totalPaid) + '</b></div>';
+  h += '<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">SALARY PENDING</div><b style="font-size:15px;color:' + (totalBal>0?'#ea580c':'var(--ok)') + '">' + inr(totalBal) + '</b></div>';
+  h += '<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">OUTSTANDING ADVANCES</div><b style="font-size:15px;color:' + (totAdv>0?'#d97706':'var(--ok)') + '">' + inr(totAdv) + '</b></div>';
+  h += '</div>';
+
+  // Quick staff pay chips row
+  h += '<div style="display:flex;gap:8px;overflow-x:auto;padding-top:10px;margin-top:10px;border-top:1px dashed var(--line);-webkit-overflow-scrolling:touch">';
+  workers.forEach(function(w){
+    var isDis = (w.active === false || w.active === 0);
+    var pnd = (w.balance > 0 ? w.balance : 0);
+    h += '<div style="flex-shrink:0;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:11.5px;display:flex;align-items:center;gap:6px;' + (isDis?'opacity:0.6;':'') + 'cursor:pointer" onclick="switchWorkerCalTab(\'pay\')" title="Click to view staff payroll card">';
+    h += '<b>' + esc(w.name) + '</b>';
+    h += '<span class="sub">(' + (w.duties||0) + ' shifts)</span>';
+    h += '<span style="font-weight:700;color:' + (pnd>0?'#ea580c':'var(--ok)') + '">' + (pnd>0 ? inr(pnd)+' due' : 'Paid') + '</span>';
+    h += '</div>';
+  });
+  h += '</div>';
+
+  h += '</div>';
+  return h;
+}
+
+function renderWorkerPaySection(){
+  if(ME && (ME.role === "owner" || ME.role === "manager")){
+    return getOwnerManagerPayrollHTML(true);
+  }
+  if(!WORKER_PAY_CACHE || !WORKER_PAY_CACHE.worker){
+    return '<div class="empty" style="padding:32px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px"><div style="font-size:26px;margin-bottom:8px">💵</div><b>Loading salary, wage rates &amp; advances…</b></div>';
+  }
+  var w = WORKER_PAY_CACHE.worker;
+  var reqs = WORKER_PAY_CACHE.advance_requests || [];
+  var monthName = "";
+  try {
+    var p = (DUTY_CAL_MONTH||PM||today().slice(0,7)).split("-");
+    monthName = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  } catch(_) { monthName = DUTY_CAL_MONTH; }
+
+  var h = '<div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">'
+    +'<div>'
+    +'<h2 style="margin:0;font-size:18px;font-weight:800;letter-spacing:-0.2px">💵 My Salary, Wages &amp; Advances</h2>'
+    +'<div class="sub" style="margin-top:2px">Wage computation, forecourt incentives &amp; advances for <b>'+monthName+'</b></div>'
+    +'</div>'
+    +'<div class="btns" style="margin:0;gap:6px;flex-wrap:wrap">'
+    +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12px;font-weight:700;color:var(--brand);border-color:rgba(14,165,233,0.3);display:inline-flex;align-items:center;gap:5px" onclick="switchWorkerCalTab(\'calendar\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>View Shift Calendar</button>'
+    +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:5px" onclick="requestAdvanceModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>Request Salary Advance</button>'
+    +'</div></div>';
+
+  if(reqs.length){
+    h += '<div style="background:rgba(2,132,199,0.05);border:1px solid rgba(2,132,199,0.25);border-radius:10px;padding:12px;margin-bottom:14px">'
+      +'<div style="font-weight:800;font-size:12.5px;color:#0284c7;margin-bottom:8px">📋 My Advance Requests for '+monthName+':</div>'
+      +reqs.map(function(q){
+        var stColor = (q.status === 'approved' ? 'var(--ok)' : q.status === 'rejected' ? 'var(--due)' : 'var(--warn)');
+        var stBadge = (q.status === 'approved' ? '✅ Approved &amp; Disbursed' : q.status === 'rejected' ? '❌ Rejected' : '⏳ Pending Review');
+        return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 8px;background:var(--card);border:1px solid var(--line);border-radius:6px;margin-top:4px;flex-wrap:wrap;gap:6px">'
+          +'<span>• Requested <b>'+inr(q.amount)+'</b> ('+esc(q.reason||"Personal Advance")+')</span>'
+          +'<span style="font-weight:700;color:'+stColor+'">'+stBadge+'</span>'
+          +'</div>';
+      }).join("")
+      +'</div>';
+  }
+
+  h += payCard(w, true);
+  h += '</div>';
+  return h;
+}
+
+function renderWorkerPaySnapshotStrip(){
+  if(ME && (ME.role === "owner" || ME.role === "manager")){
+    return renderManagerOwnerPaySnapshotStrip();
+  }
+  if(!WORKER_PAY_CACHE || !WORKER_PAY_CACHE.worker) return "";
+  var w = WORKER_PAY_CACHE.worker;
+  var grossEarn = (w.gross || w.earn || 0);
+  var advTotal = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
+  var netPayable = (w.net || 0);
+  var balDue = (w.balance != null ? w.balance : 0);
+  var shortVal = (w.net_short || 0);
+
+  return '<div style="background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.03)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;box-shadow:0 2px 6px rgba(2,132,199,0.3)">₹</div>'
+    +'<div>'
+    +'<div style="font-size:14.5px;font-weight:800;color:var(--ink)">My Pay &amp; Wages Summary</div>'
+    +'<div class="sub" style="font-size:12px">Forecourt attendance synchronized earnings · '+esc(DUTY_CAL_MONTH||PM)+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="btns" style="margin:0;gap:6px;flex-wrap:wrap">'
+    +'<button type="button" class="ghost" style="padding:5px 11px;font-size:12px;font-weight:700;color:#0284c7;border-color:rgba(2,132,199,0.3)" onclick="switchWorkerCalTab(\'pay\')">💵 View Full Wage Sheet →</button>'
+    +'<button type="button" class="ghost" style="padding:5px 11px;font-size:12px;font-weight:700" onclick="showPaySlipById('+(w.id||(ME&&ME.id))+')">📄 Pay Slip</button>'
+    +'<button type="button" class="ghost" style="padding:5px 11px;font-size:12px;font-weight:700;color:#059669;border-color:rgba(5,150,105,0.3)" onclick="requestAdvanceModal()">💸 Request Advance</button>'
+    +'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12px">'
+    +'<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">GROSS EARNINGS</div><b style="color:var(--ink);font-size:15px">'+inr(grossEarn)+'</b></div>'
+    +'<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">SHIFT SHORTAGE</div><b style="color:'+(shortVal>0?'var(--due)':'var(--ok)')+';font-size:15px">'+(shortVal>0?('-'+inr(shortVal)):'₹0 (Clean)')+'</b></div>'
+    +'<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">OUTSTANDING ADVANCE</div><b style="color:'+(advTotal>0?'#d97706':'var(--ok)')+';font-size:15px">'+inr(advTotal)+'</b></div>'
+    +'<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">NET TAKE-HOME</div><b style="color:var(--ok);font-size:15px">'+inr(netPayable)+'</b></div>'
+    +'<div><div class="sub" style="font-size:10.5px;font-weight:700;color:var(--mute)">BALANCE DUE</div><b style="color:'+(balDue>0?'#ea580c':'var(--ok)')+';font-size:15px">'+inr(balDue)+'</b></div>'
+    +'</div>'
+    +'</div>';
+}
+
+function loadWorkerCalendarHome(initialSubTab){
   tab = "wcal";
+  if(initialSubTab) DUTY_CAL_SUBTAB = initialSubTab;
   document.body.classList.add("logged-in");
   renderDrawerContent();
   if(!DUTY_CAL_MONTH || !/^\d{4}-\d{2}$/.test(DUTY_CAL_MONTH)){
     DUTY_CAL_MONTH = (typeof PM !== "undefined" && PM && /^\d{4}-\d{2}$/.test(PM)) ? PM : today().slice(0, 7);
   }
+  PM = DUTY_CAL_MONTH;
   if(ME && ME.role === "worker"){
     DUTY_CAL_WORKER = String(ME.id);
     if(DUTY_CAL_VIEW === "matrix"){
@@ -12167,7 +12462,8 @@ function loadWorkerCalendarHome(){
   }
   var appEl = document.getElementById("app");
   if(appEl){
-    appEl.innerHTML = ubar() + wnav() + '<div class="empty" style="padding:40px 10px"><div style="font-size:26px;margin-bottom:8px">📅</div><b>Loading Forecourt Duty Calendar &amp; Attendance for ' + esc(DUTY_CAL_MONTH) + '…</b></div>';
+    var topNavLoading = (ME && ME.role === "worker") ? (ubar() + wnav()) : nav();
+    appEl.innerHTML = topNavLoading + '<div class="empty" style="padding:40px 10px"><div style="font-size:26px;margin-bottom:8px">📅</div><b>Loading Forecourt Duty Calendar, Attendance &amp; Pay for ' + esc(DUTY_CAL_MONTH) + '…</b></div>';
   }
 
   if(!SRV){
@@ -12176,21 +12472,34 @@ function loadWorkerCalendarHome(){
   }
 
   var qUrl = "/api/payroll/duty-calendar?month=" + DUTY_CAL_MONTH + (ME && ME.role === "worker" ? ("&worker_id=" + ME.id) : "");
+  var pUrl = (ME && ME.role === "worker") ? ("/api/my-pay?month=" + DUTY_CAL_MONTH) : ("/api/payroll?month=" + DUTY_CAL_MONTH);
+
   Promise.all([
     api("GET", qUrl).catch(function(e){ return { _err: e }; }),
-    api("GET", "/api/duty/current").catch(function(){ return { duty: null }; })
+    api("GET", "/api/duty/current").catch(function(){ return { duty: null }; }),
+    api("GET", pUrl).catch(function(){ return null; })
   ]).then(function(results){
     var calRes = results[0];
     ACTIVE_WORKER_DUTY = (results[1] && results[1].duty) ? results[1].duty : null;
+    var payRes = results[2];
+
+    if(payRes){
+      WORKER_PAY_CACHE = payRes;
+      if(payRes.worker){
+        LAST_PAYROLL_DATA = { workers: [payRes.worker] };
+      } else if(payRes.workers){
+        LAST_PAYROLL_DATA = payRes;
+      }
+    }
 
     if(calRes && calRes._err){
       var err = calRes._err;
       if(err && err.status === 401){
         if(appEl){
-          appEl.innerHTML = ubar() + wnav() + '<div class="empty" style="padding:40px 10px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin:12px 0">'
+          appEl.innerHTML = ((ME && ME.role === "worker") ? (ubar() + wnav()) : nav()) + '<div class="empty" style="padding:40px 10px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin:12px 0">'
             + '<div style="font-size:32px;margin-bottom:8px">🔐</div>'
-            + '<b style="font-size:16px;color:var(--ink)">Attendant Session Required</b>'
-            + '<div class="sub" style="margin-top:6px;max-width:380px;margin-left:auto;margin-right:auto">Please log in with your forecourt attendant credentials to view your duty roster and attendance.</div>'
+            + '<b style="font-size:16px;color:var(--ink)">Session Required</b>'
+            + '<div class="sub" style="margin-top:6px;max-width:380px;margin-left:auto;margin-right:auto">Please log in to view forecourt duty roster, attendance and wages.</div>'
             + '<div class="btns" style="justify-content:center;margin-top:16px;gap:8px;flex-wrap:wrap">'
             + '<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="launchDemo(\'7387251048\',\'NewPass123\')">⚡ Quick Attendant Login (Vikram)</button>'
             + '<button type="button" class="ghost" onclick="authView(false)">Go to Login Screen</button>'
@@ -12208,7 +12517,7 @@ function loadWorkerCalendarHome(){
     } catch(renderErr){
       console.error("renderWorkerCalendarHome error:", renderErr);
       if(appEl){
-        appEl.innerHTML = ubar() + wnav() + '<div class="empty" style="padding:40px 10px"><b style="color:var(--due)">Error displaying duty calendar: ' + esc(renderErr.message) + '</b><div class="sub" style="margin-top:6px">Please click below to reset calendar view.</div><div class="btns" style="justify-content:center;margin-top:14px"><button onclick="DUTY_CAL_VIEW=\'grid\';loadWorkerCalendarHome()">Reset to Grid View</button></div></div>';
+        appEl.innerHTML = ((ME && ME.role === "worker") ? (ubar() + wnav()) : nav()) + '<div class="empty" style="padding:40px 10px"><b style="color:var(--due)">Error displaying duty calendar: ' + esc(renderErr.message) + '</b><div class="sub" style="margin-top:6px">Please click below to reset calendar view.</div><div class="btns" style="justify-content:center;margin-top:14px"><button onclick="DUTY_CAL_VIEW=\'grid\';loadWorkerCalendarHome()">Reset to Grid View</button></div></div>';
       }
     }
   }).catch(function(err){
@@ -12221,6 +12530,7 @@ function loadWorkerCalendarHome(){
 function renderWorkerCalendarHome(){
   if(!DUTY_CAL_CACHE){ return loadWorkerCalendarHome(); }
   tab = "wcal";
+  var isManagerOrOwner = (ME && (ME.role === "owner" || ME.role === "manager"));
   var banner = "";
   if(DUTY_CAL_CACHE.is_offline_cache){
     banner += '<div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#b45309;border-radius:10px;padding:9px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
@@ -12241,7 +12551,7 @@ function renderWorkerCalendarHome(){
       +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 14px;border:none;border-radius:6px;cursor:pointer" onclick="tab=\'wduty\';loadW()">Open Shift Duty →</button>'
       +'</div>'
       +'</div>';
-  } else {
+  } else if(ME && ME.role === "worker"){
     banner += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:14px">'
       +'<div style="display:flex;align-items:center;gap:8px">'
       +'<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok)"></span>'
@@ -12254,10 +12564,44 @@ function renderWorkerCalendarHome(){
       +'</div>'
       +'</div>';
   }
-  var calHtml = getDutyCalendarHTML(true);
+
+  var subNav = '<div class="duty-cal-subtabs noprint" style="display:flex;gap:6px;margin-bottom:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,0.02);flex-wrap:wrap">'
+    +'<button type="button" style="flex:1;min-width:180px;padding:8px 12px;font-size:12.5px;font-weight:700;border:none;border-radius:6px;cursor:pointer;background:'+(DUTY_CAL_SUBTAB==="calendar"?'linear-gradient(135deg, #0A63F8 0%, #0640aa 100%)':'transparent')+';color:'+(DUTY_CAL_SUBTAB==="calendar"?'#fff':'var(--mute)')+'" onclick="switchWorkerCalTab(\'calendar\')">🗓️ Forecourt Duty Calendar &amp; Attendance</button>'
+    +'<button type="button" style="flex:1;min-width:180px;padding:8px 12px;font-size:12.5px;font-weight:700;border:none;border-radius:6px;cursor:pointer;background:'+(DUTY_CAL_SUBTAB==="pay"?'linear-gradient(135deg, #0A63F8 0%, #0640aa 100%)':'transparent')+';color:'+(DUTY_CAL_SUBTAB==="pay"?'#fff':'var(--mute)')+'" onclick="switchWorkerCalTab(\'pay\')">' + (isManagerOrOwner ? '👥 Staff Payroll, Wages &amp; Advances' : '💵 My Pay, Wages &amp; Advances') + '</button>'
+    +'<button type="button" style="flex:1;min-width:140px;padding:8px 12px;font-size:12.5px;font-weight:700;border:none;border-radius:6px;cursor:pointer;background:'+(DUTY_CAL_SUBTAB==="all"?'linear-gradient(135deg, #0A63F8 0%, #0640aa 100%)':'transparent')+';color:'+(DUTY_CAL_SUBTAB==="all"?'#fff':'var(--mute)')+'" onclick="switchWorkerCalTab(\'all\')">' + (isManagerOrOwner ? '📑 Combined Roster &amp; Staff Payroll' : '📑 Combined Roster &amp; Pay') + '</button>'
+    +'</div>';
+
+  var mainContent = "";
+  if(DUTY_CAL_SUBTAB === "pay"){
+    if(isManagerOrOwner){
+      mainContent = getOwnerManagerPayrollHTML(true);
+    } else {
+      mainContent = renderWorkerPaySection();
+    }
+  } else if(DUTY_CAL_SUBTAB === "all"){
+    if(isManagerOrOwner){
+      mainContent = renderManagerOwnerPaySnapshotStrip() + getDutyCalendarHTML(true) + '<div style="margin-top:22px;border-top:2px solid var(--line);padding-top:18px">' + getOwnerManagerPayrollHTML(true) + '</div>';
+    } else {
+      mainContent = renderWorkerPaySection() + getDutyCalendarHTML(true);
+    }
+  } else {
+    // default calendar subtab
+    if(isManagerOrOwner){
+      mainContent = renderManagerOwnerPaySnapshotStrip() + getDutyCalendarHTML(true);
+    } else {
+      mainContent = renderWorkerPaySnapshotStrip() + getDutyCalendarHTML(true);
+    }
+  }
+
+  var topNav = (ME && ME.role === "worker") ? (ubar() + wnav()) : nav();
   var appEl = document.getElementById("app");
   if(appEl){
-    appEl.innerHTML = ubar() + wnav() + banner + calHtml;
+    appEl.innerHTML = topNav + banner + subNav + mainContent;
+  }
+
+  if(isManagerOrOwner && (DUTY_CAL_SUBTAB === "pay" || DUTY_CAL_SUBTAB === "all")){
+    renderSalaryList();
+    setTimeout(renderSalaryList, 50);
   }
 }
 
@@ -12378,7 +12722,7 @@ function openDutyCalDayDetailModal(dateStr, workerFilter){
     if(userAtt && (userAtt.status === "paid_leave" || userAtt.status === "casual_leave" || userAtt.status === "sick_leave")){
       h += 'Approved Leave Logged</b><div class="sub" style="margin-top:4px">'+esc(userAtt.note||"Casual / Sick Leave")+'</div>';
     } else if(userAtt && userAtt.status === "weekly_off" || (!userAtt && isSun)){
-      h += 'Weekly Rest Day</b><div class="sub" style="margin-top:4px">No nozzle duty scheduled for this date.</div>';
+      h += 'Weekly Off (Off Duty)</b><div class="sub" style="margin-top:4px">No nozzle duty scheduled for this date.</div>';
     } else if(isPast){
       h += 'No Shift Duty Logged</b><div class="sub" style="margin-top:4px;color:var(--due)">Absent record / Loss of Pay (LOP)</div>';
     } else {
@@ -12549,6 +12893,7 @@ function getDutyCalendarHTML(isInline){
     h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
       +'<span class="sub" style="font-weight:700;font-size:12px">Attendant:</span>'
       +'<span style="font-weight:800;color:var(--ink);font-size:13px;padding:3px 10px;background:var(--bg);border:1px solid var(--line);border-radius:6px">👤 '+esc(ME.name)+'</span>'
+      +'<button type="button" class="ghost" style="padding:3px 9px;font-size:11.5px;font-weight:700;color:#0284c7" onclick="switchWorkerCalTab(\'pay\')">💵 My Pay &amp; Wages</button>'
       +'</div>';
   } else {
     h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
@@ -12559,7 +12904,9 @@ function getDutyCalendarHTML(isInline){
       var cnt = allDuties.filter(function(d){ return d && String(d.worker_id) === String(wk.id); }).length;
       h += '<option value="'+wk.id+'"'+(DUTY_CAL_WORKER===String(wk.id)?' selected':'')+'>'+esc(wk.name)+' ('+esc(wk.role)+', '+cnt+' shifts)</option>';
     });
-    h += '</select></div>';
+    h += '</select>'
+      +(DUTY_CAL_WORKER && DUTY_CAL_WORKER !== "all" ? '<button type="button" class="ghost" style="padding:3px 9px;font-size:11.5px;font-weight:700;color:#0284c7" onclick="showAdvanceLedgerModal('+DUTY_CAL_WORKER+')">📑 View Worker Pay &amp; Ledger</button>' : '')
+      +'</div>';
   }
 
   h += '<div class="duty-cal-view-group" style="display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg);flex-wrap:wrap;max-width:100%">'
@@ -13326,7 +13673,7 @@ function openMarkAttendanceModal(dateStr, workerId){
     +'<label style="margin-top:10px">Attendance / Leave Status'
     +'<select id="att_status" required style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-weight:700">'
     +'<option value="present"'+(curStatus==="present"?' selected':'')+'>🟢 Present (P) — Relief / Manually Verified</option>'
-    +'<option value="weekly_off"'+(curStatus==="weekly_off"?' selected':'')+'>🔵 Weekly Off (WO) — Scheduled Rest Day</option>'
+    +'<option value="weekly_off"'+(curStatus==="weekly_off"?' selected':'')+'>🔵 Weekly Off (WO) — Off Duty</option>'
     +'<option value="paid_leave"'+(curStatus==="paid_leave"?' selected':'')+'>🟡 Paid Leave (PL) — Approved Paid Day</option>'
     +'<option value="casual_leave"'+(curStatus==="casual_leave"?' selected':'')+'>🟡 Casual Leave (CL) — Approved Casual Leave</option>'
     +'<option value="sick_leave"'+(curStatus==="sick_leave"?' selected':'')+'>🟡 Sick Leave (SL) — Medical / Sick Leave</option>'
