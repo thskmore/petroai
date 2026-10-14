@@ -2125,6 +2125,151 @@ body:not(.logged-in) #navDrawerBackdrop {
   gap: 6px;
   align-items: center;
 }
+
+/* ---- Forecourt Duty Calendar Mobile & Responsive Suite ---- */
+.duty-cal-wrap {
+  width: 100%;
+  max-width: 100%;
+}
+.duty-cal-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  background: var(--card);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.duty-cal-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.duty-cal-metric-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+  min-width: 0;
+}
+.duty-cal-legend-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--mute);
+  background: rgba(0,0,0,0.02);
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.duty-cal-grid-box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.duty-cal-cell {
+  min-height: 104px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+.duty-cal-list-desktop {
+  display: block;
+}
+.duty-cal-list-mobile {
+  display: none;
+}
+@media (max-width: 900px) {
+  .duty-cal-metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 680px) {
+  .duty-cal-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .duty-cal-metric-card {
+    padding: 7px 8px !important;
+  }
+  .duty-cal-metric-card b {
+    font-size: 14.5px !important;
+  }
+  .duty-cal-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .duty-cal-toolbar > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .duty-cal-view-group {
+    width: 100%;
+    display: flex !important;
+  }
+  .duty-cal-view-group button {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px !important;
+    font-size: 11px !important;
+  }
+  .duty-cal-legend-bar {
+    padding: 6px 8px;
+    font-size: 10px;
+    gap: 6px;
+  }
+  .duty-cal-cell {
+    min-height: 64px !important;
+    padding: 3px 2px !important;
+    gap: 1.5px !important;
+  }
+  .duty-cal-cell .desktop-only-duty {
+    display: none !important;
+  }
+  .duty-cal-cell .mobile-only-duty {
+    display: flex !important;
+  }
+  .duty-cal-list-desktop {
+    display: none !important;
+  }
+  .duty-cal-list-mobile {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .duty-cal-card-mobile {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.1s ease;
+  }
+  .duty-cal-card-mobile:active {
+    transform: scale(0.99);
+    border-color: #0284c7;
+  }
+}
 </style>
 <script src="/d3.min.js"></script>
 <script src="/jspdf.umd.min.js"></script>
@@ -2319,6 +2464,13 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return
 function today(){return new Date().toISOString().slice(0,10)}
 function find(id){if(!S||!S.c)return null;return S.c.filter(function(c){return c.id==id})[0]}
 function render(){if(!S)S=emptyS();if(!S.c)S.c=[];if(SRV&&!ME)return;
+if(SRV && ME && ME.role === "worker"){
+  if(tab === "wduty") return loadW();
+  if(tab === "mypay") return loadMyPay();
+  if(tab === "wassign") return loadWAssign(SELECTED_HANDOVER_DUTY_ID);
+  tab = "wcal";
+  return loadWorkerCalendarHome();
+}
 if(tab=="modules")return renderModulesTab();
 if(!isTabAllowedByModules(tab)){tab="home";return renderHome();}
 if(tab=="home"||!tab)return renderHome();
@@ -2943,7 +3095,8 @@ function getNavTabsList(){
 
   if (SRV && ME && ME.role == "worker") {
     var workerTabs = [
-      { id: "wduty", label: "My Duty", icon: icons.wduty, group: "Worker Tasks" },
+      { id: "wcal", label: "Duty Calendar & Attendance", icon: icons.duty, group: "Overview" },
+      { id: "wduty", label: "My Shift Duty", icon: icons.wduty, group: "Worker Tasks" },
       { id: "mypay", label: "My Pay & Advances", icon: icons.mypay, group: "Worker Tasks" }
     ];
     return workerTabs;
@@ -3013,6 +3166,13 @@ function closeNavDrawer(){
 function selectNavTab(tabId){
   if(window.innerWidth < 900){
     closeNavDrawer();
+  }
+  if(SRV && ME && ME.role === "worker"){
+    if(tabId === "wduty"){ tab = "wduty"; return loadW(); }
+    if(tabId === "mypay"){ tab = "mypay"; return loadMyPay(); }
+    if(tabId === "wassign"){ tab = "wassign"; return loadWAssign(SELECTED_HANDOVER_DUTY_ID); }
+    tab = "wcal";
+    return loadWorkerCalendarHome();
   }
   if(tabId === "admin"){
     return renderAdminConsole();
@@ -3459,6 +3619,10 @@ function generatePetroGptAnswer(q){
 }
 
 function renderHome(){
+  if(SRV && ME && ME.role === "worker"){
+    tab = "wcal";
+    return loadWorkerCalendarHome();
+  }
   tab = "home";
   var st = S || {};
   var biz = st.biz || {};
@@ -5709,7 +5873,7 @@ function badge(t){var e=document.getElementById("bdg");e.textContent=t;e.style.d
 function emptyS(){return{c:[],inv:[],items:[],sup:[],bk:[],nozzles:[],tanks:[],deliv:[],rates:[],expcats:[],paymodes:[],modules:{},ob:{Cash:0,Bank:0,UPI:0},biz:{name:"",addr:"",gst:""}}}
 function strip(){if(!S)S=emptyS();var o=JSON.parse(JSON.stringify(S));(o.c||[]).forEach(function(c){c.e=(c.e||[]).filter(function(x){return !x.srv})});return o}
 function push(){api("PUT","/api/state",{ver:VER,state:strip()}).then(function(r){VER=r.ver;badge("")}).catch(function(e){if(e.status==409)openM('<h2>Data changed elsewhere</h2><div class="sub">Someone else saved changes. Reload to get the latest data. Your last change was not saved.</div><div class="btns"><button onclick="location.reload()">Reload now</button></div>');else if(e.status==401)location.reload();else badge("Could not save. Check your connection.")})}
-function pullDuty(cb){if(!S)S=emptyS();if(!S.c)S.c=[];api("GET","/api/credit-sales").then(function(rows){if(!S)S=emptyS();if(!S.c)S.c=[];S.c.forEach(function(c){c.e=(c.e||[]).filter(function(x){return !x.srv})});PEND=[];rows.forEach(function(r){if(r.status=="pending"){PEND.push(r);return}var c=find(r.cust_id);if(c){c.e=c.e||[];c.e.push({d:r.d,t:"sale",n:"Duty: "+r.n+(r.veh?" ("+r.veh+")":"")+" by "+r.worker,a:r.a,srv:r.id})}});api("GET","/api/credit-recoveries").then(function(recRows){(recRows||[]).forEach(function(r){var c=find(r.cust_id);if(c){c.e=c.e||[];c.e.push({d:r.d,t:"pay",n:"Duty collection ("+(r.mode||"Cash")+(r.note?" \u00b7 "+r.note:"")+") by "+r.worker,a:r.a,srv:"rec_"+r.id})}});cb&&cb()}).catch(function(){cb&&cb()})}).catch(function(){if(SRV&&!ME)return;cb&&cb()})}
+function pullDuty(cb){if(!S)S=emptyS();if(!S.c)S.c=[];var salesUrl=(ME&&ME.role==="worker")?"/api/my-credit-sales":"/api/credit-sales";api("GET",salesUrl).then(function(rows){if(!S)S=emptyS();if(!S.c)S.c=[];S.c.forEach(function(c){c.e=(c.e||[]).filter(function(x){return !x.srv})});PEND=[];rows.forEach(function(r){if(r.status=="pending"){if(!ME||ME.role!=="worker")PEND.push(r);return}var c=find(r.cust_id);if(c){c.e=c.e||[];c.e.push({d:r.d,t:"sale",n:"Duty: "+r.n+(r.veh?" ("+r.veh+")":"")+" by "+(r.worker||(ME?ME.name:"Me")),a:r.a,srv:r.id})}});api("GET","/api/credit-recoveries").then(function(recRows){(recRows||[]).forEach(function(r){var c=find(r.cust_id);if(c){c.e=c.e||[];c.e.push({d:r.d,t:"pay",n:"Duty collection ("+(r.mode||"Cash")+(r.note?" \u00b7 "+r.note:"")+") by "+r.worker,a:r.a,srv:"rec_"+r.id})}});cb&&cb()}).catch(function(){cb&&cb()})}).catch(function(){if(SRV&&!ME)return;cb&&cb()})}
 function pendHtml(){if(!SRV||!PEND.length)return '';var h='<div class="cust" style="cursor:default;border-color:var(--warn)"><b style="color:var(--warn)">'+PEND.length+' credit sale'+(PEND.length>1?'s':'')+' waiting for approval</b><div class="sub">Over the customer\'s credit limit. Managers and the owner can approve.</div>';
 PEND.forEach(function(r){var c=find(r.cust_id);h+='<div style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><div class="row"><b>'+esc(c?c.name:"Customer")+'</b><span class="amt" style="flex:none">'+inr(r.a)+'</span></div><div class="sub">'+esc(r.n)+(r.veh?' \u00b7 '+esc(r.veh):'')+' \u00b7 by '+esc(r.worker)+' \u00b7 '+r.d+'</div>'+(c?'<div class="sub">Due '+inr(due(c))+' of '+inr(c.limit)+' limit</div>':'')+'<div class="btns" style="margin:8px 0 0"><button onclick="decide('+r.id+',\'approve\')">Approve</button><button class="ghost" onclick="decide('+r.id+',\'reject\')">Reject</button></div></div>'});return h+'</div>'}
 function decide(id,w){api("POST","/api/credit-sales/"+id+"/"+w).then(function(){pullDuty(render)}).catch(function(e){badge(e.error||"Could not update.");pullDuty(render)})}
@@ -5725,12 +5889,17 @@ function fnum(x){var n=parseFloat(x);return isNaN(n)?0:n}
 function R2(a,b){return '<div class="row"><span>'+a+'</span><span style="text-align:right">'+b+'</span></div>'}
 function sect(t){return '<h1 style="margin:16px 0 6px;color:var(--ink);font-size:17px;font-weight:800">'+t+'</h1>'}
 function wnav(){
-  var T=[["wduty","My Duty","loadW","My Duty"],["mypay","My Pay","loadMyPay","My Pay & Wages"]];
-  var curW = T.find(function(t){ return tab==t[0] || (tab=="wassign"&&t[0]=="wduty"); }) || T[0];
+  var T=[
+    ["wcal","Duty Calendar","loadWorkerCalendarHome","Forecourt Duty Calendar & Attendance"],
+    ["wduty","Shift Duty","loadW","My Shift Duty"],
+    ["mypay","My Pay","loadMyPay","My Pay & Wages"]
+  ];
+  var curW = T.find(function(t){ return tab==t[0] || (tab=="wassign"&&t[0]=="wduty") || (tab=="home"&&t[0]=="wcal"); }) || T[0];
   var pumpTitle = (S&&S.biz&&S.biz.name) ? S.biz.name : "Rituraj Petrolieum";
 
   setTimeout(renderDrawerContent, 0);
 
+  var isCalActive = (tab === "wcal" || tab === "home" || !tab);
   var isDutyActive = (tab === "wduty" || tab === "wassign");
   var isPayActive = (tab === "mypay");
 
@@ -5778,8 +5947,9 @@ function wnav(){
   '</div>';
 
   var workerQuickSwitch = '<div class="row noprint" style="gap:8px;margin:8px 0 14px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--line);box-shadow:0 1px 4px rgba(6,42,107,0.04)">' +
-    '<button type="button" class="' + (isDutyActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isDutyActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wduty\';loadW()">⛽ My Duty</button>' +
-    '<button type="button" class="' + (isPayActive ? '' : 'ghost') + '" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;' + (isPayActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'mypay\';loadMyPay()">💵 My Pay &amp; Advances</button>' +
+    '<button type="button" class="' + (isCalActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isCalActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wcal\';loadWorkerCalendarHome()">📅 Duty Calendar</button>' +
+    '<button type="button" class="' + (isDutyActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isDutyActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'wduty\';loadW()">⛽ Shift Duty</button>' +
+    '<button type="button" class="' + (isPayActive ? '' : 'ghost') + '" style="flex:1;padding:8px 10px;font-size:12.5px;font-weight:700;' + (isPayActive ? 'background:linear-gradient(135deg, #0A63F8 0%, #0640aa 100%);color:#fff;' : 'border:none;color:var(--mute);background:transparent;') + '" onclick="tab=\'mypay\';loadMyPay()">💵 My Pay &amp; Advances</button>' +
   '</div>';
 
   return workerMobileTopbar + workerDesktopTopbar + workerQuickSwitch;
@@ -6450,11 +6620,23 @@ if(collBrkEl){
 updateShiftDiffDisplay(df,totalObligation,sectionTotal);
 var e=document.getElementById("dsum");if(e)e.innerHTML="";}
 function onNozInput(el,idx,field){var v=el.value;if(v.indexOf('.')!==-1){var parts=v.split('.');if(parts[1].length>2){v=parts[0]+'.'+parts[1].slice(0,2);el.value=v}}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty()}
-function onNozChange(el,idx,field){var v=el.value.trim();if(v!==""&&!isNaN(parseFloat(v))){var rounded=(Math.round(parseFloat(v)*100)/100).toFixed(2);el.value=rounded;v=rounded}if(DF&&DF.lines&&DF.lines[idx]){DF.lines[idx][field]=v}dsum();autoSaveDuty(true)}
-function finNoz(label,idx,field,val,ed){var dispVal=(val===""||val==null)?"":(typeof val==="number"?val.toFixed(2):esc(val));return '<label>'+label+'<input '+(ed?'':'disabled ')+'id="noz_'+field+'_'+idx+'" type="number" step="0.01" inputmode="decimal" placeholder="0.00" value="'+esc(dispVal)+'" oninput="onNozInput(this,'+idx+',\''+field+'\')" onchange="onNozChange(this,'+idx+',\''+field+'\')"></label>'}
+function finNoz(label,idx,field,val,ed,subNote){
+  var dispVal=(val===""||val==null)?"":(typeof val==="number"?val.toFixed(2):esc(val));
+  var isOpening=(field==='opening');
+  var lockBadge = (isOpening && !ed) ? ' <span style="font-size:10px;font-weight:700;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;margin-left:4px">🔒 Chained</span>' : '';
+  var styleAttr = (isOpening && !ed) ? ' style="font-weight:800;color:var(--ink);background:var(--card);border-color:#93c5fd;opacity:1;"' : '';
+  return '<label style="position:relative"><div style="display:flex;align-items:center;justify-content:space-between"><span>'+label+lockBadge+'</span>'+(subNote?'<span class="sub" style="font-size:10px">'+subNote+'</span>':'')+'</div>'
+    +'<input '+(ed?'':'disabled ')+styleAttr+'id="noz_'+field+'_'+idx+'" type="number" step="0.01" inputmode="decimal" placeholder="0.00" value="'+esc(dispVal)+'" oninput="onNozInput(this,'+idx+',\''+field+'\')" onchange="onNozChange(this,'+idx+',\''+field+'\')">'
+    +'</label>';
+}
 function fin(label,path,val,ed){return '<label>'+label+'<input '+(ed?'':'disabled ')+'inputmode="decimal" value="'+esc(val)+'" oninput="'+path+'=this.value;dsum();autoSaveDuty()" onchange="'+path+'=this.value;dsum();autoSaveDuty(true)"></label>'}
 function formHtml(){var wk=DF.mode=="worker",mgrReview=(ME&&ME.role=="manager"&&DF.mode=="review"),h='';
-DF.lines.forEach(function(l,i){var P='DF.lines['+i+'].';var canOp=(!wk&&!mgrReview),canCl=(wk||(!mgrReview&&ME&&ME.role=="owner")),canTs=(wk||(!mgrReview&&ME&&ME.role=="owner")),canRt=(!wk&&!mgrReview);h+='<div class="cust" style="cursor:default"><b>'+esc(l.name)+'</b> <span class="sub">'+esc(l.fuel)+'</span><div class="row">'+finNoz("Opening",i,'opening',l.opening,canOp)+finNoz("Closing",i,'closing',l.closing,canCl)+'</div><div class="row">'+finNoz("Testing (L)",i,'testing',l.testing,canTs)+fin("Rate (\u20b9/L)",P+'rate',l.rate,canRt)+'</div><div class="sub" id="dl'+i+'" style="margin-top:6px"></div></div>'});
+DF.lines.forEach(function(l,i){
+  var P='DF.lines['+i+'].';
+  var canOp=(!wk&&!mgrReview),canCl=(wk||(!mgrReview&&ME&&ME.role=="owner")),canTs=(wk||(!mgrReview&&ME&&ME.role=="owner")),canRt=(!wk&&!mgrReview);
+  var opNote = l.prev_duty_id ? ('From Duty #'+l.prev_duty_id) : (l.opening ? 'Previous Close' : '');
+  h+='<div class="cust" style="cursor:default"><div style="display:flex;justify-content:space-between;align-items:center"><b>'+esc(l.name)+'</b> <span class="role-badge" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;font-size:11px">'+esc(l.fuel)+'</span></div><div class="row" style="margin-top:6px">'+finNoz("Opening Meter",i,'opening',l.opening,canOp,opNote)+finNoz("Closing Meter",i,'closing',l.closing,canCl)+'</div><div class="row">'+finNoz("Testing (L)",i,'testing',l.testing,canTs)+fin("Rate (\u20b9/L)",P+'rate',l.rate,canRt)+'</div><div class="sub" id="dl'+i+'" style="margin-top:6px"></div></div>';
+});
 h+=sect("Lubes and shop & Credit recovery");
 var totalLube=0;
 (DF.items||[]).forEach(function(it){
@@ -8833,7 +9015,12 @@ function wSave(sub){
 }
 // ---- Manager: assign, review, close day, reports
 function reloadState(cb){api("GET","/api/state").then(function(r){VER=r.ver;S=r.state||emptyS();["c","inv","items","sup","bk","nozzles","tanks","deliv","rates","expcats","paymodes"].forEach(function(k){S[k]=S[k]||[]});S.ob=S.ob||{Cash:0,Bank:0,UPI:0};S.biz=S.biz||{name:"",addr:"",gst:""};pullDuty(cb)}).catch(function(){cb&&cb()})}
-function renderDutyTab(){var A=document.getElementById("app");if(!SRV){A.innerHTML=nav()+'<div class="empty">Duty entries need the server. They are not available in this preview.</div>';return}
+function renderDutyTab(){var A=document.getElementById("app");
+if(SRV && ME && ME.role === "worker"){
+  tab = "wduty";
+  return loadW();
+}
+if(!SRV){A.innerHTML=nav()+'<div class="empty">Duty entries need the server. They are not available in this preview.</div>';return}
 tab="duty";A.innerHTML=nav()+'<div class="empty">Loading\u2026</div>';
 api("GET","/api/duties?d="+DD).then(function(r){if(tab!="duty")return;var st=r.day_status,h=nav()+'<h1>Duty and nozzle readings</h1><div class="btns"><button onclick="assignForm()">Assign duty</button><button class="ghost" onclick="sumForm()">Daily summary</button><button class="ghost" onclick="dayReport()">Day report</button><button class="ghost" style="display:inline-flex;align-items:center;gap:6px" onclick="printDutyDaySheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Day Duties</button></div>';
 h+='<label>Business day<input type="date" value="'+DD+'" onchange="DD=this.value;renderDutyTab()"></label><div class="cust" style="cursor:default;margin-top:10px"><div class="row"><b>'+DD+'</b><span style="flex:none;color:'+(st=="approved"?'var(--ok)':st=="closed"?'var(--warn)':'var(--ink)')+'">'+(st=="approved"?"Approved by owner":st=="closed"?"Closed, waiting for owner":"Open")+'</span></div><div class="sub">The business day runs from 6 AM to 6 AM.</div><div class="btns" style="margin:8px 0 0">'+(st=="open"?'<button onclick="dayAsk(\'close\')">Close day</button>':'')+(st=="closed"&&ME.role=="owner"?'<button onclick="dayAct(\'approve\')">Approve day</button>':'')+(st!="open"&&ME.role=="owner"?'<button class="ghost" onclick="dayAct(\'reopen\')">Reopen day</button>':'')+'</div></div>';
@@ -10339,33 +10526,67 @@ function numToWords(n){
   return str.trim()+" Rupees Only";
 }
 
+var EMP_SEARCH_QUERY="";
+var EMP_ROLE_FILTER="all";
+var EMP_STATUS_FILTER="all";
+var EMP_ONLY_HIGH_ADV=false;
+
+function filterHighAdvanceStaff(){
+  EMP_ONLY_HIGH_ADV = !EMP_ONLY_HIGH_ADV;
+  renderSalaryList();
+}
+
 function payCard(w,own){
   var L=function(a,b,c,bold){return '<tr><td'+(bold?' style="font-weight:700"':'')+'>'+a+'</td><td class="r" style="'+(bold?'font-weight:700;':'')+(c?'color:'+c+';':'')+'">'+b+'</td></tr>'};
   var isMonthly=(w.pay_type==="monthly");
   var du=SHS.filter(function(x){return w.count&&w.count[x]>0}).map(function(x){return x+' \u00d7 '+w.count[x]+(w.rates&&w.rates[x]!=null?' @ '+inr(w.rates[x]):' (no rate)')}).join(", ")||"No closed duties";
-  var attStr=(w.days_worked||0)+' / '+(w.standard_shifts_month||26)+' Days Worked ('+(w.duties||0)+' Shifts'+(w.double_shifts?' · '+w.double_shifts+' Double Shifts':'')+(w.night_shifts?' · '+w.night_shifts+' Night Shifts':'')+')'+(w.deduct_lop&&w.lop_days>0?' · ⚠️ '+w.lop_days+'d LOP':'');
+  var attStr=(w.days_worked||0)+' / '+(w.standard_shifts_month||26)+' Days Worked ('+(w.duties||0)+' Shifts'+(w.double_shifts?' · '+w.double_shifts+' Double':'')+(w.night_shifts?' · '+w.night_shifts+' Night':'')+')'+(w.deduct_lop&&w.lop_days>0?' · ⚠️ '+w.lop_days+'d LOP':'');
 
-  var h='<div class="cust" style="cursor:default;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--card)">'
-    +'<div class="row" style="align-items:flex-start">'
-    +'<div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b style="font-size:16px">'+esc(w.name)+'</b>'
-    +'<span class="role-badge" style="background:'+(isMonthly?'#0284c7':'#7c3aed')+';color:#fff;font-size:11px">'+(isMonthly?'Monthly Fixed: '+inr(w.monthly_salary):'Shift-based Wage')+'</span>'
-    +'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">'+esc(w.role)+'</span></div>'
-    +(w.mobile?'<div class="sub" style="margin-top:2px">📞 +91 '+esc(w.mobile)+(w.bank_acc?' · A/C: ••••'+esc(w.bank_acc.slice(-4))+(w.bank_ifsc?' ('+esc(w.bank_ifsc)+')':''):'')+(w.bank_upi?' · UPI: '+esc(w.bank_upi):'')+'</div>':'')
+  var advAmt = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
+  var advThreshold = w.monthly_salary > 0 ? (w.monthly_salary * 0.4) : 4000;
+  var isHighAdv = advAmt >= advThreshold && advAmt > 0;
+  var initials = (w.name || "E").split(" ").map(function(p){return p[0]}).slice(0,2).join("").toUpperCase();
+
+  var h='<div class="cust emp-card" style="cursor:default;margin-bottom:14px;border:1.5px solid '+(isHighAdv?'#f59e0b':'var(--line)')+';border-radius:12px;padding:16px;background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,0.03);position:relative">'
+    +'<div class="row" style="align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">'
+    // Left: Avatar & Info
+    +'<div style="display:flex;gap:12px;align-items:flex-start">'
+    +'<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(2,132,199,0.25)">'+esc(initials)+'</div>'
+    +'<div>'
+    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<b style="font-size:17px;color:var(--ink)">'+esc(w.name)+'</b>'
+    +'<span class="role-badge" style="background:'+(isMonthly?'#0284c7':'#7c3aed')+';color:#fff;font-size:11px;font-weight:700">'+(isMonthly?'Monthly Base: '+inr(w.monthly_salary):'Shift-based Wage')+'</span>'
+    +'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">'+esc(w.role)+'</span>'
+    +(w.active===false?'<span class="role-badge" style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700">Inactive</span>':'<span class="role-badge" style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700">Active</span>')
+    +'</div>'
+    +(w.mobile?'<div class="sub" style="margin-top:3px;font-size:12.5px">📞 +91 <b>'+esc(w.mobile)+'</b>'+(w.bank_acc?' · A/C: ••••'+esc(w.bank_acc.slice(-4))+(w.bank_ifsc?' ('+esc(w.bank_ifsc)+')':''):'')+(w.bank_upi?' · UPI: '+esc(w.bank_upi):'')+'</div>':'')
     +'<div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-    +'<span class="role-badge" style="background:var(--bg);color:var(--ink);border:1px solid var(--line);font-size:11px;font-weight:600">📅 '+esc(attStr)+'</span>'
+    +'<span class="role-badge" style="background:var(--bg);color:var(--ink);border:1px solid var(--line);font-size:11.5px;font-weight:600">📅 '+esc(attStr)+'</span>'
+    // Advance Ledger Pill
+    +(advAmt>0
+      ? '<button type="button" class="ghost" style="padding:2px 8px;font-size:11.5px;font-weight:800;border-radius:6px;border-color:'+(isHighAdv?'#f59e0b':'rgba(245,158,11,0.4)')+';background:'+(isHighAdv?'rgba(245,158,11,0.12)':'rgba(245,158,11,0.06)')+';color:'+(isHighAdv?'#b45309':'#d97706')+';display:inline-flex;align-items:center;gap:4px" onclick="showAdvanceLedgerModal('+w.id+')">'+(isHighAdv?'🚨 High Advance: ':'💸 Advance Balance: ')+inr(advAmt)+' <span style="font-size:10px;text-decoration:underline">Ledger &rarr;</span></button>'
+      : '<button type="button" class="ghost" style="padding:2px 8px;font-size:11.5px;font-weight:700;border-radius:6px;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05);color:var(--ok);display:inline-flex;align-items:center;gap:4px" onclick="showAdvanceLedgerModal('+w.id+')">✅ No Advance (₹0) <span style="font-size:10px;text-decoration:underline">Ledger &rarr;</span></button>')
     +(w.epf_opted?'<span class="role-badge" style="background:rgba(5,150,105,0.1);color:var(--ok);font-size:11px;font-weight:700">EPF (12%) Active'+(w.uan_no?' · UAN: '+esc(w.uan_no):'')+'</span>':'')
     +(w.esic_opted?'<span class="role-badge" style="background:rgba(2,132,199,0.1);color:#0284c7;font-size:11px;font-weight:700">ESIC (0.75%) Active'+(w.esic_no?' · IP: '+esc(w.esic_no):'')+'</span>':'')
     +'</div>'
     +'</div>'
-    +'<div style="text-align:right"><span class="amt" style="font-size:18px;color:var(--ink)">'+inr(w.net)+'</span><div class="sub" style="font-size:11px;font-weight:600">Net Payable ('+PM+')</div>'
-    +(w.balance>0?'<div style="font-size:12px;font-weight:700;color:var(--due);margin-top:2px">Due: '+inr(w.balance)+'</div>':'<div style="font-size:12px;font-weight:700;color:var(--ok);margin-top:2px">✅ Fully Paid</div>')
+    +'</div>'
+
+    // Right: Amounts
+    +'<div style="text-align:right">'
+    +'<span class="amt" style="font-size:20px;font-weight:900;color:var(--ink)">'+inr(w.net)+'</span>'
+    +'<div class="sub" style="font-size:11.5px;font-weight:700;color:var(--mute)">Net Take-Home ('+PM+')</div>'
+    +(w.balance>0
+      ?'<div style="font-size:13px;font-weight:800;color:var(--due);margin-top:2px">Pending Due: '+inr(w.balance)+'</div>'
+      :'<div style="font-size:13px;font-weight:800;color:var(--ok);margin-top:2px">✅ Fully Settled</div>')
     +'</div>'
     +'</div>';
 
+  // Shift Shortage / Excess Banners (Forecourt auto-sync)
   if(w.short>0){
-    h+='<div style="margin-top:8px;padding:8px 12px;background:rgba(225,29,72,0.06);border:1px solid rgba(225,29,72,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-      +'<div><span style="font-weight:700;color:var(--due)">⚠️ Forecourt Cash Shortages:</span> <b>'+inr(w.short)+'</b> across '+((w.short_list&&w.short_list.length)||1)+' shift handover(s)'
-      +(w.waived?' <span style="color:var(--ok)">('+inr(w.waived)+' waived, Net Due: '+inr(w.net_short)+')</span>':'')
+    h+='<div style="margin-top:10px;padding:9px 12px;background:rgba(225,29,72,0.06);border:1px solid rgba(225,29,72,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<div><span style="font-weight:800;color:var(--due)">⚠️ Forecourt Cash Shortages (Auto-Linked):</span> <b>'+inr(w.short)+'</b> across '+((w.short_list&&w.short_list.length)||1)+' shift handover(s)'
+      +(w.waived?' <span style="color:var(--ok)">('+inr(w.waived)+' waived by dealer, Net Due: '+inr(w.net_short)+')</span>':'')
       +'</div>'
       +'<div style="display:flex;gap:6px">'
       +'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;font-weight:700;color:var(--due);border-color:rgba(225,29,72,0.3)" onclick="showShortBreakdown('+w.id+')">Inspect Shifts &rarr;</button>'
@@ -10374,8 +10595,8 @@ function payCard(w,own){
       +'</div></div>';
   }
   if(w.excess>0){
-    h+='<div style="margin-top:8px;padding:8px 12px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-      +'<div><span style="font-weight:700;color:var(--ok)">📈 Forecourt Cash Excess:</span> <b>+'+inr(w.excess)+'</b> across '+((w.excess_list&&w.excess_list.length)||1)+' shift handover(s) credited to salary/advance</div>'
+    h+='<div style="margin-top:10px;padding:9px 12px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.25);border-radius:8px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<div><span style="font-weight:800;color:var(--ok)">📈 Forecourt Cash Excess:</span> <b>+'+inr(w.excess)+'</b> across '+((w.excess_list&&w.excess_list.length)||1)+' shift handover(s) credited to salary/advance</div>'
       +'<div style="display:flex;gap:6px">'
       +'<button type="button" class="ghost" style="padding:2px 8px;font-size:11px;font-weight:700;color:var(--ok);border-color:rgba(5,150,105,0.3)" onclick="showExcessBreakdown('+w.id+')">Inspect Shifts &rarr;</button>'
       +'</div></div>';
@@ -10384,7 +10605,8 @@ function payCard(w,own){
   if(w.missing_rate&&!isMonthly){h+='<div class="sub" style="color:var(--due);margin-top:4px">⚠️ Some shifts have no rate configured, counted as ₹0.</div>';}
   if(w.pending){h+='<div class="sub" style="color:var(--warn);margin-top:4px">⏳ '+w.pending+' duty open/submitted, will be included once closed.</div>';}
 
-  h+='<div class="tbl" style="margin-top:10px"><table style="min-width:0;font-size:13px">'
+  // Earnings vs Deductions Table
+  h+='<div class="tbl" style="margin-top:12px"><table style="min-width:0;font-size:13px">'
     +(isMonthly?L("Fixed Basic Salary<div class=\"sub\">"+(w.duties||0)+" closed shifts recorded ("+(w.days_worked||0)+" days)</div>",inr(w.earn))
               :L("Shift Duties Pay<div class=\"sub\">"+esc(du)+"</div>",inr(w.earn)))
     +(w.auto_night_allowance?L("Night Shift Forecourt Allowance<div class=\"sub\">"+(w.night_shifts||0)+" night duties @ "+inr(w.night_shift_allowance||0)+"/shift</div>","+"+inr(w.auto_night_allowance),'var(--green)'):'')
@@ -10394,7 +10616,7 @@ function payCard(w,own){
     +(w.deposit_refund?L("Uniform Deposit Refund","+"+inr(w.deposit_refund),'var(--green)'):'')
     +(w.excess?L("Shift Cash Excess Credited<div class=\"sub\">Handover excess collections added</div>","+"+inr(w.excess),'var(--green)'):'')
     +L("<b>Gross Total Earnings</b>","<b>"+inr(w.gross||w.earn)+"</b>",'',true)
-    +(w.advance?L("Cash Advances","\u2212"+inr(w.advance),'var(--due)'):'')
+    +(w.advance?L("Cash Advances (This Month)","\u2212"+inr(w.advance),'var(--due)'):'')
     +(w.lop_deduction?L("Loss of Pay (LOP Deducted)<div class=\"sub\">"+w.lop_days+" absent day(s) below standard quota</div>","\u2212"+inr(w.lop_deduction),'var(--due)'):'')
     +(w.short?L("Shift Cash Shortage Recovery"+(w.waived?'<div class=\"sub\">'+inr(w.waived)+' waived by dealer</div>':''),"\u2212"+inr(w.net_short||0),'var(--due)'):'')
     +(w.epf_ee?L("EPF Contribution (12% Employee)<div class=\"sub\">Employer matching (12%): "+inr(w.epf_er)+(w.uan_no?' · UAN: '+esc(w.uan_no):'')+"</div>","\u2212"+inr(w.epf_ee),'var(--due)'):'')
@@ -10402,8 +10624,8 @@ function payCard(w,own){
     +(w.loan_emi?L("Staff Loan EMI Recovery","\u2212"+inr(w.loan_emi),'var(--due)'):'')
     +(w.uniform_deposit?L("Uniform / Safety Shoes Deposit","\u2212"+inr(w.uniform_deposit),'var(--due)'):'')
     +(w.deduction?L("Forecourt Deductions (Mess/Uniform/Other)","\u2212"+inr(w.deduction),'var(--due)'):'')
-    +(w.paid?L("Already Paid to Worker","\u2212"+inr(w.paid),'#0284c7'):'')
-    +L("<b>Balance Due to Pay</b>","<b>"+inr(w.balance)+"</b>",(w.balance>0?'var(--due)':'var(--green)'),true)
+    +(w.paid?L("Already Disbursed to Staff","\u2212"+inr(w.paid),'#0284c7'):'')
+    +L("<b>Net Balance Due to Disburse</b>","<b>"+inr(w.balance)+"</b>",(w.balance>0?'var(--due)':'var(--green)'),true)
     +'</table></div>';
 
   // Active Loans Widget
@@ -10414,7 +10636,7 @@ function payCard(w,own){
         var rem=Math.max(0,ln.total_amount-ln.paid_amount);
         return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-top:4px">'
           +'<span>• '+esc(ln.purpose)+' (EMI: '+inr(ln.monthly_emi)+'/mo)</span>'
-          +'<span>Remaining: <b>'+inr(rem)+'</b> of '+inr(ln.total_amount)+' '+(own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px" onclick="repayLoanForm('+ln.id+','+ln.monthly_emi+',\''+esc(ln.purpose)+'\')">Deduct EMI</button>':'')+'</span></div>';
+          +'<span>Remaining: <b>'+inr(rem)+'</b> of '+inr(ln.total_amount)+' '+(!own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px" onclick="repayLoanForm('+ln.id+','+ln.monthly_emi+',\''+esc(ln.purpose)+'\')">Deduct EMI</button>':'')+'</span></div>';
       }).join("")
       +'</div>';
   }
@@ -10429,27 +10651,29 @@ function payCard(w,own){
         +'<span><b>'+esc(KL[x.kind]||x.kind)+'</b>'+(x.note?' \u00b7 '+esc(x.note):'')+'<span class="sub" style="margin-left:6px">'+x.d+'</span></span>'
         +'<div style="display:flex;align-items:center;gap:6px">'
         +'<span style="font-weight:600;color:'+(isPaid?'#0284c7':isAdd?'var(--green)':'var(--due)')+'">'+(isAdd?'+':'-')+inr(x.amount)+'</span>'
-        +(own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px;color:var(--due)" onclick="delPay('+x.id+')">✕</button>':'')
+        +(!own?'<button type="button" class="ghost" style="padding:2px 6px;font-size:11px;color:var(--due)" onclick="delPay('+x.id+')">✕</button>':'')
         +'</div></div>';
     });
   }
 
-  // Action Buttons
+  // Action Buttons Strip (PetroPulse360 Style)
   h+='<div class="btns" style="margin-top:14px;gap:6px;flex-wrap:wrap">';
-  h+='<button type="button" class="ghost" style="font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="showPaySlipById('+w.id+')">📄 Pay Slip</button>';
-  h+='<button type="button" class="ghost" style="color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="sendSalaryWhatsApp('+w.id+')">📱 WhatsApp Slip</button>';
-  h+='<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showVoucherModalById('+w.id+')">🧾 Payout Voucher</button>';
-  h+='<button type="button" class="ghost" style="color:var(--brand);border-color:rgba(14,165,233,0.3);font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showDutyCalendarModal('+w.id+')">📅 Duty Calendar ('+(w.duties||0)+' shifts)</button>';
+  h+='<button type="button" class="ghost" style="font-weight:700;color:#d97706;border-color:rgba(217,119,6,0.3);background:rgba(217,119,6,0.04);display:inline-flex;align-items:center;gap:4px" onclick="showAdvanceLedgerModal('+w.id+')">📑 Advance Ledger</button>';
   if(!own){
-    h+='<button type="button" class="ghost" style="font-weight:600" onclick="workerSalaryForm('+w.id+')">⚙️ Salary &amp; Rates</button>'
-      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'ot\')">+ Overtime</button>'
-      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'incentive\')">+ Lube/Fuel Incentive</button>'
+    h+='<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3);font-weight:700" onclick="openAdvanceModal('+w.id+',\'advance\')">💸 Give Advance</button>'
+      +'<button type="button" class="ghost" style="color:var(--ok);border-color:rgba(5,150,105,0.3);font-weight:700" onclick="openAdvanceModal('+w.id+',\'cash_recovery\')">🔄 Cash Recovery</button>';
+  }
+  h+='<button type="button" class="ghost" style="font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="showPaySlipById('+w.id+')">📄 Pay Slip</button>';
+  h+='<button type="button" class="ghost" style="color:#059669;border-color:rgba(5,150,105,0.3);font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="sendSalaryWhatsApp('+w.id+')">📱 WhatsApp</button>';
+  h+='<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showVoucherModalById('+w.id+')">🧾 Voucher</button>';
+  h+='<button type="button" class="ghost" style="color:var(--brand);border-color:rgba(14,165,233,0.3);font-weight:600;display:inline-flex;align-items:center;gap:4px" onclick="showDutyCalendarModal('+w.id+')">📅 Duty ('+(w.duties||0)+')</button>';
+  if(!own){
+    h+='<button type="button" class="ghost" style="font-weight:600" onclick="workerSalaryForm('+w.id+')">⚙️ Rates &amp; Profile</button>'
+      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'ot\')">+ OT</button>'
+      +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'incentive\')">+ Incentive</button>'
       +'<button type="button" class="ghost" style="color:var(--green);border-color:rgba(16,185,129,0.3)" onclick="payForm('+w.id+',\'bonus\')">+ Bonus</button>'
-      +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="payForm('+w.id+',\'advance\')">\u2212 Advance</button>'
-      +(w.short>w.waived?'<button type="button" class="ghost" style="color:var(--warn);border-color:rgba(245,158,11,0.3)" onclick="payForm('+w.id+',\'waive\','+w.net_short+',\'Waive shift cash shortage\')">Waive Shortage</button>':'')
-      +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="payForm('+w.id+',\'uniform_deposit\')">\u2212 Uniform Deposit</button>'
-      +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="payForm('+w.id+',\'deduction\')">\u2212 Deduction</button>'
-      +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="payForm('+w.id+',\'paid\','+w.balance+',\'Monthly salary payment\')">✅ Record Payment</button>';
+      +(w.balance>0?'<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="payForm('+w.id+',\'paid\','+w.balance+',\'Monthly salary payment\')">✅ Disburse Salary</button>':'')
+      +'<button type="button" class="ghost" style="font-size:11px;color:var(--mute)" onclick="toggleEmployeeActive('+w.id+','+(w.active===false?1:0)+')">'+(w.active===false?'Activate Staff':'Deactivate')+'</button>';
   }
   h+='</div></div>';
   return h;
@@ -10457,86 +10681,443 @@ function payCard(w,own){
 
 function monthPick(fn){
   return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">'
-    +'<label style="margin:0;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">Select Month:'
-    +'<input type="month" value="'+PM+'" style="padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit" onchange="PM=this.value||PM;'+fn+'()">'
+    +'<label style="margin:0;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">Payroll Period:'
+    +'<input type="month" value="'+PM+'" style="padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit" onchange="PM=this.value||PM;'+fn+'()">'
     +'</label>'
     +'</div>';
 }
 
 function renderSalary(){
   var A=document.getElementById("app");
+  if(SRV && ME && ME.role === "worker"){
+    return loadMyPay();
+  }
   if(!SRV){A.innerHTML=nav()+'<div class="empty">Salary needs the server database. It is not available in local mode.</div>';return}
   tab="pay";
-  A.innerHTML=nav()+'<div class="empty">Loading payroll\u2026</div>';
+  A.innerHTML=nav()+'<div class="empty">Loading PetroPulse360 staff &amp; payroll suite\u2026</div>';
   api("GET","/api/payroll?month="+PM).then(function(r){
     if(tab!="pay")return;
     LAST_PAYROLL_DATA=r;
-    var workers=r.workers||[];
-    var totNet=workers.reduce(function(acc,w){return acc+(w.net||0)},0);
-    var totPaid=workers.reduce(function(acc,w){return acc+(w.paid||0)},0);
-    var totBal=workers.reduce(function(acc,w){return acc+(w.balance||0)},0);
-    var totShifts=workers.reduce(function(acc,w){return acc+(w.duties||0)},0);
-
-    var isLocked=!!r.locked;
-    var pendAdv=(r.advance_requests||[]).filter(function(x){return x.status==="pending"});
-
-    var h=nav();
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">'
-      +'<div><div style="display:flex;align-items:center;gap:8px"><h1 style="margin:0;font-size:20px;font-weight:800">Forecourt Staff Payroll &amp; Salary</h1>'
-      +(isLocked?'<span class="role-badge" style="background:#059669;color:#fff;font-size:11px;font-weight:700">🔒 Finalized &amp; Locked</span>':'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">Open Month</span>')
-      +'</div><div class="sub" style="margin-top:2px">Fixed monthly salary, attendance &amp; LOP, night shift allowances, shortages, EPF/ESIC, NEFT &amp; payslips</div></div>'
-      +'<div class="btns" style="margin:0;gap:6px">'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--brand);border-color:rgba(14,165,233,0.3);background:rgba(14,165,233,0.04);display:inline-flex;align-items:center;gap:5px" onclick="showDutyCalendarModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Duty Attendance Calendar</button>'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showBankDisbursementModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Bank NEFT &amp; UPI</button>'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;color:#059669;border-color:rgba(5,150,105,0.3);display:inline-flex;align-items:center;gap:5px" onclick="showBulkWaModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>Bulk WhatsApp Slips</button>'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showStatutoryChallanModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"></path><path d="M3 10h18"></path><path d="M5 6l7-3 7 3"></path><path d="M4 10v11"></path><path d="M20 10v11"></path><path d="M8 14v4"></path><path d="M12 14v4"></path><path d="M16 14v4"></path></svg>EPF &amp; ESIC Challan</button>'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="exportSalaryCsv()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Salary Sheet (.csv)</button>'
-      +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="loanForm()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>Issue Staff Loan</button>'
-      +(isLocked
-        ?'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--ok);border-color:rgba(5,150,105,0.4)" onclick="toggleMonthLock(false)">🔓 Unlock Month</button>'
-        :'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--ink)" onclick="toggleMonthLock(true)">🔒 Lock Month</button>')
-      +'</div></div>';
-
-    if(isLocked){
-      h+='<div style="background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-        +'<div style="display:flex;align-items:center;gap:8px"><span>🔒</span><div><b style="color:var(--ok);font-size:13px">Payroll for '+PM+' is Finalized &amp; Locked</b><div class="sub">Historical salary figures, payslips, and bank sheets are secured against modifications.</div></div></div>'
-        +'<button type="button" class="ghost" style="padding:3px 10px;font-size:11.5px;font-weight:700" onclick="toggleMonthLock(false)">Unlock to make changes</button>'
-        +'</div>';
-    }
-
-    if(pendAdv.length){
-      h+='<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px;margin-bottom:14px">'
-        +'<div style="font-weight:700;font-size:13px;color:var(--warn);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
-        +'<span>🔔 Pending Staff Advance Requests ('+pendAdv.length+')</span><span style="font-size:11px;color:var(--mute)">Submitted via Staff Portal</span></div>'
-        +pendAdv.map(function(rq){
-          return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:8px 10px;border-radius:6px;border:1px solid var(--line);margin-top:6px;flex-wrap:wrap;gap:8px">'
-            +'<div><b>'+esc(rq.worker_name||"Worker")+'</b> requested <b>'+inr(rq.amount)+'</b><div class="sub">'+(rq.reason?esc(rq.reason):"Staff Advance")+' · '+rq.month+'</div></div>'
-            +'<div style="display:flex;gap:6px">'
-            +'<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="actionAdvanceReq('+rq.id+',\'reject\')">Reject</button>'
-            +'<button type="button" style="padding:4px 10px;font-size:11.5px;background:#059669;color:#fff;font-weight:700" onclick="actionAdvanceReq('+rq.id+',\'approve\')">Approve &amp; Deduct</button>'
-            +'</div></div>';
-        }).join("")
-        +'</div>';
-    }
-
-    h+=monthPick("renderSalary");
-
-    // Aggregate summary cards
-    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">'
-      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL NET PAYABLE</div><b style="font-size:17px;color:var(--ink)">'+inr(totNet)+'</b></div>'
-      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL PAID SO FAR</div><b style="font-size:17px;color:#0284c7">'+inr(totPaid)+'</b></div>'
-      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">PENDING BALANCE</div><b style="font-size:17px;color:'+(totBal>0?'var(--due)':'var(--green)')+'">'+inr(totBal)+'</b></div>'
-      +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:center"><div class="sub" style="font-size:11px">TOTAL CLOSED SHIFTS</div><b style="font-size:17px;color:var(--ink)">'+totShifts+'</b></div>'
-      +'</div>';
-
-    if(!workers.length){
-      h+='<div class="empty">No workers or staff accounts found. Add workers under Settings → Team.</div>';
-    } else {
-      workers.forEach(function(w){h+=payCard(w,false)});
-    }
-    A.innerHTML=h;
+    renderSalaryView();
   }).catch(function(e){
     badge(e.error||"Could not load payroll.");
+  });
+}
+
+function renderSalaryView(){
+  var A=document.getElementById("app");
+  if(!A||!LAST_PAYROLL_DATA)return;
+  var r=LAST_PAYROLL_DATA;
+  var workers=r.workers||[];
+  var summary=r.summary||{};
+  var isLocked=!!r.locked;
+  var pendAdv=(r.advance_requests||[]).filter(function(x){return x.status==="pending"});
+
+  var totNet = summary.total_net_payable != null ? summary.total_net_payable : workers.reduce(function(acc,w){return acc+(w.net||0)},0);
+  var totPaid = summary.total_paid != null ? summary.total_paid : workers.reduce(function(acc,w){return acc+(w.paid||0)},0);
+  var totBal = summary.total_balance_due != null ? summary.total_balance_due : workers.reduce(function(acc,w){return acc+(w.balance||0)},0);
+  var totAdv = summary.total_outstanding_advances != null ? summary.total_outstanding_advances : workers.reduce(function(acc,w){return acc+(w.outstanding_advance||w.advance||0)},0);
+  var totalCommitment = summary.total_commitment != null ? summary.total_commitment : workers.reduce(function(acc,w){return acc+(w.pay_type==='monthly'?w.monthly_salary:w.earn)},0);
+  var totalStaff = summary.total_staff != null ? summary.total_staff : workers.length;
+  var activeStaff = summary.active_staff != null ? summary.active_staff : workers.filter(function(w){return w.active!==false}).length;
+
+  var highAlerts = summary.high_advance_alerts || [];
+
+  var h=nav();
+  // Header title & quick action toolbar
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">'
+    +'<div>'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<h1 style="margin:0;font-size:22px;font-weight:900;letter-spacing:-0.3px">Staff, Advances &amp; Forecourt Payroll</h1>'
+    +(isLocked?'<span class="role-badge" style="background:#059669;color:#fff;font-size:11px;font-weight:700">🔒 Finalized &amp; Locked</span>':'<span class="role-badge" style="background:var(--bg);color:var(--mute);border:1px solid var(--line);font-size:11px">Open Period</span>')
+    +'</div>'
+    +'<div class="sub" style="margin-top:3px">PetroPulse360 integrated forecourt staff directory, live advance ledgers, shift shortage link, and statutory compliance.</div>'
+    +'</div>'
+    +'<div class="btns" style="margin:0;gap:6px;flex-wrap:wrap">'
+    +'<button type="button" style="background:linear-gradient(135deg,#0A63F8,#0640aa);color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="addEmployeeModal()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>+ Add Employee</button>'
+    +'<button type="button" class="ghost" style="color:var(--due);border-color:rgba(220,38,38,0.3);font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAdvanceModal(null,\'advance\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>💸 Issue Advance</button>'
+    +'<button type="button" class="ghost" style="color:var(--ok);border-color:rgba(5,150,105,0.3);font-weight:700;display:inline-flex;align-items:center;gap:6px" onclick="openAdvanceModal(null,\'cash_recovery\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>🔄 Cash Recovery to Drawer</button>'
+    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showBankDisbursementModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Bank NEFT</button>'
+    +'<button type="button" class="ghost" style="color:#059669;border-color:rgba(5,150,105,0.3);font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showBulkWaModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Bulk WhatsApp</button>'
+    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="showStatutoryChallanModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v4"/><path d="M12 14v4"/><path d="M16 14v4"/></svg>EPF &amp; ESIC</button>'
+    +'<button type="button" class="ghost" style="font-weight:600;display:inline-flex;align-items:center;gap:5px" onclick="loanForm()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Issue Loan</button>'
+    +(isLocked
+      ?'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--ok);border-color:rgba(5,150,105,0.4)" onclick="toggleMonthLock(false)">🔓 Unlock Month</button>'
+      :'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px;font-weight:700;color:var(--ink)" onclick="toggleMonthLock(true)">🔒 Lock Month</button>')
+    +'</div>'
+    +'</div>';
+
+  // High Advance Warning Alert Banner (PetroPulse360 Feature)
+  if(highAlerts.length){
+    h+='<div style="background:rgba(245,158,11,0.08);border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:24px">⚠️</span>'
+      +'<div>'
+      +'<b style="color:#b45309;font-size:13.5px">Outstanding Advance Limit Alert ('+highAlerts.length+' staff over 40% threshold):</b>'
+      +'<div class="sub" style="margin-top:2px;color:#78350f">'+highAlerts.map(function(a){return '<b>'+esc(a.name)+'</b> ('+inr(a.outstanding)+')'}).join(', ')+' have accumulated high advances. Review ledgers before issuing fresh payouts.'+'</div>'
+      +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px">'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;font-weight:700;border-color:#b45309;color:#b45309;background:#fff" onclick="filterHighAdvanceStaff()">'+(EMP_ONLY_HIGH_ADV?'Show All Staff':'Filter High Advances')+'</button>'
+      +'</div>'
+      +'</div>';
+  }
+
+  // Pending Advance Requests Bar
+  if(pendAdv.length){
+    h+='<div style="background:rgba(2,132,199,0.08);border:1.5px solid #0284c7;border-radius:10px;padding:12px;margin-bottom:14px">'
+      +'<div style="font-weight:800;font-size:13px;color:#0284c7;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      +'<span>🔔 Pending Staff Advance Requests ('+pendAdv.length+')</span><span style="font-size:11px;color:var(--mute)">Direct Worker Portal Requests</span></div>'
+      +pendAdv.map(function(rq){
+        return '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:8px 10px;border-radius:6px;border:1px solid var(--line);margin-top:6px;flex-wrap:wrap;gap:8px">'
+          +'<div><b>'+esc(rq.worker_name||"Worker")+'</b> requested <b>'+inr(rq.amount)+'</b><div class="sub">'+(rq.reason?esc(rq.reason):"Staff Advance")+' · '+rq.month+'</div></div>'
+          +'<div style="display:flex;gap:6px">'
+          +'<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;color:var(--due);border-color:rgba(220,38,38,0.3)" onclick="actionAdvanceReq('+rq.id+',\'reject\')">Reject</button>'
+          +'<button type="button" style="padding:4px 10px;font-size:11.5px;background:#059669;color:#fff;font-weight:700" onclick="actionAdvanceReq('+rq.id+',\'approve\')">Approve &amp; Deduct</button>'
+          +'</div></div>';
+      }).join("")
+      +'</div>';
+  }
+
+  // Month Picker & Top Controls
+  h+=monthPick("renderSalary");
+
+  // PetroPulse360 Top 4 Metric KPI Cards
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">'
+    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
+    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px">TOTAL STAFF ROSTER</div>'
+    +'<div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">'
+    +'<b style="font-size:22px;color:var(--ink)">'+activeStaff+'</b>'
+    +'<span class="sub" style="font-size:12px">Active / '+totalStaff+' total</span>'
+    +'</div></div>'
+
+    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
+    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px">MONTHLY PAYROLL COMMITMENT</div>'
+    +'<b style="font-size:22px;color:var(--ink);display:block;margin-top:4px">'+inr(totalCommitment)+'</b>'
+    +'<div class="sub" style="font-size:11px;margin-top:2px">Base wage commitments</div></div>'
+
+    +'<div style="background:var(--card);border:1.5px solid '+(totAdv>0?'rgba(245,158,11,0.5)':'var(--line)')+';border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
+    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px;color:'+(totAdv>0?'#b45309':'var(--mute)')+'">TOTAL OUTSTANDING ADVANCES</div>'
+    +'<b style="font-size:22px;color:'+(totAdv>0?'#d97706':'var(--ink)')+';display:block;margin-top:4px">'+inr(totAdv)+'</b>'
+    +'<div class="sub" style="font-size:11px;margin-top:2px">Across all staff ledgers</div></div>'
+
+    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.02)">'
+    +'<div class="sub" style="font-size:11px;font-weight:700;letter-spacing:0.4px">PENDING DISBURSEMENT</div>'
+    +'<b style="font-size:22px;color:'+(totBal>0?'var(--due)':'var(--ok)')+';display:block;margin-top:4px">'+inr(totBal)+'</b>'
+    +'<div class="sub" style="font-size:11px;margin-top:2px">'+inr(totPaid)+' already disbursed</div></div>'
+    +'</div>';
+
+  // Search & Filter Bar
+  h+='<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'
+    +'<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:240px">'
+    +'<input id="emp_search_input" placeholder="🔍 Search staff by name, mobile, role..." value="'+esc(EMP_SEARCH_QUERY)+'" style="flex:1;padding:6px 12px;border:1px solid var(--line);border-radius:6px;font:inherit" oninput="EMP_SEARCH_QUERY=this.value.toLowerCase();renderSalaryList()">'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<select id="emp_role_filter" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);font:inherit" onchange="EMP_ROLE_FILTER=this.value;renderSalaryList()">'
+    +'<option value="all"'+(EMP_ROLE_FILTER==='all'?' selected':'')+'>All Roles</option>'
+    +'<option value="worker"'+(EMP_ROLE_FILTER==='worker'?' selected':'')+'>Pump Attendants (DSMs)</option>'
+    +'<option value="manager"'+(EMP_ROLE_FILTER==='manager'?' selected':'')+'>Managers</option>'
+    +'</select>'
+    +'<select id="emp_status_filter" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);font:inherit" onchange="EMP_STATUS_FILTER=this.value;renderSalaryList()">'
+    +'<option value="all"'+(EMP_STATUS_FILTER==='all'?' selected':'')+'>All Statuses</option>'
+    +'<option value="active"'+(EMP_STATUS_FILTER==='active'?' selected':'')+'>Active Only</option>'
+    +'<option value="inactive"'+(EMP_STATUS_FILTER==='inactive'?' selected':'')+'>Inactive Only</option>'
+    +'</select>'
+    +'</div>'
+    +'</div>';
+
+  h+='<div id="salary_cards_container"></div>';
+  A.innerHTML=h;
+  renderSalaryList();
+}
+
+function renderSalaryList(){
+  var container=document.getElementById("salary_cards_container");
+  if(!container||!LAST_PAYROLL_DATA)return;
+  var workers=LAST_PAYROLL_DATA.workers||[];
+
+  var filtered=workers.filter(function(w){
+    if(EMP_SEARCH_QUERY){
+      var q=EMP_SEARCH_QUERY.trim().toLowerCase();
+      var matchName = (w.name||"").toLowerCase().indexOf(q)!==-1;
+      var matchMobile = (w.mobile||"").indexOf(q)!==-1;
+      var matchRole = (w.role||"").toLowerCase().indexOf(q)!==-1;
+      if(!matchName&&!matchMobile&&!matchRole) return false;
+    }
+    if(EMP_ROLE_FILTER!=="all"){
+      if(w.role!==EMP_ROLE_FILTER) return false;
+    }
+    if(EMP_STATUS_FILTER==="active"){
+      if(w.active===false) return false;
+    } else if(EMP_STATUS_FILTER==="inactive"){
+      if(w.active!==false) return false;
+    }
+    if(EMP_ONLY_HIGH_ADV){
+      var adv = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
+      var threshold = w.monthly_salary > 0 ? (w.monthly_salary * 0.4) : 4000;
+      if(adv < threshold || adv <= 0) return false;
+    }
+    return true;
+  });
+
+  if(!filtered.length){
+    container.innerHTML='<div class="empty" style="padding:32px 16px"><div style="font-size:28px;margin-bottom:8px">👥</div><b>No staff members matched your filter criteria.</b><div class="sub" style="margin-top:4px">Adjust filters or add a new employee profile.</div></div>';
+    return;
+  }
+
+  var html="";
+  filtered.forEach(function(w){
+    html+=payCard(w,false);
+  });
+  container.innerHTML=html;
+}
+
+// ----------------------------------------------------------------------------
+// PetroPulse360 Interactive Advance Ledger Modal
+// ----------------------------------------------------------------------------
+function showAdvanceLedgerModal(workerId){
+  if(ME && ME.role === "worker"){
+    workerId = ME.id;
+  }
+  if(!LAST_PAYROLL_DATA)return toast("Load payroll first.");
+  openM('<h2>📑 Employee Advance Ledger</h2><div class="empty">Loading advance history and audit trail\u2026</div>');
+  api("GET","/api/employees/advance-ledger/"+workerId).then(function(r){
+    var emp = r.employee || {};
+    var ledger = r.ledger || [];
+    var totOut = r.total_outstanding || 0;
+
+    var h='<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px">'
+      +'<div>'
+      +'<h2 style="margin:0;font-size:19px">📑 Advance Ledger: '+esc(emp.name)+'</h2>'
+      +'<div class="sub" style="margin-top:3px">'+esc(emp.role)+' · 📞 +91 '+esc(emp.mobile||"")+' · Basic: '+(emp.pay_type==="monthly"?inr(emp.monthly_salary)+"/mo":"Shift Rates")+'</div>'
+      +'</div>'
+      +'<div style="text-align:right">'
+      +'<div class="sub" style="font-size:11px;font-weight:700">NET OUTSTANDING ADVANCE BALANCE</div>'
+      +'<b style="font-size:22px;color:'+(totOut>0?'#d97706':'var(--ok)')+'">'+inr(totOut)+'</b>'
+      +'</div>'
+      +'</div>';
+
+    var isWorker = (ME && ME.role === "worker");
+    // Quick Action Buttons inside Ledger Modal
+    h+='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
+      +(isWorker
+        ? '<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 14px;font-size:12.5px" onclick="requestAdvanceModal()">➕ Request Salary Advance</button>'
+        : '<button type="button" style="background:var(--due);color:#fff;font-weight:700;padding:6px 12px;font-size:12.5px" onclick="openAdvanceModal('+emp.id+',\'advance\')">💸 Give Fresh Advance</button>'
+          +'<button type="button" style="background:#059669;color:#fff;font-weight:700;padding:6px 12px;font-size:12.5px" onclick="openAdvanceModal('+emp.id+',\'cash_recovery\')">🔄 Record Cash Recovery</button>'
+          +'<button type="button" class="ghost" style="padding:6px 12px;font-size:12.5px" onclick="payForm('+emp.id+',\'waive\',0,\'Waive advance/shortage\')">🤝 Waive / Adjust</button>')
+      +'</div>';
+
+    if(!ledger.length){
+      h+='<div class="empty" style="padding:24px">No advance or deduction transactions recorded for this employee.</div>';
+    } else {
+      h+='<div class="tbl" style="max-height:340px;overflow-y:auto;margin-bottom:12px"><table>'
+        +'<thead><tr><th>Date</th><th>Transaction Type</th><th>Reference / Remarks</th><th class="r">Debit (Given)</th><th class="r">Credit (Recovered)</th><th class="r">Running Balance</th></tr></thead><tbody>';
+
+      var typeLabels = {
+        advance: "💸 Advance Payout",
+        cash_recovery: "🔄 Cash Recovery (Drawer)",
+        waive: "🤝 Waived by Owner",
+        paid: "✅ Salary Payment",
+        excess: "📈 Shift Excess Credit",
+        loan_emi: "💰 Loan EMI",
+        deduction: "Forecourt Deduction"
+      };
+
+      ledger.forEach(function(tx){
+        var isDebit = tx.debit > 0;
+        var isCredit = tx.credit > 0;
+        var typeName = typeLabels[tx.kind] || tx.kind;
+        var ref = tx.duty_id ? ('Shift Duty #'+tx.duty_id+(tx.duty_shift?' ('+tx.duty_shift+')':'')) : (tx.note || 'Direct Entry');
+
+        h+='<tr>'
+          +'<td><b>'+esc(tx.d)+'</b></td>'
+          +'<td><span style="font-weight:700;color:'+(tx.kind==='advance'?'var(--due)':tx.kind==='cash_recovery'?'var(--ok)':'var(--ink)')+'">'+esc(typeName)+'</span></td>'
+          +'<td>'+esc(ref)+'</td>'
+          +'<td class="r" style="font-weight:700;color:var(--due)">'+(isDebit?'+'+inr(tx.debit):'—')+'</td>'
+          +'<td class="r" style="font-weight:700;color:var(--ok)">'+(isCredit?'\u2212'+inr(tx.credit):'—')+'</td>'
+          +'<td class="r" style="font-weight:800;color:var(--ink)">'+inr(tx.running_balance)+'</td>'
+          +'</tr>';
+      });
+
+      h+='</tbody></table></div>';
+    }
+
+    h+='<div class="row" style="margin-top:14px;justify-content:flex-end"><button type="button" class="ghost" onclick="close()">Close</button></div>';
+    openM(h);
+  }).catch(function(e){
+    er(e.error||"Could not load ledger.");
+  });
+}
+
+// ----------------------------------------------------------------------------
+// PetroPulse360 Advance & Cash Drawer Recovery Modal
+// ----------------------------------------------------------------------------
+function openAdvanceModal(workerId, defaultKind){
+  if(ME && ME.role === "worker"){
+    return requestAdvanceModal();
+  }
+  if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
+  var workers = LAST_PAYROLL_DATA.workers;
+  var kind = defaultKind || "advance";
+  var isRecovery = (kind === "cash_recovery");
+
+  var h='<h2>'+(isRecovery ? '🔄 Record Cash Recovery (Repayment)' : '💸 Issue Employee Cash Advance')+'</h2>'
+    +'<div class="sub" style="margin-bottom:12px">'+(isRecovery ? 'Staff member returns cash back into the pump register drawer or bank.' : 'Issue advance cash payout with automatic sync to today\'s shift cash drawer.')+'</div>';
+
+  h+='<label>Staff Member'
+    +'<select id="adv_worker_id">'+workers.map(function(w){
+      var adv = (w.outstanding_advance != null ? w.outstanding_advance : (w.advance || 0));
+      return '<option value="'+w.id+'"'+(workerId==w.id?' selected':'')+'>'+esc(w.name)+' ('+esc(w.role)+') · Bal: '+inr(adv)+'</option>';
+    }).join("")+'</select>'
+    +'</label>';
+
+  h+='<label>Transaction Type'
+    +'<select id="adv_kind" onchange="var isRec=(this.value===\'cash_recovery\');document.getElementById(\'adv_drawer_hint\').textContent=isRec?\'Cash will be ADDED to today\\\'s physical cash drawer.\':\'Cash will be DEDUCTED from today\\\'s physical cash drawer.\'">'
+    +'<option value="advance"'+(!isRecovery?' selected':'')+'>💸 Advance Payout (Staff receives cash)</option>'
+    +'<option value="cash_recovery"'+(isRecovery?' selected':'')+'>🔄 Cash Recovery (Staff returns cash to drawer)</option>'
+    +'</select>'
+    +'</label>';
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<label>Amount (\u20b9)<input id="adv_amt" type="number" step="0.01" inputmode="decimal" placeholder="e.g. 2000"></label>'
+    +'<label>Date<input id="adv_date" type="date" value="'+today()+'"></label>'
+    +'</div>';
+
+  h+='<label>Reason / Note<input id="adv_note" placeholder="e.g. Mid-month festival advance / Emergency medical"></label>';
+
+  // Bi-directional cash drawer sync box
+  h+='<div style="background:rgba(2,132,199,0.05);border:1.5px solid rgba(2,132,199,0.35);border-radius:8px;padding:12px;margin-top:12px">'
+    +'<label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;font-weight:700;font-size:13px">'
+    +'<input type="checkbox" id="adv_sync_drawer" checked style="width:17px;height:17px;accent-color:#0284c7"> Sync with Shift Cash Drawer (Day Book &amp; Physical Cash Count)'
+    +'</label>'
+    +'<div id="adv_drawer_hint" class="sub" style="margin:4px 0 8px 25px;font-size:11.5px">'+(isRecovery?'Cash will be ADDED to today\'s physical cash drawer.':'Cash will be DEDUCTED from today\'s physical cash drawer.')+'</div>'
+    +'<div style="margin-left:25px"><label style="margin:0;font-size:12px">Payment Channel'
+    +'<select id="adv_pay_mode"><option value="Cash">Cash (Forecourt Counter Drawer)</option><option value="Bank">Bank NEFT / IMPS Transfer</option><option value="UPI">UPI / GPay / PhonePe</option></select>'
+    +'</label></div>'
+    +'</div>';
+
+  h+='<div class="err" id="er"></div>'
+    +'<div class="row" style="margin-top:16px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="saveAdvanceTransaction()">Save Transaction</button></div>';
+
+  openM(h);
+}
+
+function saveAdvanceTransaction(){
+  var wid = v("adv_worker_id");
+  var kind = v("adv_kind");
+  var amt = v("adv_amt");
+  var dt = v("adv_date");
+  var note = v("adv_note");
+  var chk = document.getElementById("adv_sync_drawer");
+  var syncDrawer = chk && chk.checked;
+  var sel = document.getElementById("adv_pay_mode");
+  var payMode = sel ? sel.value : "Cash";
+
+  if(!amt || parseFloat(amt) <= 0) return er("Please enter a valid amount.");
+
+  api("POST","/api/employees/advance",{
+    worker_id: wid,
+    kind: kind,
+    amount: amt,
+    d: dt,
+    note: note,
+    sync_cash_drawer: syncDrawer,
+    pay_mode: payMode
+  }).then(function(res){
+    close();
+    toast(res.message || "Advance entry recorded.");
+    renderSalary();
+  }).catch(function(e){
+    er(e.error || "Could not record transaction.");
+  });
+}
+
+// ----------------------------------------------------------------------------
+// Add Employee Profile Modal (PetroPulse360 Feature)
+// ----------------------------------------------------------------------------
+function addEmployeeModal(){
+  var h='<h2>+ Add Forecourt Employee</h2>'
+    +'<div class="sub" style="margin-bottom:12px">Create a new staff profile for pump attendant (DSM), cashier, or forecourt manager.</div>';
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<label>Full Name<input id="new_emp_name" placeholder="e.g. Rahul Shinde"></label>'
+    +'<label>10-Digit Mobile<input id="new_emp_mobile" inputmode="numeric" placeholder="e.g. 9876543210"></label>'
+    +'</div>';
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<label>Role / Designation'
+    +'<select id="new_emp_role"><option value="worker">Pump Attendant (DSM)</option><option value="manager">Forecourt Manager</option></select>'
+    +'</label>'
+    +'<label>Compensation Structure'
+    +'<select id="new_emp_pay_type" onchange="var m=document.getElementById(\'sec_new_salary\');m.style.display=(this.value===\'monthly\'?\'block\':\'none\');">'
+    +'<option value="duty">Shift-based Wage (Per Closed Duty)</option>'
+    +'<option value="monthly">Fixed Monthly Basic Salary</option>'
+    +'</select>'
+    +'</label>'
+    +'</div>';
+
+  h+='<div id="sec_new_salary" style="display:none;background:rgba(2,132,199,0.04);border:1px solid rgba(2,132,199,0.25);border-radius:8px;padding:10px;margin-bottom:10px">'
+    +'<label style="margin:0">Monthly Basic Salary (\u20b9)<input id="new_emp_salary" inputmode="decimal" placeholder="e.g. 15000"></label>'
+    +'</div>';
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px">'
+    +'<label>Bank Account No<input id="new_emp_acc" inputmode="numeric" placeholder="e.g. 1234567890"></label>'
+    +'<label>Bank IFSC<input id="new_emp_ifsc" style="text-transform:uppercase" placeholder="e.g. SBIN0001234"></label>'
+    +'<label>Staff UPI ID<input id="new_emp_upi" placeholder="e.g. rahul@upi"></label>'
+    +'</div>';
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px">'
+    +'<label style="display:flex;align-items:center;gap:6px;font-weight:700"><input type="checkbox" id="new_emp_epf" style="width:16px;height:16px;accent-color:var(--ok)"> Opt into EPF (12%)</label>'
+    +'<label style="display:flex;align-items:center;gap:6px;font-weight:700"><input type="checkbox" id="new_emp_esic" style="width:16px;height:16px;accent-color:#0284c7"> Opt into ESIC (0.75%)</label>'
+    +'</div>';
+
+  h+='<div class="err" id="er"></div>'
+    +'<div class="row" style="margin-top:16px"><button type="button" class="ghost" onclick="close()">Cancel</button><button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="saveNewEmployee()">Create Employee Profile</button></div>';
+
+  openM(h);
+}
+
+function saveNewEmployee(){
+  var nm = v("new_emp_name");
+  var mob = v("new_emp_mobile");
+  var rl = v("new_emp_role");
+  var pt = v("new_emp_pay_type");
+  var sal = v("new_emp_salary");
+  var acc = v("new_emp_acc");
+  var ifsc = v("new_emp_ifsc");
+  var upi = v("new_emp_upi");
+  var epf = document.getElementById("new_emp_epf") && document.getElementById("new_emp_epf").checked;
+  var esic = document.getElementById("new_emp_esic") && document.getElementById("new_emp_esic").checked;
+
+  if(!nm) return er("Please enter employee name.");
+  if(!mob || mob.length !== 10) return er("Please enter a valid 10-digit mobile number.");
+
+  api("POST","/api/employees",{
+    name: nm,
+    mobile: mob,
+    role: rl,
+    pay_type: pt,
+    monthly_salary: sal,
+    bank_acc: acc,
+    bank_ifsc: ifsc,
+    bank_upi: upi,
+    epf_opted: epf,
+    esic_opted: esic
+  }).then(function(res){
+    close();
+    toast(res.message || "Employee added.");
+    renderSalary();
+  }).catch(function(e){
+    er(e.error || "Could not add employee.");
+  });
+}
+
+function toggleEmployeeActive(workerId, active){
+  api("POST","/api/employees/"+workerId+"/toggle-status",{}).then(function(res){
+    toast(res.message || "Status updated.");
+    renderSalary();
+  }).catch(function(e){
+    badge(e.error || "Could not update status.");
   });
 }
 
@@ -10809,6 +11390,7 @@ function loanFormForShortage(workerId, amount){
 }
 
 function showShortBreakdown(workerId){
+  if(ME && ME.role === "worker") workerId = ME.id;
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
   var w=LAST_PAYROLL_DATA.workers.filter(function(x){return x.id==workerId})[0];
   if(!w)return toast("Worker not found");
@@ -10855,6 +11437,7 @@ function showShortBreakdown(workerId){
 }
 
 function showExcessBreakdown(workerId){
+  if(ME && ME.role === "worker") workerId = ME.id;
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
   var w=LAST_PAYROLL_DATA.workers.filter(function(x){return x.id==workerId})[0];
   if(!w)return toast("Worker not found");
@@ -11086,6 +11669,7 @@ function batchMarkAllPaidModal(totBal){
 }
 
 function sendSalaryWhatsApp(workerId){
+  if(ME && ME.role === "worker") workerId = ME.id;
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
   var w=LAST_PAYROLL_DATA.workers.filter(function(x){return x.id==workerId})[0];
   if(!w)return toast("Worker not found");
@@ -11134,6 +11718,7 @@ function sendSalaryWhatsApp(workerId){
 }
 
 function showPaySlipById(id){
+  if(ME && ME.role === "worker") id = ME.id;
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
   var w=LAST_PAYROLL_DATA.workers.filter(function(x){return x.id==id})[0];
   if(w)showPaySlip(w);
@@ -11244,6 +11829,7 @@ function showPaySlip(w){
 }
 
 function showVoucherModalById(id){
+  if(ME && ME.role === "worker") id = ME.id;
   if(!LAST_PAYROLL_DATA||!LAST_PAYROLL_DATA.workers)return toast("Load payroll first.");
   var w=LAST_PAYROLL_DATA.workers.filter(function(x){return x.id==id})[0];
   if(w)showVoucherModal(w);
@@ -11467,6 +12053,13 @@ var DUTY_CAL_MATRIX_MODE = null; // "cards" | "table" (auto-detected on mobile/d
 var DUTY_CAL_MATRIX_RANGE = "all"; // "all" | "w1" | "w2" | "w3" | "w4" | "w5"
 
 function showDutyCalendarModal(filterWorkerId, viewMode){
+  if(ME && ME.role === "worker"){
+    DUTY_CAL_WORKER = String(ME.id);
+    if(viewMode) DUTY_CAL_VIEW = viewMode;
+    closeM();
+    tab = "wcal";
+    return loadWorkerCalendarHome();
+  }
   if(filterWorkerId !== undefined && filterWorkerId !== null){
     DUTY_CAL_WORKER = String(filterWorkerId);
   } else if(!DUTY_CAL_WORKER){
@@ -11482,70 +12075,397 @@ function showDutyCalendarModal(filterWorkerId, viewMode){
 }
 
 function changeDutyCalMonth(offset){
-  var parts = DUTY_CAL_MONTH.split("-");
+  var parts = (DUTY_CAL_MONTH || today().slice(0, 7)).split("-");
   var y = parseInt(parts[0], 10);
   var m = parseInt(parts[1], 10) + offset;
   if(m < 1){ m = 12; y--; }
   else if(m > 12){ m = 1; y++; }
   DUTY_CAL_MONTH = y + "-" + (m < 10 ? "0" + m : m);
-  loadAndRenderDutyCalendar();
+  if(tab === "wcal" && ME && ME.role === "worker"){
+    loadWorkerCalendarHome();
+  } else {
+    loadAndRenderDutyCalendar();
+  }
 }
 
 function setDutyCalMonth(val){
   if(val && /^\d{4}-\d{2}$/.test(val)){
     DUTY_CAL_MONTH = val;
-    loadAndRenderDutyCalendar();
+    if(tab === "wcal" && ME && ME.role === "worker"){
+      loadWorkerCalendarHome();
+    } else {
+      loadAndRenderDutyCalendar();
+    }
+  }
+}
+
+function refreshDutyCalendarView(){
+  if(tab === "wcal" && ME && ME.role === "worker"){
+    renderWorkerCalendarHome();
+  } else {
+    renderDutyCalendarModal();
+  }
+}
+
+var ACTIVE_WORKER_DUTY = null;
+
+function synthesizeOfflineDutyCal(month, workerId){
+  var m = month || (typeof PM !== "undefined" && PM && /^\d{4}-\d{2}$/.test(PM)) ? PM : today().slice(0, 7);
+  var staff = [];
+  if(ME){
+    staff.push({
+      id: ME.id,
+      name: ME.name || "Attendant",
+      role: ME.role || "worker",
+      pay_type: "duty",
+      standard_shifts_month: 26,
+      monthly_salary: 16000
+    });
+  }
+  if(typeof LAST_PAYROLL_DATA !== "undefined" && LAST_PAYROLL_DATA && LAST_PAYROLL_DATA.workers){
+    LAST_PAYROLL_DATA.workers.forEach(function(w){
+      if(!staff.some(function(s){ return String(s.id) === String(w.id); })){
+        staff.push({
+          id: w.id,
+          name: w.name || ("Worker #" + w.id),
+          role: w.role || "worker",
+          pay_type: w.pay_type || "duty",
+          standard_shifts_month: w.standard_shifts_month || 26,
+          monthly_salary: w.monthly_salary || 0
+        });
+      }
+    });
+  }
+  var duties = [];
+  if(S && S.duties && Array.isArray(S.duties)){
+    duties = S.duties.filter(function(d){
+      return d && d.d && d.d.startsWith(m) && (!workerId || String(d.worker_id) === String(workerId));
+    });
+  }
+  return {
+    month: m,
+    worker_id: workerId ? +workerId : (ME && ME.role === "worker" ? ME.id : null),
+    duties: duties,
+    attendance: [],
+    staff: staff,
+    is_offline_cache: true
+  };
+}
+
+function loadWorkerCalendarHome(){
+  tab = "wcal";
+  document.body.classList.add("logged-in");
+  renderDrawerContent();
+  if(!DUTY_CAL_MONTH || !/^\d{4}-\d{2}$/.test(DUTY_CAL_MONTH)){
+    DUTY_CAL_MONTH = (typeof PM !== "undefined" && PM && /^\d{4}-\d{2}$/.test(PM)) ? PM : today().slice(0, 7);
+  }
+  if(ME && ME.role === "worker"){
+    DUTY_CAL_WORKER = String(ME.id);
+    if(DUTY_CAL_VIEW === "matrix"){
+      DUTY_CAL_VIEW = "grid";
+    }
+  }
+  var appEl = document.getElementById("app");
+  if(appEl){
+    appEl.innerHTML = ubar() + wnav() + '<div class="empty" style="padding:40px 10px"><div style="font-size:26px;margin-bottom:8px">📅</div><b>Loading Forecourt Duty Calendar &amp; Attendance for ' + esc(DUTY_CAL_MONTH) + '…</b></div>';
+  }
+
+  if(!SRV){
+    DUTY_CAL_CACHE = synthesizeOfflineDutyCal(DUTY_CAL_MONTH, ME ? ME.id : null);
+    return renderWorkerCalendarHome();
+  }
+
+  var qUrl = "/api/payroll/duty-calendar?month=" + DUTY_CAL_MONTH + (ME && ME.role === "worker" ? ("&worker_id=" + ME.id) : "");
+  Promise.all([
+    api("GET", qUrl).catch(function(e){ return { _err: e }; }),
+    api("GET", "/api/duty/current").catch(function(){ return { duty: null }; })
+  ]).then(function(results){
+    var calRes = results[0];
+    ACTIVE_WORKER_DUTY = (results[1] && results[1].duty) ? results[1].duty : null;
+
+    if(calRes && calRes._err){
+      var err = calRes._err;
+      if(err && err.status === 401){
+        if(appEl){
+          appEl.innerHTML = ubar() + wnav() + '<div class="empty" style="padding:40px 10px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin:12px 0">'
+            + '<div style="font-size:32px;margin-bottom:8px">🔐</div>'
+            + '<b style="font-size:16px;color:var(--ink)">Attendant Session Required</b>'
+            + '<div class="sub" style="margin-top:6px;max-width:380px;margin-left:auto;margin-right:auto">Please log in with your forecourt attendant credentials to view your duty roster and attendance.</div>'
+            + '<div class="btns" style="justify-content:center;margin-top:16px;gap:8px;flex-wrap:wrap">'
+            + '<button type="button" style="background:#0284c7;color:#fff;font-weight:700" onclick="launchDemo(\'7387251048\',\'NewPass123\')">⚡ Quick Attendant Login (Vikram)</button>'
+            + '<button type="button" class="ghost" onclick="authView(false)">Go to Login Screen</button>'
+            + '</div></div>';
+        }
+        return;
+      }
+      DUTY_CAL_CACHE = synthesizeOfflineDutyCal(DUTY_CAL_MONTH, ME ? ME.id : null);
+    } else {
+      DUTY_CAL_CACHE = calRes || synthesizeOfflineDutyCal(DUTY_CAL_MONTH, ME ? ME.id : null);
+    }
+
+    try {
+      renderWorkerCalendarHome();
+    } catch(renderErr){
+      console.error("renderWorkerCalendarHome error:", renderErr);
+      if(appEl){
+        appEl.innerHTML = ubar() + wnav() + '<div class="empty" style="padding:40px 10px"><b style="color:var(--due)">Error displaying duty calendar: ' + esc(renderErr.message) + '</b><div class="sub" style="margin-top:6px">Please click below to reset calendar view.</div><div class="btns" style="justify-content:center;margin-top:14px"><button onclick="DUTY_CAL_VIEW=\'grid\';loadWorkerCalendarHome()">Reset to Grid View</button></div></div>';
+      }
+    }
+  }).catch(function(err){
+    console.error("Worker calendar home error:", err);
+    DUTY_CAL_CACHE = synthesizeOfflineDutyCal(DUTY_CAL_MONTH, ME ? ME.id : null);
+    renderWorkerCalendarHome();
+  });
+}
+
+function renderWorkerCalendarHome(){
+  if(!DUTY_CAL_CACHE){ return loadWorkerCalendarHome(); }
+  tab = "wcal";
+  var banner = "";
+  if(DUTY_CAL_CACHE.is_offline_cache){
+    banner += '<div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#b45309;border-radius:10px;padding:9px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      +'<span style="font-size:12.5px;font-weight:600">⚠️ Displaying local/offline forecourt calendar records.</span>'
+      +'<button type="button" class="ghost" style="padding:3px 9px;font-size:11.5px;font-weight:700" onclick="loadWorkerCalendarHome()">🔄 Reconnect Server</button>'
+      +'</div>';
+  }
+  if(ACTIVE_WORKER_DUTY){
+    banner += '<div style="background:linear-gradient(135deg, rgba(2,132,199,0.08) 0%, rgba(2,132,199,0.16) 100%);border:1.5px solid #0284c7;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 2px 6px rgba(2,132,199,0.08)">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:24px">⛽</span>'
+      +'<div>'
+      +'<div style="font-weight:800;font-size:14px;color:var(--ink)">Active Shift in Progress — '+esc(ACTIVE_WORKER_DUTY.shift)+' Shift ('+esc(ACTIVE_WORKER_DUTY.d)+')</div>'
+      +'<div class="sub" style="font-size:12px;margin-top:2px">Nozzles assigned · Log meter readings, fuel sales &amp; collections</div>'
+      +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px">'
+      +'<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 14px;border:none;border-radius:6px;cursor:pointer" onclick="tab=\'wduty\';loadW()">Open Shift Duty →</button>'
+      +'</div>'
+      +'</div>';
+  } else {
+    banner += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok)"></span>'
+      +'<span style="font-size:12.5px;font-weight:700;color:var(--ink)">Forecourt Status: Ready for shift</span>'
+      +'<span class="sub">· Hand over shift or review calendar records</span>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px">'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="tab=\'wassign\';loadWAssign()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>🤝 Handover Shift</button>'
+      +'<button type="button" class="ghost" style="padding:4px 10px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px" onclick="tab=\'wduty\';loadW()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>⛽ Shift Duty</button>'
+      +'</div>'
+      +'</div>';
+  }
+  var calHtml = getDutyCalendarHTML(true);
+  var appEl = document.getElementById("app");
+  if(appEl){
+    appEl.innerHTML = ubar() + wnav() + banner + calHtml;
   }
 }
 
 function loadAndRenderDutyCalendar(){
+  if(!DUTY_CAL_MONTH || !/^\d{4}-\d{2}$/.test(DUTY_CAL_MONTH)){
+    DUTY_CAL_MONTH = (typeof PM !== "undefined" && PM && /^\d{4}-\d{2}$/.test(PM)) ? PM : today().slice(0, 7);
+  }
   openM('<div class="empty" style="padding:40px 10px"><div style="font-size:24px;margin-bottom:8px">📅</div><b>Loading duty calendar &amp; forecourt attendance for '+DUTY_CAL_MONTH+'\u2026</b></div>', "990px");
-  api("GET", "/api/payroll/duty-calendar?month=" + DUTY_CAL_MONTH).then(function(res){
-    DUTY_CAL_CACHE = res;
-    renderDutyCalendarModal();
+  var qUrl = "/api/payroll/duty-calendar?month=" + DUTY_CAL_MONTH;
+  if(ME && ME.role === "worker"){
+    DUTY_CAL_WORKER = String(ME.id);
+    qUrl += "&worker_id=" + ME.id;
+  } else if(DUTY_CAL_WORKER && DUTY_CAL_WORKER !== "all"){
+    qUrl += "&worker_id=" + DUTY_CAL_WORKER;
+  }
+  api("GET", qUrl).then(function(res){
+    DUTY_CAL_CACHE = res || synthesizeOfflineDutyCal(DUTY_CAL_MONTH, DUTY_CAL_WORKER);
+    try {
+      renderDutyCalendarModal();
+    } catch(renderErr){
+      console.error("renderDutyCalendarModal error:", renderErr);
+      openM('<div class="empty" style="padding:40px 10px"><b style="color:var(--due)">Error displaying duty calendar: ' + esc(renderErr.message) + '</b><div class="btns" style="justify-content:center;margin-top:14px"><button class="ghost" onclick="closeM()">Close</button></div></div>', "560px");
+    }
   }).catch(function(err){
-    openM('<div class="empty" style="padding:40px 10px"><b style="color:var(--due)">Could not load duty calendar.</b><div class="sub" style="margin-top:6px">'+esc(err.error||"Network or database error")+'</div><div class="btns" style="justify-content:center;margin-top:14px"><button class="ghost" onclick="close()">Close</button></div></div>', "560px");
+    console.error("Duty calendar error:", err);
+    DUTY_CAL_CACHE = synthesizeOfflineDutyCal(DUTY_CAL_MONTH, DUTY_CAL_WORKER);
+    renderDutyCalendarModal();
   });
 }
 
 function renderDutyCalendarModal(){
+  if(tab === "wcal" && ME && ME.role === "worker"){
+    return renderWorkerCalendarHome();
+  }
   if(!DUTY_CAL_CACHE){ return; }
-  var m = DUTY_CAL_MONTH;
-  var allDuties = DUTY_CAL_CACHE.duties || [];
-  var attRecords = DUTY_CAL_CACHE.attendance || [];
-  var staffList = DUTY_CAL_CACHE.staff || [];
+  var h = getDutyCalendarHTML(false);
+  openM(h, "990px");
+}
+
+function openDutyCalDayDetailModal(dateStr, workerFilter){
+  if(!dateStr) return;
+  var isWorkerRole = (ME && ME.role === "worker");
+  var allDuties = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.duties) || [];
+  var attRecords = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.attendance) || [];
+  
+  if(isWorkerRole){
+    allDuties = allDuties.filter(function(d){ return d && String(d.worker_id) === String(ME.id); });
+    attRecords = attRecords.filter(function(a){ return a && String(a.worker_id) === String(ME.id); });
+  } else if(workerFilter && workerFilter !== "all"){
+    allDuties = allDuties.filter(function(d){ return d && String(d.worker_id) === String(workerFilter); });
+    attRecords = attRecords.filter(function(a){ return a && String(a.worker_id) === String(workerFilter); });
+  }
+
+  var dayDuties = allDuties.filter(function(d){ return d.d === dateStr; });
+  var dayAtts = attRecords.filter(function(a){ return a.d === dateStr; });
+  var dayLitres = dayDuties.reduce(function(a,d){ return a + (Number(d.litres)||0); }, 0);
+  var dayCollected = dayDuties.reduce(function(a,d){ return a + (Number(d.collected)||0); }, 0);
+  var dayShortage = dayDuties.reduce(function(a,d){ return a + (d.diff <= -1 ? Math.abs(d.diff) : 0); }, 0);
+
+  var formattedDate = "";
+  try {
+    formattedDate = new Date(dateStr + "T00:00:00").toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  } catch(_) {
+    formattedDate = dateStr;
+  }
+
+  var h = '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px">'
+    +'<div>'
+    +'<div style="display:flex;align-items:center;gap:6px">'
+    +'<span style="font-size:22px">📅</span>'
+    +'<h2 style="margin:0;font-size:17.5px;font-weight:800">Shift &amp; Attendance Details</h2>'
+    +'</div>'
+    +'<div class="sub" style="margin-top:2px;font-weight:600;color:var(--ink)">'+esc(formattedDate)+'</div>'
+    +'</div>'
+    +'<button type="button" class="ghost" style="padding:4px 8px;font-size:13px;font-weight:700" onclick="closeM()">✕</button>'
+    +'</div>';
+
+  h += '<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:6px;margin-bottom:12px">'
+    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 8px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">SHIFTS</div><b style="font-size:16px">'+dayDuties.length+'</b></div>'
+    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 8px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">LITRES</div><b style="font-size:16px;color:#0284c7">'+Math.round(dayLitres).toLocaleString("en-IN")+'L</b></div>'
+    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 8px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">COLLECTED</div><b style="font-size:16px;color:var(--ok)">'+inr(dayCollected)+'</b></div>'
+    +'</div>';
+
+  if(dayDuties.length > 0){
+    h += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">';
+    dayDuties.forEach(function(dt){
+      var isM = (dt.shift === "Morning"), isEve = (dt.shift === "Evening");
+      var fg = isM ? "#b45309" : isEve ? "#0369a1" : "#6d28d9";
+      var icon = isM ? "🌅" : isEve ? "🌇" : "🌙";
+      var isShort = (dt.diff <= -1);
+
+      h += '<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.03)">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        +'<div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="font-size:12px;font-weight:800;color:'+fg+'">'+icon+' '+esc(dt.shift)+' Shift</span>'
+        +'<span class="role-badge" style="background:#059669;color:#fff;font-size:9.5px">🟢 Present</span>'
+        +'</div>'
+        +'<span style="font-size:12px;font-weight:700;color:var(--ink)">👤 '+esc(dt.worker_name||"Attendant")+'</span>'
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:4px;font-size:11.5px;background:var(--bg);padding:6px 8px;border-radius:6px;margin-bottom:8px">'
+        +'<div><span class="sub" style="font-size:10px">Litres Sold:</span><br><b>'+(dt.litres ? Math.round(dt.litres)+' L' : '0 L')+'</b></div>'
+        +'<div><span class="sub" style="font-size:10px">Sales Value:</span><br><b>'+inr(dt.sales||0)+'</b></div>'
+        +'<div><span class="sub" style="font-size:10px">Shortage:</span><br><b style="color:'+(isShort?'var(--due)':'var(--ok)')+'">'+(isShort?('-'+inr(Math.abs(dt.diff))):'Clean ₹0')+'</b></div>'
+        +'</div>'
+        +'<button type="button" class="ghost" style="width:100%;padding:6px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px" onclick="inspectDutyModal('+dt.id+')">🔍 View Meter Readings &amp; Details</button>'
+        +'</div>';
+    });
+    h += '</div>';
+  } else {
+    var isSun = (new Date(dateStr + "T00:00:00").getDay() === 0);
+    var isPast = (dateStr < today());
+    var userAtt = dayAtts.length ? dayAtts[0] : null;
+
+    h += '<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px 14px;text-align:center;margin-bottom:14px">'
+      +'<div style="font-size:26px;margin-bottom:6px">'+(userAtt ? '📝' : isSun ? '🏖️' : isPast ? '⚠️' : '⏳')+'</div>'
+      +'<b style="font-size:14.5px;color:var(--ink)">';
+
+    if(userAtt && (userAtt.status === "paid_leave" || userAtt.status === "casual_leave" || userAtt.status === "sick_leave")){
+      h += 'Approved Leave Logged</b><div class="sub" style="margin-top:4px">'+esc(userAtt.note||"Casual / Sick Leave")+'</div>';
+    } else if(userAtt && userAtt.status === "weekly_off" || (!userAtt && isSun)){
+      h += 'Weekly Rest Day</b><div class="sub" style="margin-top:4px">No nozzle duty scheduled for this date.</div>';
+    } else if(isPast){
+      h += 'No Shift Duty Logged</b><div class="sub" style="margin-top:4px;color:var(--due)">Absent record / Loss of Pay (LOP)</div>';
+    } else {
+      h += 'Upcoming Date</b><div class="sub" style="margin-top:4px">No duty recorded yet for upcoming shift.</div>';
+    }
+    h += '</div>';
+  }
+
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+    +(isWorkerRole
+      ? '<button type="button" style="background:#0284c7;color:#fff;font-weight:700;padding:6px 14px;border:none;border-radius:6px;cursor:pointer" onclick="closeM();tab=\'wduty\';loadW()">⛽ Open Shift Duty</button>'
+      : '<button type="button" class="ghost" style="padding:6px 12px;font-size:12px;font-weight:700" onclick="openMarkAttendanceModal(\''+dateStr+'\')">✏️ Mark Attendance</button>')
+    +'<button type="button" class="ghost" onclick="closeM()">Close</button>'
+    +'</div>';
+
+  openM(h, "500px");
+}
+
+function getDutyCalendarHTML(isInline){
+  if(!DUTY_CAL_CACHE){ return ""; }
+  var isWorkerRole = (ME && ME.role === "worker");
+  if(isWorkerRole){
+    DUTY_CAL_WORKER = String(ME.id);
+    if(DUTY_CAL_VIEW === "matrix"){
+      DUTY_CAL_VIEW = "grid";
+    }
+  }
+  var m = DUTY_CAL_MONTH || (today().slice(0, 7));
+  if(!/^\d{4}-\d{2}$/.test(m)){
+    m = today().slice(0, 7);
+    DUTY_CAL_MONTH = m;
+  }
+  var allDuties = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.duties) || [];
+  var attRecords = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.attendance) || [];
+  var staffList = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.staff) || [];
+
+  if(isWorkerRole){
+    allDuties = allDuties.filter(function(d){ return d && String(d.worker_id) === String(ME.id); });
+    attRecords = attRecords.filter(function(a){ return a && String(a.worker_id) === String(ME.id); });
+    staffList = staffList.filter(function(w){ return w && String(w.id) === String(ME.id); });
+    if(!staffList.length){
+      staffList = [{ id: ME.id, name: ME.name || "Worker", role: ME.role || "worker", pay_type: "duty", standard_shifts_month: 26 }];
+    }
+  }
 
   var workerMap = {};
   staffList.forEach(function(w){
-    workerMap[String(w.id)] = { id: w.id, name: w.name, role: w.role || "worker", pay_type: w.pay_type || "duty", standard_shifts: w.standard_shifts_month || 26, duties: 0 };
+    if(w && w.id){
+      workerMap[String(w.id)] = { id: w.id, name: w.name || ("Worker #" + w.id), role: w.role || "worker", pay_type: w.pay_type || "duty", standard_shifts: w.standard_shifts_month || 26, duties: 0 };
+    }
   });
-  if(LAST_PAYROLL_DATA && LAST_PAYROLL_DATA.workers){
+  if(typeof LAST_PAYROLL_DATA !== "undefined" && LAST_PAYROLL_DATA && LAST_PAYROLL_DATA.workers){
     LAST_PAYROLL_DATA.workers.forEach(function(w){
-      if(!workerMap[String(w.id)]){
-        workerMap[String(w.id)] = { id: w.id, name: w.name, role: w.role || "worker", pay_type: w.pay_type || "duty", standard_shifts: w.standard_shifts_month || 26, duties: w.duties || 0 };
+      if(w && w.id && !workerMap[String(w.id)]){
+        workerMap[String(w.id)] = { id: w.id, name: w.name || ("Worker #" + w.id), role: w.role || "worker", pay_type: w.pay_type || "duty", standard_shifts: w.standard_shifts_month || 26, duties: w.duties || 0 };
       }
     });
   }
   allDuties.forEach(function(d){
-    if(!workerMap[String(d.worker_id)]){
+    if(d && d.worker_id && !workerMap[String(d.worker_id)]){
       workerMap[String(d.worker_id)] = { id: d.worker_id, name: d.worker_name || ("Worker #" + d.worker_id), role: d.worker_role || "worker", pay_type: "duty", standard_shifts: 26, duties: 0 };
     }
   });
   Object.keys(workerMap).forEach(function(wid){
-    workerMap[wid].duties = allDuties.filter(function(d){ return String(d.worker_id) === String(wid); }).length;
+    workerMap[wid].duties = allDuties.filter(function(d){ return d && String(d.worker_id) === String(wid); }).length;
   });
-  var workerList = Object.values(workerMap).sort(function(a,b){ return a.name.localeCompare(b.name); });
+  var workerList = Object.values(workerMap).sort(function(a,b){
+    var na = (a && a.name) ? String(a.name) : "";
+    var nb = (b && b.name) ? String(b.name) : "";
+    return na.localeCompare(nb);
+  });
 
   var displayedDuties = allDuties;
   if(DUTY_CAL_WORKER !== "all"){
-    displayedDuties = allDuties.filter(function(d){ return String(d.worker_id) === String(DUTY_CAL_WORKER); });
+    displayedDuties = allDuties.filter(function(d){ return d && String(d.worker_id) === String(DUTY_CAL_WORKER); });
   }
 
   var parts = m.split("-");
   var year = parseInt(parts[0], 10);
   var monthIdx = parseInt(parts[1], 10) - 1;
   var daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-  var monthName = new Date(year, monthIdx, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  var monthName = "";
+  try {
+    monthName = new Date(year, monthIdx, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  } catch(_) {
+    monthName = m;
+  }
   var todayStr = today();
 
   var totalShifts = displayedDuties.length;
@@ -11558,6 +12478,7 @@ function renderDutyCalendarModal(){
   var totShortage = 0;
 
   displayedDuties.forEach(function(d){
+    if(!d) return;
     datesSet.add(d.d);
     var key = d.d + "_" + d.worker_id;
     dateWorkerCount[key] = (dateWorkerCount[key] || 0) + 1;
@@ -11601,67 +12522,78 @@ function renderDutyCalendarModal(){
     +'</div>'
     +'<div class="sub" style="margin-top:2px">Logged nozzle shifts, present/absent days, dispensed volume &amp; cash audit for <b>'+monthName+'</b></div>'
     +'</div>'
-    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-    +'<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="openMarkAttendanceModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>Mark Attendance</button>'
-    +'<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="exportDutyCalendarCsv()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export CSV</button>'
-    +'<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="window.print()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>Print</button>'
-    +'<button type="button" class="ghost" style="padding:5px 9px;font-size:13px;font-weight:700" onclick="close()">✕</button>'
-    +'</div>'
-    +'</div>';
+    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
 
-  h += '<div class="noprint" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;background:var(--card);padding:10px 12px;border:1px solid var(--line);border-radius:10px">'
+  if(!isWorkerRole){
+    h += '<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="openMarkAttendanceModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>Mark Attendance</button>';
+  }
+  h += '<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="exportDutyCalendarCsv()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export CSV</button>'
+    +'<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="window.print()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>Print</button>';
+
+  if(isInline){
+    h += '<button type="button" class="ghost" style="padding:5px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px" onclick="loadWorkerCalendarHome()" title="Refresh duty calendar">🔄 Refresh</button>';
+  } else {
+    h += '<button type="button" class="ghost" style="padding:5px 9px;font-size:13px;font-weight:700" onclick="closeM()">✕</button>';
+  }
+  h += '</div></div>';
+
+  h += '<div class="duty-cal-toolbar noprint">'
     +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
     +'<button type="button" class="ghost" style="padding:4px 8px;font-size:12px;font-weight:700" onclick="changeDutyCalMonth(-1)">◀ Prev</button>'
     +'<input type="month" value="'+m+'" style="padding:4px 8px;font-size:13px;font-weight:700;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)" onchange="setDutyCalMonth(this.value)">'
     +'<button type="button" class="ghost" style="padding:4px 8px;font-size:12px;font-weight:700" onclick="changeDutyCalMonth(1)">Next ▶</button>'
     +(m !== today().slice(0,7) ? '<button type="button" class="ghost" style="padding:4px 8px;font-size:11.5px;color:var(--brand)" onclick="setDutyCalMonth(today().slice(0,7))">Current Month</button>' : '')
-    +'</div>'
-    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
-    +'<span class="sub" style="font-weight:700;font-size:12px">Attendant:</span>'
-    +'<select style="padding:4px 8px;font-size:12.5px;font-weight:600;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);min-width:180px" onchange="DUTY_CAL_WORKER=this.value;renderDutyCalendarModal()">'
-    +'<option value="all"'+(DUTY_CAL_WORKER==="all"?' selected':'')+'>👥 All Forecourt Staff (Combined)</option>';
-  workerList.forEach(function(wk){
-    var cnt = allDuties.filter(function(d){ return String(d.worker_id) === String(wk.id); }).length;
-    h += '<option value="'+wk.id+'"'+(DUTY_CAL_WORKER===String(wk.id)?' selected':'')+'>'+esc(wk.name)+' ('+esc(wk.role)+', '+cnt+' shifts)</option>';
-  });
-  h += '</select>'
-    +'</div>'
-    +'<div style="display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg);flex-wrap:wrap;max-width:100%">'
-    +'<button type="button" style="padding:5px 9px;font-size:11.5px;font-weight:700;border:none;border-radius:0;background:'+(DUTY_CAL_VIEW==="grid"?'#0284c7':'transparent')+';color:'+(DUTY_CAL_VIEW==="grid"?'#fff':'var(--mute)')+'" onclick="DUTY_CAL_VIEW=\'grid\';renderDutyCalendarModal()">🗓️ Calendar Grid</button>'
-    +'<button type="button" style="padding:5px 9px;font-size:11.5px;font-weight:700;border:none;border-radius:0;background:'+(DUTY_CAL_VIEW==="matrix"?'#0284c7':'transparent')+';color:'+(DUTY_CAL_VIEW==="matrix"?'#fff':'var(--mute)')+'" onclick="DUTY_CAL_VIEW=\'matrix\';renderDutyCalendarModal()">👥 Attendance Matrix</button>'
-    +'<button type="button" style="padding:5px 9px;font-size:11.5px;font-weight:700;border:none;border-radius:0;background:'+(DUTY_CAL_VIEW==="list"?'#0284c7':'transparent')+';color:'+(DUTY_CAL_VIEW==="list"?'#fff':'var(--mute)')+'" onclick="DUTY_CAL_VIEW=\'list\';renderDutyCalendarModal()">📋 Shift List</button>'
+    +'</div>';
+
+  if(isWorkerRole){
+    h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +'<span class="sub" style="font-weight:700;font-size:12px">Attendant:</span>'
+      +'<span style="font-weight:800;color:var(--ink);font-size:13px;padding:3px 10px;background:var(--bg);border:1px solid var(--line);border-radius:6px">👤 '+esc(ME.name)+'</span>'
+      +'</div>';
+  } else {
+    h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +'<span class="sub" style="font-weight:700;font-size:12px">Attendant:</span>'
+      +'<select style="padding:4px 8px;font-size:12.5px;font-weight:600;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);min-width:180px" onchange="DUTY_CAL_WORKER=this.value;refreshDutyCalendarView()">'
+      +'<option value="all"'+(DUTY_CAL_WORKER==="all"?' selected':'')+'>👥 All Forecourt Staff (Combined)</option>';
+    workerList.forEach(function(wk){
+      var cnt = allDuties.filter(function(d){ return d && String(d.worker_id) === String(wk.id); }).length;
+      h += '<option value="'+wk.id+'"'+(DUTY_CAL_WORKER===String(wk.id)?' selected':'')+'>'+esc(wk.name)+' ('+esc(wk.role)+', '+cnt+' shifts)</option>';
+    });
+    h += '</select></div>';
+  }
+
+  h += '<div class="duty-cal-view-group" style="display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg);flex-wrap:wrap;max-width:100%">'
+    +'<button type="button" style="padding:5px 9px;font-size:11.5px;font-weight:700;border:none;border-radius:0;background:'+(DUTY_CAL_VIEW==="grid"?'#0284c7':'transparent')+';color:'+(DUTY_CAL_VIEW==="grid"?'#fff':'var(--mute)')+'" onclick="DUTY_CAL_VIEW=\'grid\';refreshDutyCalendarView()">🗓️ Calendar Grid</button>'
+    +(!isWorkerRole ? '<button type="button" style="padding:5px 9px;font-size:11.5px;font-weight:700;border:none;border-radius:0;background:'+(DUTY_CAL_VIEW==="matrix"?'#0284c7':'transparent')+';color:'+(DUTY_CAL_VIEW==="matrix"?'#fff':'var(--mute)')+'" onclick="DUTY_CAL_VIEW=\'matrix\';refreshDutyCalendarView()">👥 Attendance Matrix</button>' : '')
+    +'<button type="button" style="padding:5px 9px;font-size:11.5px;font-weight:700;border:none;border-radius:0;background:'+(DUTY_CAL_VIEW==="list"?'#0284c7':'transparent')+';color:'+(DUTY_CAL_VIEW==="list"?'#fff':'var(--mute)')+'" onclick="DUTY_CAL_VIEW=\'list\';refreshDutyCalendarView()">📋 Shift List</button>'
     +'</div>'
     +'</div>';
 
-  // 6 Metric Summary Cards including Attendance Mandays
-  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px">'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">RECORDED SHIFTS</div><b style="font-size:17px;color:var(--ink)">'+totalShifts+'</b><div class="sub" style="font-size:10px">'+daysWorked+' active days</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">ATTENDANCE</div><b style="font-size:17px;color:#059669">'+attendanceKpiVal+'</b><div class="sub" style="font-size:10px">'+attendanceKpiSub+'</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">FUEL DISPENSED</div><b style="font-size:17px;color:#0284c7">'+totLitres.toLocaleString("en-IN", {maximumFractionDigits:1})+' L</b><div class="sub" style="font-size:10px">Forecourt meter sum</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">TOTAL COLLECTED</div><b style="font-size:17px;color:var(--ok)">'+inr(totCollected)+'</b><div class="sub" style="font-size:10px">Cash, UPI &amp; POS</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">CASH SHORTAGES</div><b style="font-size:17px;color:'+(totShortage>0?'var(--due)':'var(--ok)')+'">'+(totShortage>0?('-'+inr(totShortage)):'₹0 (Clean)')+'</b><div class="sub" style="font-size:10px">'+(totShortage>0?'Auto-deducted':'Zero shortage')+'</div></div>'
-    +'<div style="background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center"><div class="sub" style="font-size:10px;font-weight:700">SHIFT BREAKDOWN</div><div style="font-size:11.5px;font-weight:700;margin-top:3px"><span style="color:#d97706">🌅 '+shiftTypeCounts.Morning+'</span> &nbsp;<span style="color:#2563eb">🌇 '+shiftTypeCounts.Evening+'</span> &nbsp;<span style="color:#7c3aed">🌙 '+shiftTypeCounts.Night+'</span></div><div class="sub" style="font-size:10px">'+(doubleShiftsCount?doubleShiftsCount+' double shifts':'Standard roster')+'</div></div>'
+  // 6 Metric Summary Cards (Responsive on Mobile)
+  h += '<div class="duty-cal-metrics-grid">'
+    +'<div class="duty-cal-metric-card"><div class="sub" style="font-size:10px;font-weight:700">RECORDED SHIFTS</div><b style="font-size:17px;color:var(--ink)">'+totalShifts+'</b><div class="sub" style="font-size:10px">'+daysWorked+' active days</div></div>'
+    +'<div class="duty-cal-metric-card"><div class="sub" style="font-size:10px;font-weight:700">ATTENDANCE</div><b style="font-size:17px;color:#059669">'+attendanceKpiVal+'</b><div class="sub" style="font-size:10px">'+attendanceKpiSub+'</div></div>'
+    +'<div class="duty-cal-metric-card"><div class="sub" style="font-size:10px;font-weight:700">FUEL DISPENSED</div><b style="font-size:17px;color:#0284c7">'+totLitres.toLocaleString("en-IN", {maximumFractionDigits:1})+' L</b><div class="sub" style="font-size:10px">Forecourt meter sum</div></div>'
+    +'<div class="duty-cal-metric-card"><div class="sub" style="font-size:10px;font-weight:700">TOTAL COLLECTED</div><b style="font-size:17px;color:var(--ok)">'+inr(totCollected)+'</b><div class="sub" style="font-size:10px">Cash, UPI &amp; POS</div></div>'
+    +'<div class="duty-cal-metric-card"><div class="sub" style="font-size:10px;font-weight:700">CASH SHORTAGES</div><b style="font-size:17px;color:'+(totShortage>0?'var(--due)':'var(--ok)')+'">'+(totShortage>0?('-'+inr(totShortage)):'₹0 (Clean)')+'</b><div class="sub" style="font-size:10px">'+(totShortage>0?'Auto-deducted':'Zero shortage')+'</div></div>'
+    +'<div class="duty-cal-metric-card"><div class="sub" style="font-size:10px;font-weight:700">SHIFT BREAKDOWN</div><div style="font-size:11.5px;font-weight:700;margin-top:3px"><span style="color:#d97706">🌅 '+shiftTypeCounts.Morning+'</span> &nbsp;<span style="color:#2563eb">🌇 '+shiftTypeCounts.Evening+'</span> &nbsp;<span style="color:#7c3aed">🌙 '+shiftTypeCounts.Night+'</span></div><div class="sub" style="font-size:10px">'+(doubleShiftsCount?doubleShiftsCount+' double shifts':'Standard roster')+'</div></div>'
     +'</div>';
 
-  // Attendance Legend & Filter Pills
-  h += '<div class="noprint" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;font-size:11px;color:var(--mute);background:rgba(0,0,0,0.02);padding:7px 12px;border-radius:8px;border:1px solid var(--line)">'
-    +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;margin-right:4px;vertical-align:middle"></span><b>🟢 Present (P)</b></span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0d9488;margin-right:4px;vertical-align:middle"></span><b>⚡ Double Duty (2P)</b></span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2563eb;margin-right:4px;vertical-align:middle"></span><b>🔵 Weekly Off (WO)</b></span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d97706;margin-right:4px;vertical-align:middle"></span><b>🟡 Leave (PL/CL)</b></span>'
-    +'<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--due);margin-right:4px;vertical-align:middle"></span><b>🔴 Absent / LOP (A)</b></span>'
-    +'<span style="color:var(--line)">|</span>'
-    +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:3px;vertical-align:middle"></span>🌅 Morning</span>'
-    +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0284c7;margin-right:3px;vertical-align:middle"></span>🌇 Evening</span>'
-    +'<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#8b5cf6;margin-right:3px;vertical-align:middle"></span>🌙 Night</span>'
+  // Attendance Legend & Filter Pills (Touch scrollable)
+  h += '<div class="duty-cal-legend-bar noprint">'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'
+    +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#059669;margin-right:3px;vertical-align:middle"></span><b>🟢 Present (P)</b></span>'
+    +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#0d9488;margin-right:3px;vertical-align:middle"></span><b>⚡ Double (2P)</b></span>'
+    +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2563eb;margin-right:3px;vertical-align:middle"></span><b>🔵 Off (WO)</b></span>'
+    +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#d97706;margin-right:3px;vertical-align:middle"></span><b>🟡 Leave (L)</b></span>'
+    +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--due);margin-right:3px;vertical-align:middle"></span><b>🔴 Absent (A)</b></span>'
     +'</div>'
-    +'<div style="display:flex;align-items:center;gap:6px">'
+    +'<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">'
     +'<span style="font-weight:700">Filter:</span>'
-    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:11px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="all"?"rgba(2,132,199,0.15)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="all"?"#0284c7":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'all\';renderDutyCalendarModal()">All Days</button>'
-    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:11px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="present"?"rgba(16,185,129,0.15)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="present"?"#059669":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'present\';renderDutyCalendarModal()">🟢 Present</button>'
-    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:11px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="off"?"rgba(239,68,68,0.12)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="off"?"#dc2626":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'off\';renderDutyCalendarModal()">🏖️ Off / Absent</button>'
-    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:11px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="double"?"rgba(13,148,136,0.15)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="double"?"#0f766e":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'double\';renderDutyCalendarModal()">⚡ 2x Double</button>'
+    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:10.5px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="all"?"rgba(2,132,199,0.15)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="all"?"#0284c7":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'all\';refreshDutyCalendarView()">All</button>'
+    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:10.5px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="present"?"rgba(16,185,129,0.15)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="present"?"#059669":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'present\';refreshDutyCalendarView()">🟢 Present</button>'
+    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:10.5px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="off"?"rgba(239,68,68,0.12)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="off"?"#dc2626":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'off\';refreshDutyCalendarView()">🏖️ Off</button>'
+    +'<button type="button" class="ghost" style="padding:2px 7px;font-size:10.5px;font-weight:700;background:'+(DUTY_CAL_ATT_FILTER==="double"?"rgba(13,148,136,0.15)":"transparent")+';color:'+(DUTY_CAL_ATT_FILTER==="double"?"#0f766e":"var(--mute)")+'" onclick="DUTY_CAL_ATT_FILTER=\'double\';refreshDutyCalendarView()">⚡ 2P</button>'
     +'</div>'
     +'</div>';
 
@@ -11673,32 +12605,45 @@ function renderDutyCalendarModal(){
     h += renderDutyCalendarListView(displayedDuties);
   }
 
-  h += '<div class="row noprint" style="margin-top:14px;gap:8px;justify-content:flex-end">'
-    +'<button type="button" class="ghost" onclick="close()">Close</button>'
-    +'</div>';
+  if(!isInline){
+    h += '<div class="row noprint" style="margin-top:14px;gap:8px;justify-content:flex-end">'
+      +'<button type="button" class="ghost" onclick="closeM()">Close</button>'
+      +'</div>';
+  } else {
+    h += '<div class="sub" style="text-align:center;margin-top:20px;padding:12px;color:var(--mute);border-top:1px solid var(--line)">'
+      +'Forecourt shift records and attendance are synchronized in real-time with verified nozzle meter readings.'
+      +'</div>';
+  }
 
-  openM(h, "990px");
+  return h;
 }
 
 function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerList, allDuties, attRecords){
+  var isWorkerRole = (ME && ME.role === "worker");
+  if(isWorkerRole){
+    duties = (duties||[]).filter(function(d){ return d && String(d.worker_id) === String(ME.id); });
+    allDuties = (allDuties||[]).filter(function(d){ return d && String(d.worker_id) === String(ME.id); });
+    attRecords = (attRecords||[]).filter(function(a){ return a && String(a.worker_id) === String(ME.id); });
+    workerList = (workerList||[]).filter(function(w){ return w && String(w.id) === String(ME.id); });
+  }
   var firstDayOfWeek = new Date(year, monthIdx, 1).getDay();
   var weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var todayStr = today();
   var isSingleWorker = (DUTY_CAL_WORKER !== "all");
 
-  var h = '<div style="background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)">';
+  var h = '<div class="duty-cal-grid-box">';
   
-  h += '<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg);border-bottom:1px solid var(--line);text-align:center;font-size:11px;font-weight:700;color:var(--mute);letter-spacing:0.5px;text-transform:uppercase">'
+  h += '<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg);border-bottom:1px solid var(--line);text-align:center;font-size:10.5px;font-weight:700;color:var(--mute);letter-spacing:0.5px;text-transform:uppercase">'
     + weekDays.map(function(wd, i){
         var isWknd = (i === 0 || i === 6);
-        return '<div style="padding:8px 4px;'+(isWknd?'color:var(--warn)':'')+'">'+wd+'</div>';
+        return '<div style="padding:7px 2px;'+(isWknd?'color:var(--warn)':'')+'">'+wd+'</div>';
       }).join("")
     +'</div>';
 
   h += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line)">';
 
   for(var b = 0; b < firstDayOfWeek; b++){
-    h += '<div style="background:rgba(0,0,0,0.02);min-height:102px;padding:6px;opacity:0.4"></div>';
+    h += '<div style="background:rgba(0,0,0,0.02);min-height:64px;padding:4px;opacity:0.3"></div>';
   }
 
   for(var day = 1; day <= daysInMonth; day++){
@@ -11710,10 +12655,10 @@ function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerL
     var isFuture = (curDateStr > todayStr);
     var isPast = (curDateStr < todayStr);
 
-    var dayDuties = duties.filter(function(d){ return d.d === curDateStr; });
+    var dayDuties = (duties||[]).filter(function(d){ return d && d.d === curDateStr; });
     var dayLitres = dayDuties.reduce(function(a, d){ return a + (Number(d.litres)||0); }, 0);
-    var dayAllDuties = allDuties.filter(function(d){ return d.d === curDateStr; });
-    var dayAtts = attRecords.filter(function(a){ return a.d === curDateStr; });
+    var dayAllDuties = (allDuties||[]).filter(function(d){ return d && d.d === curDateStr; });
+    var dayAtts = (attRecords||[]).filter(function(a){ return a && a.d === curDateStr; });
 
     // Double shift detection
     var workerDayCounts = {};
@@ -11732,40 +12677,39 @@ function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerL
       if(dayDuties.length >= 2){
         isPresent = true;
         isDouble = true;
-        attStatusBadge = '<span style="font-size:9.5px;font-weight:800;background:rgba(13,148,136,0.18);color:#0f766e;border:1px solid rgba(13,148,136,0.35);padding:1px 5px;border-radius:4px">⚡ 2P DOUBLE</span>';
+        attStatusBadge = '<span style="font-size:9px;font-weight:800;background:rgba(13,148,136,0.18);color:#0f766e;border:1px solid rgba(13,148,136,0.35);padding:1px 4px;border-radius:4px">⚡ 2P</span>';
       } else if(dayDuties.length === 1){
         isPresent = true;
-        attStatusBadge = '<span style="font-size:9.5px;font-weight:800;background:rgba(16,185,129,0.18);color:#059669;border:1px solid rgba(16,185,129,0.35);padding:1px 5px;border-radius:4px">🟢 PRESENT</span>';
+        attStatusBadge = '<span style="font-size:9px;font-weight:800;background:rgba(16,185,129,0.18);color:#059669;border:1px solid rgba(16,185,129,0.35);padding:1px 4px;border-radius:4px">🟢 P</span>';
       } else if(userAttRecord){
         if(userAttRecord.status === "weekly_off"){
           isOffOrAbsent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:700;background:rgba(59,130,246,0.15);color:#2563eb;border:1px solid rgba(59,130,246,0.3);padding:1px 5px;border-radius:4px">🔵 WEEKLY OFF</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:700;background:rgba(59,130,246,0.15);color:#2563eb;border:1px solid rgba(59,130,246,0.3);padding:1px 4px;border-radius:4px">🔵 WO</span>';
         } else if(userAttRecord.status === "paid_leave" || userAttRecord.status === "casual_leave" || userAttRecord.status === "sick_leave"){
           isOffOrAbsent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:700;background:rgba(234,179,8,0.18);color:#b45309;border:1px solid rgba(234,179,8,0.35);padding:1px 5px;border-radius:4px">🟡 LEAVE</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:700;background:rgba(234,179,8,0.18);color:#b45309;border:1px solid rgba(234,179,8,0.35);padding:1px 4px;border-radius:4px">🟡 L</span>';
         } else if(userAttRecord.status === "half_day"){
           isPresent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:700;background:rgba(249,115,22,0.18);color:#c2410c;border:1px solid rgba(249,115,22,0.35);padding:1px 5px;border-radius:4px">🟠 HALF DAY</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:700;background:rgba(249,115,22,0.18);color:#c2410c;border:1px solid rgba(249,115,22,0.35);padding:1px 4px;border-radius:4px">🟠 HD</span>';
         } else if(userAttRecord.status === "present"){
           isPresent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:800;background:rgba(16,185,129,0.18);color:#059669;border:1px solid rgba(16,185,129,0.35);padding:1px 5px;border-radius:4px">🟢 PRESENT (Relief)</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:800;background:rgba(16,185,129,0.18);color:#059669;border:1px solid rgba(16,185,129,0.35);padding:1px 4px;border-radius:4px">🟢 P</span>';
         } else {
           isOffOrAbsent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:700;background:rgba(239,68,68,0.15);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:1px 5px;border-radius:4px">🔴 ABSENT / LOP</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:700;background:rgba(239,68,68,0.15);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:1px 4px;border-radius:4px">🔴 A</span>';
         }
       } else {
         if(isFuture){
-          attStatusBadge = '<span style="font-size:9px;font-weight:600;background:rgba(0,0,0,0.03);color:var(--mute);padding:1px 4px;border-radius:3px">⏳ Upcoming</span>';
+          attStatusBadge = '<span style="font-size:8.5px;font-weight:600;background:rgba(0,0,0,0.03);color:var(--mute);padding:1px 3px;border-radius:3px">⏳</span>';
         } else if(isSunday){
           isOffOrAbsent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:700;background:rgba(59,130,246,0.15);color:#2563eb;border:1px solid rgba(59,130,246,0.3);padding:1px 5px;border-radius:4px">🔵 WEEKLY OFF</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:700;background:rgba(59,130,246,0.15);color:#2563eb;border:1px solid rgba(59,130,246,0.3);padding:1px 4px;border-radius:4px">🔵 WO</span>';
         } else {
           isOffOrAbsent = true;
-          attStatusBadge = '<span style="font-size:9.5px;font-weight:700;background:rgba(239,68,68,0.15);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:1px 5px;border-radius:4px">🔴 ABSENT (LOP)</span>';
+          attStatusBadge = '<span style="font-size:9px;font-weight:700;background:rgba(239,68,68,0.15);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:1px 4px;border-radius:4px">🔴 A</span>';
         }
       }
     } else {
-      // All staff view
       var presentWorkerIds = new Set(dayDuties.map(function(d){ return String(d.worker_id); }));
       dayAtts.forEach(function(a){ if(a.status === "present") presentWorkerIds.add(String(a.worker_id)); });
       var presentCount = presentWorkerIds.size;
@@ -11775,39 +12719,47 @@ function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerL
       isDouble = hasDoubleShift;
       isOffOrAbsent = (offStaffList.length > 0);
 
-      attStatusBadge = '<span style="font-size:9.5px;font-weight:800;background:'+(presentCount>0?'rgba(16,185,129,0.18)':'rgba(239,68,68,0.15)')+';color:'+(presentCount>0?'#059669':'#dc2626')+';border:1px solid '+(presentCount>0?'rgba(16,185,129,0.35)':'rgba(239,68,68,0.3)')+';padding:1px 6px;border-radius:4px">👥 '+presentCount+'/'+totalStaffCount+' Present</span>';
+      attStatusBadge = '<span style="font-size:8.5px;font-weight:800;background:'+(presentCount>0?'rgba(16,185,129,0.18)':'rgba(239,68,68,0.15)')+';color:'+(presentCount>0?'#059669':'#dc2626')+';border:1px solid '+(presentCount>0?'rgba(16,185,129,0.35)':'rgba(239,68,68,0.3)')+';padding:1px 4px;border-radius:4px">'+presentCount+'/'+totalStaffCount+'</span>';
     }
 
-    // Apply Attendance Filter
     var isDimmed = false;
     if(DUTY_CAL_ATT_FILTER === "present" && !isPresent) isDimmed = true;
     if(DUTY_CAL_ATT_FILTER === "off" && !isOffOrAbsent) isDimmed = true;
     if(DUTY_CAL_ATT_FILTER === "double" && !isDouble) isDimmed = true;
 
-    h += '<div style="background:'+(isToday?'rgba(2,132,199,0.03)':isSunday?'rgba(245,158,11,0.02)':'var(--bg)')+';min-height:104px;padding:6px;display:flex;flex-direction:column;gap:3px;position:relative;'
+    h += '<div class="duty-cal-cell" onclick="openDutyCalDayDetailModal(\''+curDateStr+'\', \''+(isSingleWorker ? DUTY_CAL_WORKER : 'all')+'\')" style="background:'+(isToday?'rgba(2,132,199,0.04)':isSunday?'rgba(245,158,11,0.02)':'var(--bg)')+';'
       +(isDimmed ? 'opacity:0.25;' : '')
-      +(isToday ? 'outline:2px solid #0284c7;outline-offset:-2px;' : '')+'">'
+      +(isToday ? 'outline:2px solid #0284c7;outline-offset:-2px;' : '')+';cursor:pointer">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">'
-      +'<div style="display:flex;align-items:center;gap:4px">'
-      +'<span style="font-size:13px;font-weight:'+(isToday?'800':'700')+';color:'+(isToday?'#0284c7':isSunday?'var(--warn)':'var(--ink)')+'">'+day+'</span>'
-      +(isToday ? '<span style="font-size:8.5px;font-weight:800;background:#0284c7;color:#fff;padding:1px 4px;border-radius:3px">TODAY</span>' : '')
+      +'<div style="display:flex;align-items:center;gap:3px">'
+      +'<span class="duty-cal-day-num" style="font-size:12.5px;font-weight:'+(isToday?'800':'700')+';color:'+(isToday?'#0284c7':isSunday?'var(--warn)':'var(--ink)')+'">'+day+'</span>'
+      +(isToday ? '<span style="font-size:8px;font-weight:800;background:#0284c7;color:#fff;padding:0.5px 3px;border-radius:2px">TODAY</span>' : '')
       +'</div>'
       + attStatusBadge
       +'</div>';
 
-    // Cell Body: Single Worker vs All Workers
+    // Desktop vs Mobile Cell Body
     if(isSingleWorker){
       if(dayDuties.length > 0){
-        h += '<div style="display:flex;flex-direction:column;gap:3px;flex:1">';
+        // Mobile summary badge (Compact)
+        h += '<div class="mobile-only-duty" style="display:none;flex-direction:column;gap:2px;flex:1">'
+          +'<div style="font-size:9px;font-weight:700;color:#0284c7;background:rgba(2,132,199,0.1);padding:1px 3px;border-radius:3px;text-align:center">'
+          + dayDuties.map(function(dt){ return (dt.shift==='Morning'?'🌅':dt.shift==='Evening'?'🌇':'🌙'); }).join('')
+          + (dayLitres ? (' ' + Math.round(dayLitres) + 'L') : '')
+          +'</div>'
+          +'</div>';
+
+        // Desktop summary (Full cards)
+        h += '<div class="desktop-only-duty" style="display:flex;flex-direction:column;gap:3px;flex:1">';
         dayDuties.forEach(function(dt){
-          var isMorn = (dt.shift === "Morning"), isEve = (dt.shift === "Evening"), isNight = (dt.shift === "Night");
+          var isMorn = (dt.shift === "Morning"), isEve = (dt.shift === "Evening");
           var bg = isMorn ? "rgba(245,158,11,0.12)" : isEve ? "rgba(2,132,199,0.12)" : "rgba(139,92,246,0.12)";
           var border = isMorn ? "rgba(245,158,11,0.3)" : isEve ? "rgba(2,132,199,0.3)" : "rgba(139,92,246,0.3)";
           var fg = isMorn ? "#b45309" : isEve ? "#0369a1" : "#6d28d9";
           var icon = isMorn ? "🌅" : isEve ? "🌇" : "🌙";
           var isShort = (dt.diff <= -1);
 
-          h += '<div onclick="inspectDutyModal('+dt.id+')" style="cursor:pointer;background:'+bg+';border:1px solid '+border+';border-radius:5px;padding:3px 5px;font-size:10px;line-height:1.2;transition:transform 0.1s" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">'
+          h += '<div onclick="event.stopPropagation();inspectDutyModal('+dt.id+')" style="cursor:pointer;background:'+bg+';border:1px solid '+border+';border-radius:5px;padding:3px 5px;font-size:10px;line-height:1.2;transition:transform 0.1s" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">'
             +'<div style="display:flex;align-items:center;justify-content:space-between;gap:2px">'
             +'<span style="font-weight:700;color:'+fg+'">'+icon+' '+esc(dt.shift)+'</span>'
             +(dt.litres ? '<span style="font-weight:600;color:var(--ink);font-size:9.5px">'+Math.round(dt.litres)+'L</span>' : '')
@@ -11817,46 +12769,49 @@ function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerL
               : (dt.diff > 1 ? '<div style="color:var(--ok);font-size:9px">+₹'+Math.round(dt.diff)+'</div>' : ''))
             +'</div>';
         });
-        h += '<div style="font-size:9px;color:#059669;font-weight:700;display:flex;align-items:center;gap:2px;margin-top:auto">✓ Forecourt Duty Verified</div>';
+        h += '<div style="font-size:9px;color:#059669;font-weight:700;display:flex;align-items:center;gap:2px;margin-top:auto">✓ Forecourt Verified</div>';
         h += '</div>';
       } else {
-        // No duties recorded for this worker on this date
-        h += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px;text-align:center">';
+        // Empty cell for single worker
+        h += '<div class="mobile-only-duty" style="display:none;flex:1;align-items:center;justify-content:center;color:var(--mute);font-size:8.5px">'
+          +(isSunday ? '🏖️ Off' : isPast ? '⚠️ LOP' : '·')
+          +'</div>';
+        h += '<div class="desktop-only-duty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px;text-align:center">';
         if(userAttRecord && (userAttRecord.status === "paid_leave" || userAttRecord.status === "casual_leave" || userAttRecord.status === "sick_leave")){
-          h += '<span style="font-size:15px">📝</span><b style="font-size:10.5px;color:#b45309">Approved Leave</b>'
-            +'<div style="font-size:9px;color:rgba(180,83,9,0.8);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(userAttRecord.note||'Leave')+'</div>';
+          h += '<span style="font-size:14px">📝</span><b style="font-size:10px;color:#b45309">Approved Leave</b>';
         } else if(userAttRecord && userAttRecord.status === "weekly_off" || (!userAttRecord && isSunday)){
-          h += '<span style="font-size:15px">🏖️</span><b style="font-size:10.5px;color:#2563eb">Weekly Rest Day</b>'
-            +'<div style="font-size:9px;color:rgba(37,99,235,0.7)">No Duty Scheduled</div>';
+          h += '<span style="font-size:14px">🏖️</span><b style="font-size:10px;color:#2563eb">Weekly Rest</b>';
         } else if(isFuture){
-          h += '<div style="color:rgba(0,0,0,0.22);font-size:10.5px;font-style:italic">— Upcoming —</div>';
+          h += '<div style="color:rgba(0,0,0,0.22);font-size:10px;font-style:italic">— Upcoming —</div>';
         } else {
-          h += '<span style="font-size:15px">⚠️</span><b style="font-size:10.5px;color:#dc2626">No Shift Logged</b>'
-            +'<div style="font-size:9px;color:rgba(220,38,38,0.75)">Loss of Pay (LOP)</div>';
+          h += '<span style="font-size:14px">⚠️</span><b style="font-size:10px;color:#dc2626">No Shift Logged</b><div style="font-size:8.5px;color:rgba(220,38,38,0.75)">LOP</div>';
         }
         h += '</div>';
       }
-      h += '<div style="display:flex;justify-content:flex-end;margin-top:auto;padding-top:1px">'
-        +'<button type="button" class="ghost" style="padding:1px 5px;font-size:9px;font-weight:600;border:1px solid var(--line);border-radius:3px;color:var(--mute)" onclick="openMarkAttendanceModal(\''+curDateStr+'\', '+DUTY_CAL_WORKER+')">✏️ Edit</button>'
-        +'</div>';
     } else {
       // All Forecourt Staff (Combined View)
       var presentStaffSet = new Set(dayDuties.map(function(d){ return String(d.worker_id); }));
       var offStaffNames = workerList.filter(function(w){ return !presentStaffSet.has(String(w.id)); });
 
       if(dayDuties.length === 0){
-        h += '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,0.25);font-size:11px;font-style:italic">— No Duty Logged —</div>';
+        h += '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:rgba(0,0,0,0.25);font-size:10px;font-style:italic">— No Duty —</div>';
       } else {
-        h += '<div style="display:flex;flex-direction:column;gap:3px;flex:1">';
+        h += '<div class="mobile-only-duty" style="display:none;flex-direction:column;gap:2px;flex:1">'
+          +'<div style="font-size:9px;font-weight:700;color:#0284c7;background:rgba(2,132,199,0.1);padding:1px 3px;border-radius:3px;text-align:center">'
+          +'⛽ '+dayDuties.length+' shifts'
+          +'</div>'
+          +'</div>';
+
+        h += '<div class="desktop-only-duty" style="display:flex;flex-direction:column;gap:3px;flex:1">';
         dayDuties.forEach(function(dt){
-          var isMorn = (dt.shift === "Morning"), isEve = (dt.shift === "Evening"), isNight = (dt.shift === "Night");
+          var isMorn = (dt.shift === "Morning"), isEve = (dt.shift === "Evening");
           var bg = isMorn ? "rgba(245,158,11,0.12)" : isEve ? "rgba(2,132,199,0.12)" : "rgba(139,92,246,0.12)";
           var border = isMorn ? "rgba(245,158,11,0.3)" : isEve ? "rgba(2,132,199,0.3)" : "rgba(139,92,246,0.3)";
           var fg = isMorn ? "#b45309" : isEve ? "#0369a1" : "#6d28d9";
           var icon = isMorn ? "🌅" : isEve ? "🌇" : "🌙";
           var isShort = (dt.diff <= -1);
 
-          h += '<div onclick="inspectDutyModal('+dt.id+')" style="cursor:pointer;background:'+bg+';border:1px solid '+border+';border-radius:5px;padding:3px 5px;font-size:10px;line-height:1.2;transition:transform 0.1s" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">'
+          h += '<div onclick="event.stopPropagation();inspectDutyModal('+dt.id+')" style="cursor:pointer;background:'+bg+';border:1px solid '+border+';border-radius:5px;padding:3px 5px;font-size:10px;line-height:1.2;transition:transform 0.1s" onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">'
             +'<div style="display:flex;align-items:center;justify-content:space-between;gap:2px">'
             +'<span style="font-weight:700;color:'+fg+'">'+icon+' '+esc(dt.shift)+'</span>'
             +(dt.litres ? '<span style="font-weight:600;color:var(--ink);font-size:9.5px">'+Math.round(dt.litres)+'L</span>' : '')
@@ -11872,14 +12827,13 @@ function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerL
         h += '</div>';
       }
 
-      // Day Attendance Roster link at bottom of each grid box
       if(offStaffNames.length > 0){
-        h += '<div onclick="openDayAttendanceModal(\''+curDateStr+'\')" style="cursor:pointer;background:rgba(0,0,0,0.02);padding:2px 4px;border-radius:4px;border-top:1px dashed var(--line);margin-top:auto;font-size:9px;display:flex;align-items:center;justify-content:space-between;color:var(--mute)" title="Click to view daily roster &amp; mark attendance">'
-          +'<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🏖️ <b>'+offStaffNames.length+' Off:</b> '+offStaffNames.map(function(w){ return esc(w.name.split(' ')[0]); }).slice(0, 2).join(', ')+(offStaffNames.length>2?'…':'')+'</span>'
+        h += '<div class="desktop-only-duty" onclick="event.stopPropagation();openDayAttendanceModal(\''+curDateStr+'\')" style="cursor:pointer;background:rgba(0,0,0,0.02);padding:2px 4px;border-radius:4px;border-top:1px dashed var(--line);margin-top:auto;font-size:9px;display:flex;align-items:center;justify-content:space-between;color:var(--mute)" title="Click to view daily roster &amp; mark attendance">'
+          +'<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🏖️ <b>'+offStaffNames.length+' Off:</b> '+offStaffNames.map(function(w){ return esc((w.name||"").split(' ')[0]); }).slice(0, 2).join(', ')+(offStaffNames.length>2?'…':'')+'</span>'
           +'<span style="color:var(--brand);font-weight:800">›</span>'
           +'</div>';
       } else {
-        h += '<div onclick="openDayAttendanceModal(\''+curDateStr+'\')" style="cursor:pointer;font-size:9px;color:#059669;font-weight:700;border-top:1px dashed var(--line);margin-top:auto;padding-top:2px;text-align:center" title="Click to view full roster">'
+        h += '<div class="desktop-only-duty" onclick="event.stopPropagation();openDayAttendanceModal(\''+curDateStr+'\')" style="cursor:pointer;font-size:9px;color:#059669;font-weight:700;border-top:1px dashed var(--line);margin-top:auto;padding-top:2px;text-align:center" title="Click to view full roster">'
           +'✓ 100% Present ('+workerList.length+' Staff) ›'
           +'</div>';
       }
@@ -11891,7 +12845,7 @@ function renderDutyCalendarGridView(year, monthIdx, daysInMonth, duties, workerL
   var totalCells = firstDayOfWeek + daysInMonth;
   var trailingCells = (7 - (totalCells % 7)) % 7;
   for(var t = 0; t < trailingCells; t++){
-    h += '<div style="background:rgba(0,0,0,0.02);min-height:102px;padding:6px;opacity:0.4"></div>';
+    h += '<div style="background:rgba(0,0,0,0.02);min-height:64px;padding:4px;opacity:0.3"></div>';
   }
 
   h += '</div></div>';
@@ -11910,14 +12864,20 @@ function stepMatrixWeek(dir){
 }
 
 function renderDutyCalendarMatrixView(daysInMonth, workerList, allDuties, attRecords){
+  var isWorkerRole = (ME && ME.role === "worker");
+  if(isWorkerRole){
+    allDuties = (allDuties||[]).filter(function(d){ return String(d.worker_id) === String(ME.id); });
+    attRecords = (attRecords||[]).filter(function(a){ return String(a.worker_id) === String(ME.id); });
+    workerList = (workerList||[]).filter(function(w){ return String(w.id) === String(ME.id); });
+  }
   var isMobile = (typeof window !== "undefined" && window.innerWidth < 768);
   var currentMode = DUTY_CAL_MATRIX_MODE || (isMobile ? "cards" : "table");
   var currentRange = DUTY_CAL_MATRIX_RANGE || "all";
 
-  var activeWorkers = (DUTY_CAL_WORKER !== "all")
-    ? workerList.filter(function(w){ return String(w.id) === String(DUTY_CAL_WORKER); })
-    : workerList;
-  if(!activeWorkers.length) activeWorkers = workerList;
+  var activeWorkers = (isWorkerRole)
+    ? workerList.filter(function(w){ return String(w.id) === String(ME.id); })
+    : ((DUTY_CAL_WORKER !== "all") ? workerList.filter(function(w){ return String(w.id) === String(DUTY_CAL_WORKER); }) : workerList);
+  if(!activeWorkers.length) activeWorkers = isWorkerRole ? [{ id: ME.id, name: ME.name, role: ME.role || "worker", pay_type: "duty", standard_shifts: 26, duties: 0 }] : workerList;
 
   if(!activeWorkers.length){
     return '<div class="empty" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:34px 14px;text-align:center">'
@@ -11951,9 +12911,11 @@ function renderDutyCalendarMatrixView(daysInMonth, workerList, allDuties, attRec
       +'</div>';
   } else {
     h += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mute)">'
-      +(DUTY_CAL_WORKER !== "all"
-        ? '<span>Filtered to <b>'+esc((activeWorkers[0]||{}).name||'Attendant')+'</b> · <a href="javascript:void(0)" onclick="DUTY_CAL_WORKER=\'all\';renderDutyCalendarModal()" style="color:#0284c7;font-weight:700">Show All ('+workerList.length+')</a></span>'
-        : '<span>Showing <b>'+activeWorkers.length+' Staff Members</b> · Tap cell to inspect/mark</span>')
+      +(isWorkerRole
+        ? '<span>Forecourt Attendant: <b>'+esc(ME.name)+'</b></span>'
+        : (DUTY_CAL_WORKER !== "all"
+          ? '<span>Filtered to <b>'+esc((activeWorkers[0]||{}).name||'Attendant')+'</b> · <a href="javascript:void(0)" onclick="DUTY_CAL_WORKER=\'all\';renderDutyCalendarModal()" style="color:#0284c7;font-weight:700">Show All ('+workerList.length+')</a></span>'
+          : '<span>Showing <b>'+activeWorkers.length+' Staff Members</b> · Tap cell to inspect/mark</span>'))
       +'</div>';
   }
   h += '</div>';
@@ -12248,6 +13210,10 @@ function renderDutyCalendarMatrixView(daysInMonth, workerList, allDuties, attRec
 }
 
 function renderDutyCalendarListView(duties){
+  var isWorkerRole = (ME && ME.role === "worker");
+  if(isWorkerRole){
+    duties = (duties||[]).filter(function(d){ return String(d.worker_id) === String(ME.id); });
+  }
   if(!duties.length){
     return '<div class="empty" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:30px 10px">'
       +'<div style="font-size:24px;margin-bottom:6px">📭</div>'
@@ -12261,7 +13227,8 @@ function renderDutyCalendarListView(duties){
     return b.id - a.id;
   });
 
-  var h = '<div class="tbl" style="max-height:480px;overflow:auto;border:1px solid var(--line);border-radius:10px"><table>'
+  var h = '<div class="duty-cal-list-desktop">'
+    +'<div class="tbl" style="max-height:480px;overflow:auto;border:1px solid var(--line);border-radius:10px"><table>'
     +'<thead><tr style="position:sticky;top:0;background:var(--bg);z-index:2">'
     +'<th>Date</th><th>Shift</th><th>Attendant</th><th>Attendance Status</th><th class="r">Litres Sold</th><th class="r">Total Sales</th><th class="r">Cash / Collection</th><th class="r">Variance</th><th>Audit &amp; Details</th>'
     +'</tr></thead><tbody>';
@@ -12288,11 +13255,49 @@ function renderDutyCalendarListView(duties){
       +'</tr>';
   });
 
-  h += '</tbody></table></div>';
+  h += '</tbody></table></div></div>';
+
+  // Responsive Mobile Card List View
+  h += '<div class="duty-cal-list-mobile">';
+  sorted.forEach(function(d){
+    var isM = (d.shift === "Morning"), isE = (d.shift === "Evening"), isN = (d.shift === "Night");
+    var bg = isM ? "#fef3c7" : isE ? "#dbeafe" : "#ede9fe";
+    var fg = isM ? "#b45309" : isE ? "#1d4ed8" : "#6d28d9";
+    var icon = isM ? "🌅" : isE ? "🌇" : "🌙";
+    var isShort = (d.diff <= -1);
+
+    h += '<div class="duty-cal-card-mobile" onclick="inspectDutyModal('+d.id+')">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<span style="font-size:13.5px;font-weight:800;color:var(--ink)">'+esc(d.d)+'</span>'
+      +'<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;background:'+bg+';color:'+fg+'">'+icon+' '+esc(d.shift)+'</span>'
+      +'</div>'
+      +'<span class="role-badge" style="font-size:10px;background:#059669;color:#fff">🟢 Present</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-top:2px">'
+      +'<span class="sub">Attendant: <b style="color:var(--ink)">'+esc(d.worker_name||"Attendant")+'</b></span>'
+      +'<span style="font-weight:700;color:#0284c7">'+(d.litres ? Math.round(d.litres).toLocaleString("en-IN") + " L" : "—")+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;padding-top:6px;border-top:1px dashed var(--line);margin-top:4px">'
+      +'<span style="color:var(--ok);font-weight:700">Collected: '+inr(d.collected||0)+'</span>'
+      +'<span style="font-weight:700;color:'+(isShort?'var(--due)':d.diff>1?'var(--ok)':'var(--mute)')+'">'
+      +(isShort ? ('⚠️ -' + inr(Math.abs(d.diff))) : (d.diff > 1 ? ('+' + inr(d.diff)) : 'Clean ₹0'))
+      +'</span>'
+      +'</div>'
+      +'<div style="display:flex;justify-content:flex-end;margin-top:2px">'
+      +'<button type="button" class="ghost" style="padding:3px 9px;font-size:11px;font-weight:700" onclick="event.stopPropagation();inspectDutyModal('+d.id+')">🔍 View Readings &rarr;</button>'
+      +'</div>'
+      +'</div>';
+  });
+  h += '</div>';
+
   return h;
 }
 
 function openMarkAttendanceModal(dateStr, workerId){
+  if(ME && ME.role === "worker"){
+    return toast("Attendance can only be marked by Owner or Manager.");
+  }
   dateStr = dateStr || today();
   workerId = workerId || (DUTY_CAL_WORKER !== "all" ? DUTY_CAL_WORKER : "");
   var workerList = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.staff) ? DUTY_CAL_CACHE.staff : [];
@@ -12366,6 +13371,9 @@ function clearAttendanceRecord(workerId, dateStr){
 }
 
 function openDayAttendanceModal(dateStr){
+  if(ME && ME.role === "worker"){
+    return toast("Daily attendance records can only be managed by Owner or Manager.");
+  }
   var m = dateStr.slice(0, 7);
   var allDuties = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.duties) ? DUTY_CAL_CACHE.duties : [];
   var attRecords = (DUTY_CAL_CACHE && DUTY_CAL_CACHE.attendance) ? DUTY_CAL_CACHE.attendance : [];
@@ -12543,7 +13551,10 @@ function exportDutyCalendarCsv(){
     return toast("No recorded duties to export for " + DUTY_CAL_MONTH);
   }
   var duties = DUTY_CAL_CACHE.duties;
-  if(DUTY_CAL_WORKER !== "all"){
+  var isWorkerRole = (ME && ME.role === "worker");
+  if(isWorkerRole){
+    duties = duties.filter(function(d){ return String(d.worker_id) === String(ME.id); });
+  } else if(DUTY_CAL_WORKER !== "all"){
     duties = duties.filter(function(d){ return String(d.worker_id) === String(DUTY_CAL_WORKER); });
   }
 
@@ -12997,8 +14008,8 @@ function start(){
     return renderAdminConsole();
   }
   if(ME.role==="worker"){
-    tab="wduty";
-    return loadW();
+    tab="wcal";
+    return loadWorkerCalendarHome();
   }
   if(location.hash === "#ledger") {
     tab = "ledger";

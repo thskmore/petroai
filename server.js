@@ -1144,7 +1144,14 @@ app.put("/api/credit-recoveries/:id", need(), (q, s) => {
 app.get("/api/credit-recoveries", need(), (q, s) => {
   const names = {};
   customers().forEach((c) => (names[String(c.id)] = c.name));
-  const rows = db.prepare("select cr.id,cr.cust_id,cr.d,cr.mode,cr.note,cr.a,cr.created,u.name worker from credit_recoveries cr join users u on u.id=cr.worker_id order by cr.id desc limit 100").all();
+  let sql = "select cr.id,cr.cust_id,cr.d,cr.mode,cr.note,cr.a,cr.created,u.name worker from credit_recoveries cr join users u on u.id=cr.worker_id";
+  const params = [];
+  if (q.user.role === "worker") {
+    sql += " where cr.worker_id=?";
+    params.push(q.user.id);
+  }
+  sql += " order by cr.id desc limit 100";
+  const rows = db.prepare(sql).all(...params);
   s.json(rows.map((r) => ({ ...r, cname: names[r.cust_id] || "Customer" })));
 });
 app.delete("/api/credit-recoveries/:id", need(), (q, s) => {
@@ -1179,7 +1186,7 @@ function rateFor(st, fuel, date) {
   return best ? +best.rate : null;
 }
 function lastClose(nid) {
-  return db.prepare("select dl.closing c from duty_lines dl join duties d on d.id=dl.duty_id where dl.nozzle_id=? and d.status in ('submitted','closed') and dl.closing is not null order by d.submitted desc, dl.id desc limit 1").get(String(nid)) || {};
+  return db.prepare("select dl.closing c, d.id duty_id, d.shift, d.d from duty_lines dl join duties d on d.id=dl.duty_id where dl.nozzle_id=? and d.status in ('submitted','closed') and dl.closing is not null and dl.closing > 0 order by coalesce(d.closed_at, d.submitted, d.started, d.id) desc, dl.id desc limit 1").get(String(nid)) || {};
 }
 const dayStatus = (d) => (db.prepare("select status from days where d=?").get(d) || { status: "open" }).status;
 function detail(d) {
@@ -1188,11 +1195,25 @@ function detail(d) {
   let lines = [];
   try {
     lines = db.prepare("select * from duty_lines where duty_id=? order by id").all(d.id).map((l) => {
-      const opening = l.opening == null ? null : r2(l.opening);
+      let opening = l.opening == null ? null : r2(l.opening);
+      const n = nm[l.nozzle_id] || {};
+      let sourceDutyId = null;
+      if (opening == null || opening === 0) {
+        const lc = lastClose(l.nozzle_id);
+        if (lc.c != null) {
+          opening = r2(lc.c);
+          sourceDutyId = lc.duty_id;
+          try {
+            db.prepare("update duty_lines set opening=? where id=? and (opening is null or opening=0)").run(opening, l.id);
+          } catch (_) {}
+        } else if (n.open != null) {
+          opening = r2(n.open);
+        }
+      }
       const closing = l.closing == null ? null : r2(l.closing);
       const testing = l.testing == null ? 0 : r2(l.testing);
-      const lt = closing == null ? 0 : r2(closing - (opening || 0) - testing), n = nm[l.nozzle_id] || {};
-      return { ...l, opening, closing, testing, nozzle: n.name || "Nozzle", fuel: n.fuel || "", litres: lt, amount: r2(lt * (l.rate || 0)) };
+      const lt = closing == null ? 0 : r2(closing - (opening || 0) - testing);
+      return { ...l, opening, closing, testing, nozzle: n.name || "Nozzle", fuel: n.fuel || "", litres: lt, amount: r2(lt * (l.rate || 0)), prev_duty_id: sourceDutyId };
     });
   } catch (errLines) {
     lines = [];
@@ -1663,14 +1684,23 @@ app.get("/api/worker/assign-info", need(), (q, s) => {
   const requestedDutyId = q.query.duty_id ? parseInt(q.query.duty_id, 10) : null;
 
   let lastDuty = null;
-  if (requestedDutyId && !isNaN(requestedDutyId)) {
-    lastDuty = db.prepare("select * from duties where id=? and status in ('closed', 'submitted')").get(requestedDutyId);
-  }
-  if (!lastDuty) {
-    lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
-  }
-  if (!lastDuty) {
-    lastDuty = db.prepare("select * from duties where status in ('closed', 'submitted') order by id desc limit 1").get();
+  if (q.user.role === "worker") {
+    if (requestedDutyId && !isNaN(requestedDutyId)) {
+      lastDuty = db.prepare("select * from duties where id=? and worker_id=? and status in ('closed', 'submitted')").get(requestedDutyId, q.user.id);
+    }
+    if (!lastDuty) {
+      lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
+    }
+  } else {
+    if (requestedDutyId && !isNaN(requestedDutyId)) {
+      lastDuty = db.prepare("select * from duties where id=? and status in ('closed', 'submitted')").get(requestedDutyId);
+    }
+    if (!lastDuty) {
+      lastDuty = db.prepare("select * from duties where worker_id=? and status in ('closed', 'submitted') order by id desc limit 1").get(q.user.id);
+    }
+    if (!lastDuty) {
+      lastDuty = db.prepare("select * from duties where status in ('closed', 'submitted') order by id desc limit 1").get();
+    }
   }
 
   // Get list of all worker's recently closed duties for selection
@@ -1897,7 +1927,10 @@ app.get("/api/handover-history", need(), (q, s) => {
   `;
   const params = [];
 
-  if (worker_id && worker_id !== "all") {
+  if (q.user.role === "worker") {
+    sql += " and (h.sender_id = ? or h.receiver_id = ?)";
+    params.push(q.user.id, q.user.id);
+  } else if (worker_id && worker_id !== "all") {
     sql += " and (h.sender_id = ? or h.receiver_id = ?)";
     params.push(+worker_id, +worker_id);
   }
@@ -1924,11 +1957,20 @@ app.get("/api/handover-history", need(), (q, s) => {
   const rows = db.prepare(sql).all(...params);
 
   // Summary statistics
-  const totalCount = db.prepare("select count(*) c from duty_handovers").get()?.c || 0;
+  const isWorker = q.user.role === "worker";
+  const totalCount = isWorker
+    ? (db.prepare("select count(*) c from duty_handovers where sender_id=? or receiver_id=?").get(q.user.id, q.user.id)?.c || 0)
+    : (db.prepare("select count(*) c from duty_handovers").get()?.c || 0);
   const todayDate = bizDate();
-  const todayCount = db.prepare("select count(*) c from duty_handovers where d=?").get(todayDate)?.c || 0;
-  const withNotesCount = db.prepare("select count(*) c from duty_handovers where note is not null and length(trim(note))>0").get()?.c || 0;
-  const staffList = db.prepare("select id, name, role from users where active=1 order by name").all();
+  const todayCount = isWorker
+    ? (db.prepare("select count(*) c from duty_handovers where d=? and (sender_id=? or receiver_id=?)").get(todayDate, q.user.id, q.user.id)?.c || 0)
+    : (db.prepare("select count(*) c from duty_handovers where d=?").get(todayDate)?.c || 0);
+  const withNotesCount = isWorker
+    ? (db.prepare("select count(*) c from duty_handovers where note is not null and length(trim(note))>0 and (sender_id=? or receiver_id=?)").get(q.user.id, q.user.id)?.c || 0)
+    : (db.prepare("select count(*) c from duty_handovers where note is not null and length(trim(note))>0").get()?.c || 0);
+  const staffList = isWorker
+    ? [{ id: q.user.id, name: q.user.name, role: q.user.role }]
+    : db.prepare("select id, name, role from users where active=1 order by name").all();
 
   s.json({
     handovers: rows.map((r) => ({
@@ -5230,10 +5272,23 @@ function payFor(u, month) {
   const net = r2(gross - total_deductions);
   const balance = r2(net - paid);
 
+  // Cumulative all-time advance ledger tracking
+  let all_time_advance = 0;
+  let all_time_recoveries = 0;
+  try {
+    const allAdv = db.prepare("select kind, amount from pay_items where worker_id=?").all(u.id);
+    allAdv.forEach((it) => {
+      if (it.kind === "advance") all_time_advance += it.amount;
+      else if (it.kind === "cash_recovery" || it.kind === "waive") all_time_recoveries += it.amount;
+    });
+  } catch (_) {}
+  const outstanding_advance = r2(Math.max(0, all_time_advance - all_time_recoveries));
+
   return {
     id: u.id,
     name: u.name,
     role: u.role,
+    active: u.active !== 0,
     mobile: u.mobile || "",
     pay_type,
     monthly_salary,
@@ -5278,6 +5333,9 @@ function payFor(u, month) {
     excess,
     excess_list,
     advance,
+    outstanding_advance,
+    all_time_advance: r2(all_time_advance),
+    all_time_recoveries: r2(all_time_recoveries),
     bonus,
     ot: total_ot,
     auto_ot,
@@ -5297,73 +5355,98 @@ function payFor(u, month) {
 }
 
 app.get("/api/payroll/duty-calendar", need(), (q, s) => {
-  const m = monthOf(q.query.month);
-  const sId = getStationId(q);
-  let targetWorker = q.query.worker_id ? +q.query.worker_id : null;
-  if (q.user.role === "worker") {
-    targetWorker = q.user.id;
-  }
-  let sql = `
-    select d.*, u.name as worker_name, u.role as worker_role
-    from duties d
-    join users u on u.id = d.worker_id
-    where substr(d.d, 1, 7) = ? and d.station_id = ?
-  `;
-  const params = [m, sId];
-  if (targetWorker) {
-    sql += " and d.worker_id = ?";
-    params.push(targetWorker);
-  }
-  sql += " order by d.d asc, d.id asc";
-  const rawDuties = db.prepare(sql).all(...params);
-  const duties = rawDuties.map((d) => {
-    const det = detail(d);
-    return {
-      id: d.id,
-      d: d.d,
-      shift: d.shift,
-      worker_id: d.worker_id,
-      worker_name: d.worker_name,
-      worker_role: d.worker_role,
-      status: d.status,
-      diff: det ? det.diff : 0,
-      collected: det ? det.collected : r2((d.cash || 0) + (d.upi || 0) + (d.card || 0)),
-      sales: det ? det.sales : 0,
-      litres: det ? det.litres : 0,
-      cash: det ? det.cash : (d.cash || 0),
-      upi: det ? det.upi : (d.upi || 0),
-      card: det ? det.card : (d.card || 0),
-      note: d.note || ""
-    };
-  });
-  const attSql = `
-    select a.*, u.name as worker_name, mb.name as marked_by_name
-    from attendance_records a
-    join users u on u.id = a.worker_id
-    left join users mb on mb.id = a.marked_by
-    where substr(a.d, 1, 7) = ? and a.station_id = ?
-    ${targetWorker ? "and a.worker_id = ?" : ""}
-    order by a.d asc
-  `;
-  const attParams = targetWorker ? [m, sId, targetWorker] : [m, sId];
-  let attendance = [];
   try {
-    attendance = db.prepare(attSql).all(...attParams);
-  } catch (err) {
-    console.warn("attendance query warn:", err.message);
+    const m = monthOf(q.query.month);
+    const sId = getStationId(q);
+    let targetWorker = q.query.worker_id ? +q.query.worker_id : null;
+    if (q.user.role === "worker") {
+      targetWorker = q.user.id;
+    }
+    let sql = `
+      select d.*, coalesce(u.name, 'Attendant') as worker_name, coalesce(u.role, 'worker') as worker_role
+      from duties d
+      left join users u on u.id = d.worker_id
+      where substr(d.d, 1, 7) = ? and d.station_id = ?
+    `;
+    const params = [m, sId];
+    if (targetWorker) {
+      sql += " and d.worker_id = ?";
+      params.push(targetWorker);
+    }
+    sql += " order by d.d asc, d.id asc";
+    let rawDuties = [];
+    try {
+      rawDuties = db.prepare(sql).all(...params);
+    } catch(errRaw) {
+      console.warn("rawDuties query warning:", errRaw.message);
+      rawDuties = [];
+    }
+    const duties = rawDuties.map((d) => {
+      let det = null;
+      try {
+        det = detail(d);
+      } catch (eDet) {
+        console.warn("detail(d) warn:", eDet.message);
+      }
+      return {
+        id: d.id,
+        d: d.d,
+        shift: d.shift || "Morning",
+        worker_id: d.worker_id,
+        worker_name: d.worker_name || ("Worker #" + d.worker_id),
+        worker_role: d.worker_role || "worker",
+        status: d.status || "closed",
+        diff: det ? det.diff : 0,
+        collected: det ? det.collected : r2((d.cash || 0) + (d.upi || 0) + (d.card || 0)),
+        sales: det ? det.sales : 0,
+        litres: det ? det.litres : 0,
+        cash: det ? det.cash : (d.cash || 0),
+        upi: det ? det.upi : (d.upi || 0),
+        card: det ? det.card : (d.card || 0),
+        note: d.note || ""
+      };
+    });
+    const attSql = `
+      select a.*, coalesce(u.name, 'Staff') as worker_name, coalesce(mb.name, 'Manager') as marked_by_name
+      from attendance_records a
+      left join users u on u.id = a.worker_id
+      left join users mb on mb.id = a.marked_by
+      where substr(a.d, 1, 7) = ? and a.station_id = ?
+      ${targetWorker ? "and a.worker_id = ?" : ""}
+      order by a.d asc
+    `;
+    const attParams = targetWorker ? [m, sId, targetWorker] : [m, sId];
+    let attendance = [];
+    try {
+      attendance = db.prepare(attSql).all(...attParams);
+    } catch (err) {
+      console.warn("attendance query warn:", err.message);
+      attendance = [];
+    }
+
+    let staff = [];
+    try {
+      if (q.user.role === "worker") {
+        staff = db.prepare(`
+          select id, name, role, mobile, pay_type, standard_shifts_month, monthly_salary
+          from users
+          where id=?
+        `).all(q.user.id);
+      } else {
+        staff = db.prepare(`
+          select id, name, role, mobile, pay_type, standard_shifts_month, monthly_salary
+          from users
+          where (role in ('worker','manager') or id in (select worker_id from duties where substr(d,1,7)=?)) and station_id=?
+          order by name
+        `).all(m, sId);
+      }
+    } catch (_) {}
+
+    s.json({ month: m, worker_id: targetWorker, duties, attendance, staff });
+  } catch (outerErr) {
+    console.error("Duty calendar endpoint error:", outerErr);
+    s.status(500).json({ error: "Failed to load duty calendar: " + (outerErr.message || "database error") });
   }
-
-  let staff = [];
-  try {
-    staff = db.prepare(`
-      select id, name, role, mobile, pay_type, standard_shifts_month, monthly_salary
-      from users
-      where (role in ('worker','manager') or id in (select worker_id from duties where substr(d,1,7)=?)) and station_id=?
-      order by name
-    `).all(m, sId);
-  } catch (_) {}
-
-  s.json({ month: m, worker_id: targetWorker, duties, attendance, staff });
 });
 
 app.post("/api/payroll/attendance", need("owner", "manager"), (q, s) => {
@@ -5398,10 +5481,229 @@ app.delete("/api/payroll/attendance", need("owner", "manager"), (q, s) => {
 app.get("/api/payroll", need("owner"), (q, s) => {
   const m = monthOf(q.query.month);
   const sId = getStationId(q);
-  const us = db.prepare("select id,name,role,mobile,pay_type,monthly_salary,ot_rate,lube_incentive_pct,bank_acc,bank_ifsc,bank_upi,epf_opted,uan_no,esic_opted,esic_no,premium_fuel_rate,standard_shifts_month,deduct_lop,night_shift_allowance from users where (role in ('worker','manager') or id in (select worker_id from duties where substr(d,1,7)=?)) and station_id=? order by name").all(m, sId);
+  const us = db.prepare("select id,name,role,mobile,active,pay_type,monthly_salary,ot_rate,lube_incentive_pct,bank_acc,bank_ifsc,bank_upi,epf_opted,uan_no,esic_opted,esic_no,premium_fuel_rate,standard_shifts_month,deduct_lop,night_shift_allowance from users where (role in ('worker','manager') or id in (select worker_id from duties where substr(d,1,7)=?)) and station_id=? order by name").all(m, sId);
   const lockRow = db.prepare("select * from pay_locks where station_id=? and month=?").get(sId, m);
   const advReqs = db.prepare("select r.*, u.name as worker_name from pay_advance_requests r join users u on u.id=r.worker_id where r.station_id=? and r.month=? order by r.id desc").all(sId, m);
-  s.json({ month: m, locked: !!lockRow, lock_info: lockRow || null, advance_requests: advReqs, workers: us.map((u) => payFor(u, m)) });
+  const workers = us.map((u) => payFor(u, m));
+
+  const totalStaff = us.length;
+  const activeStaff = us.filter((u) => u.active !== 0).length;
+  const inactiveStaff = totalStaff - activeStaff;
+  const totalCommitment = r2(workers.reduce((acc, w) => acc + (w.pay_type === "monthly" ? w.monthly_salary : w.earn), 0));
+  const totalOutstandingAdvances = r2(workers.reduce((acc, w) => acc + (w.outstanding_advance || w.advance || 0), 0));
+  const totalNetPayable = r2(workers.reduce((acc, w) => acc + (w.net || 0), 0));
+  const totalPaid = r2(workers.reduce((acc, w) => acc + (w.paid || 0), 0));
+  const totalBalanceDue = r2(workers.reduce((acc, w) => acc + (w.balance || 0), 0));
+
+  // High advance alert banner
+  const highAdvanceAlerts = workers.filter((w) => {
+    const adv = w.outstanding_advance || w.advance || 0;
+    const threshold = w.monthly_salary > 0 ? (w.monthly_salary * 0.4) : 4000;
+    return adv >= threshold && adv > 0;
+  }).map((w) => ({
+    id: w.id,
+    name: w.name,
+    role: w.role,
+    mobile: w.mobile,
+    outstanding: w.outstanding_advance || w.advance || 0,
+    monthly_salary: w.monthly_salary,
+    threshold: w.monthly_salary > 0 ? Math.round(w.monthly_salary * 0.4) : 4000
+  }));
+
+  s.json({
+    month: m,
+    locked: !!lockRow,
+    lock_info: lockRow || null,
+    advance_requests: advReqs,
+    summary: {
+      total_staff: totalStaff,
+      active_staff: activeStaff,
+      inactive_staff: inactiveStaff,
+      total_commitment: totalCommitment,
+      total_outstanding_advances: totalOutstandingAdvances,
+      total_net_payable: totalNetPayable,
+      total_paid: totalPaid,
+      total_balance_due: totalBalanceDue,
+      high_advance_alerts: highAdvanceAlerts
+    },
+    workers
+  });
+});
+
+// Employee Advance Ledger & Audit History
+app.get("/api/employees/advance-ledger/:id", need(), (q, s) => {
+  const wId = +q.params.id;
+  if (q.user.role === "worker" && q.user.id !== wId) {
+    return s.status(403).json({ error: "Access denied." });
+  }
+  const u = db.prepare("select id, name, role, mobile, pay_type, monthly_salary, active from users where id=?").get(wId);
+  if (!u) return s.status(404).json({ error: "Staff member not found." });
+  const sId = getStationId(q);
+
+  const items = db.prepare(`
+    select p.*, d.shift as duty_shift, d.d as duty_date
+    from pay_items p
+    left join duties d on d.id = p.duty_id
+    where p.worker_id=? and p.station_id=?
+    order by p.d asc, p.id asc
+  `).all(wId, sId);
+
+  let runningBal = 0;
+  const ledger = items.map((it) => {
+    let debit = 0, credit = 0;
+    if (it.kind === "advance") {
+      debit = it.amount;
+      runningBal += debit;
+    } else if (it.kind === "cash_recovery" || it.kind === "waive" || it.kind === "excess") {
+      credit = it.amount;
+      runningBal -= credit;
+    } else if (it.kind === "paid") {
+      credit = it.amount;
+    }
+    return {
+      ...it,
+      debit: r2(debit),
+      credit: r2(credit),
+      running_balance: r2(Math.max(0, runningBal))
+    };
+  });
+
+  s.json({
+    employee: u,
+    total_outstanding: r2(Math.max(0, runningBal)),
+    ledger: ledger.reverse()
+  });
+});
+
+// Issue Staff Advance or Record Cash Recovery with Cash Drawer Sync
+app.post("/api/employees/advance", need("owner", "manager"), (q, s) => {
+  const { worker_id, amount, kind, note, d, sync_cash_drawer, pay_mode } = q.body || {};
+  const wId = +worker_id;
+  const u = db.prepare("select id, name, role, mobile from users where id=?").get(wId);
+  if (!u) return s.status(404).json({ error: "Employee not found." });
+  const a = num(amount);
+  if (!a || a <= 0) return s.status(400).json({ error: "Please enter a valid amount." });
+
+  const txnDate = (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) ? d : today();
+  const m = txnDate.slice(0, 7);
+  const sId = getStationId(q);
+  const entryKind = (kind === "cash_recovery" || kind === "waive") ? kind : "advance";
+  const noteText = String(note || "").slice(0, 150);
+
+  const itemId = db.prepare(`
+    insert into pay_items(worker_id, month, kind, amount, note, d, created, station_id)
+    values(?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(wId, m, entryKind, r2(a), noteText, txnDate, now(), sId).lastInsertRowid;
+
+  // Bi-directional cash drawer sync
+  if (sync_cash_drawer) {
+    try {
+      const r = getState(sId);
+      if (r) {
+        const st = JSON.parse(r.json);
+        st.bk = st.bk || [];
+        const modeStr = (pay_mode === "Bank" || pay_mode === "UPI") ? pay_mode : "Cash";
+
+        if (entryKind === "advance") {
+          st.bk.push({
+            id: Date.now(),
+            d: txnDate,
+            t: "out",
+            n: `Staff Advance Payout: ${u.name}${noteText ? " (" + noteText + ")" : ""}`,
+            a: r2(a),
+            cat: "Staff Salaries & Advances",
+            mode: modeStr
+          });
+          if (modeStr === "Cash") {
+            st.ob = st.ob || { Cash: 0, Bank: 0, UPI: 0 };
+            st.ob.Cash = r2((st.ob.Cash || 0) - a);
+          }
+        } else if (entryKind === "cash_recovery") {
+          st.bk.push({
+            id: Date.now(),
+            d: txnDate,
+            t: "in",
+            n: `Staff Advance Recovery: ${u.name}${noteText ? " (" + noteText + ")" : ""}`,
+            a: r2(a),
+            cat: "Staff Advance Recovery",
+            mode: modeStr
+          });
+          if (modeStr === "Cash") {
+            st.ob = st.ob || { Cash: 0, Bank: 0, UPI: 0 };
+            st.ob.Cash = r2((st.ob.Cash || 0) + a);
+          }
+        }
+
+        const jsonStr = JSON.stringify(st);
+        const cur = r.ver + 1;
+        db.prepare("insert or replace into station_states(station_id, ver, json) values(?, ?, ?)").run(sId, cur, jsonStr);
+        if (sId === 1) {
+          db.prepare("insert into state(id,ver,json) values(1,?,?) on conflict(id) do update set ver=excluded.ver,json=excluded.json").run(cur, jsonStr);
+        }
+      }
+    } catch (errCb) {
+      console.warn("Cash drawer sync error:", errCb.message);
+    }
+  }
+
+  s.json({
+    ok: true,
+    id: itemId,
+    message: entryKind === "cash_recovery"
+      ? `Recovered ₹${a} from ${u.name} into ${sync_cash_drawer ? "cash drawer" : "ledger"}.`
+      : `Issued ₹${a} advance to ${u.name}.`
+  });
+});
+
+// Create new staff employee
+app.post("/api/employees", need("owner"), (q, s) => {
+  const { name, mobile, role, pay_type, monthly_salary, bank_acc, bank_ifsc, bank_upi, epf_opted, uan_no, esic_opted, esic_no, standard_shifts_month } = q.body || {};
+  const staffName = String(name || "").trim();
+  const staffMobile = String(mobile || "").trim();
+  if (!staffName) return s.status(400).json({ error: "Please enter employee name." });
+  if (!staffMobile || !/^\d{10}$/.test(staffMobile)) return s.status(400).json({ error: "Please enter a valid 10-digit mobile number." });
+
+  const existing = db.prepare("select id from users where mobile=?").get(staffMobile);
+  if (existing) return s.status(409).json({ error: "A user with this mobile number already exists." });
+
+  const sId = getStationId(q);
+  const bcrypt = require("bcryptjs");
+  const pass = staffMobile.slice(-4) || "1234";
+  const hash = bcrypt.hashSync(pass, 10);
+  const assignedRole = (role === "manager" || role === "owner") ? role : "worker";
+
+  const newId = db.prepare(`
+    insert into users (name, mobile, hash, role, active, station_id, approval_status, pay_type, monthly_salary, bank_acc, bank_ifsc, bank_upi, epf_opted, uan_no, esic_opted, esic_no, standard_shifts_month)
+    values (?, ?, ?, ?, 1, ?, 'approved', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    staffName,
+    staffMobile,
+    hash,
+    assignedRole,
+    sId,
+    pay_type === "monthly" ? "monthly" : "duty",
+    Math.max(0, num(monthly_salary) || 0),
+    String(bank_acc || "").trim().slice(0, 30),
+    String(bank_ifsc || "").trim().toUpperCase().slice(0, 20),
+    String(bank_upi || "").trim().slice(0, 50),
+    epf_opted ? 1 : 0,
+    String(uan_no || "").trim().slice(0, 20),
+    esic_opted ? 1 : 0,
+    String(esic_no || "").trim().slice(0, 25),
+    Math.max(1, Math.min(31, parseInt(standard_shifts_month, 10) || 26))
+  ).lastInsertRowid;
+
+  s.json({ ok: true, id: newId, message: `Employee ${staffName} added successfully. Default login password: ${pass}` });
+});
+
+// Toggle employee active / inactive status
+app.post("/api/employees/:id/toggle-status", need("owner"), (q, s) => {
+  const wId = +q.params.id;
+  const u = db.prepare("select id, active from users where id=?").get(wId);
+  if (!u) return s.status(404).json({ error: "Staff member not found." });
+  const newActive = u.active ? 0 : 1;
+  db.prepare("update users set active=? where id=?").run(newActive, wId);
+  s.json({ ok: true, active: newActive, message: newActive ? "Employee activated." : "Employee marked inactive." });
 });
 
 app.put("/api/payroll/worker-settings", need("owner"), (q, s) => {
